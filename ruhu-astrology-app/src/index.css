@@ -1,0 +1,13 @@
+@import "tailwindcss";
+
+@layer base {
+  body {
+    @apply bg-background text-textDark antialiased;
+  }
+}
+
+@layer components {
+  .container {
+    @apply max-w-7xl mx-auto;
+  }
+}
