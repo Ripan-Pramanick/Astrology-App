@@ -2,17 +2,17 @@ import React from 'react';
 import { useParams, Link } from 'react-router-dom';
 import PageHeader from '../components/common/PageHeader';
 import Card from '../components/common/Card';
-// সোশ্যাল আইকনের জন্য react-icons ব্যবহার করা হলো
 import { FaFacebook, FaTwitter, FaLinkedin } from 'react-icons/fa';
+
+// ১. স্ট্যাটিক ডেটা কম্পোনেন্টের বাইরে রাখা হলো (পারফরম্যান্স অপটিমাইজেশন)
+const recommended = [
+  { title: '500-Coconut Vel Povers & Day Muruga Powertime', desc: 'Join our brand "Day Invocation of Muruga..."' },
+  { title: '500-Coconut Vel Povers & Day Muruga Powertime', desc: 'Join our brand "Day Invocation of Muruga..."' },
+  { title: '500-Coconut Vel Povers & Day Muruga Powertime', desc: 'Join our brand "Day Invocation of Muruga..."' },
+];
 
 const BlogDetails = () => {
   const { id } = useParams();
-
-  const recommended = [
-    { title: '500-Coconut Vel Povers & Day Muruga Powertime', desc: 'Join our brand "Day Invocation of Muruga..."' },
-    { title: '500-Coconut Vel Povers & Day Muruga Powertime', desc: 'Join our brand "Day Invocation of Muruga..."' },
-    { title: '500-Coconut Vel Povers & Day Muruga Powertime', desc: 'Join our brand "Day Invocation of Muruga..."' },
-  ];
 
   return (
     <div>
@@ -65,12 +65,18 @@ const BlogDetails = () => {
             </p>
 
             <div className="border-t pt-6 mt-8">
-              <div className="flex space-x-4">
+              <div className="flex space-x-4 items-center">
                 <span className="font-semibold">Share:</span>
-                {/* এখানে react-icons এর কম্পোনেন্টগুলো বসানো হয়েছে */}
-                <FaFacebook size={20} className="cursor-pointer hover:text-accent" />
-                <FaTwitter size={20} className="cursor-pointer hover:text-accent" />
-                <FaLinkedin size={20} className="cursor-pointer hover:text-accent" />
+                {/* ২. এসইও এবং সিকিউরিটির জন্য লিংক অপটিমাইজেশন */}
+                <a href="#" target="_blank" rel="noopener noreferrer" aria-label="Share on Facebook" title="Facebook">
+                  <FaFacebook size={20} className="cursor-pointer hover:text-accent transition-colors" />
+                </a>
+                <a href="#" target="_blank" rel="noopener noreferrer" aria-label="Share on Twitter" title="Twitter">
+                  <FaTwitter size={20} className="cursor-pointer hover:text-accent transition-colors" />
+                </a>
+                <a href="#" target="_blank" rel="noopener noreferrer" aria-label="Share on LinkedIn" title="LinkedIn">
+                  <FaLinkedin size={20} className="cursor-pointer hover:text-accent transition-colors" />
+                </a>
               </div>
             </div>
           </div>
