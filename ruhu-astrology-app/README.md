@@ -1,16 +1,37 @@
-# React + Vite
+# 🌟 RUHU Astrology App
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+A modern, responsive, and feature-rich astrology web application built with React.js. This platform provides users with detailed astrological insights, free Kundli generation, and professional astrology services.
 
-Currently, two official plugins are available:
+## 🚀 Features (Implemented & Upcoming)
+- **Modern UI/UX:** Beautiful and fully responsive design built with Tailwind CSS.
+- **Free Kundli Generation:** Input birth details to generate detailed astrological charts and predictions.
+- **Detailed PDF Reports:** Generate comprehensive 200-page astrology reports (Coming Soon).
+- **Secure Authentication:** Phone number OTP verification using Firebase Auth.
+- **Multi-language Support:** Accessible in English, Bengali, and Hindi.
+- **Services & Blogs:** Dedicated sections for premium astrology services, pricing, and daily insights.
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+## 💻 Tech Stack
+- **Frontend Framework:** React.js (Vite)
+- **Styling:** Tailwind CSS
+- **Routing:** React Router DOM
+- **Icons:** React Icons & Lucide React
+- **Backend & Database (Upcoming):** Supabase
+- **Authentication (Upcoming):** Firebase (Phone Auth)
+- **PDF Generation (Upcoming):** jsPDF & html2canvas
 
-## React Compiler
+## 🛠️ Installation & Setup
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+Follow these steps to run the project locally on your machine:
 
-## Expanding the ESLint configuration
+1. **Clone the repository:**
+   ```bash
+   git clone [https://github.com/your-username/ruhu-astrology-app.git](https://github.com/your-username/ruhu-astrology-app.git)
 
-If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and [`typescript-eslint`](https://typescript-eslint.io) in your project.
+
+   src/
+├── assets/         # Images, illustrations, and SVGs
+├── components/     # Reusable UI components (Navbar, Footer, Cards, etc.)
+├── pages/          # Main application pages (Home, Kundli, Blog, etc.)
+├── layout/         # Layout wrappers for consistent UI
+├── App.jsx         # Main application routing and configuration
+└── main.jsx        # React entry point
