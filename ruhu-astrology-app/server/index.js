@@ -23,12 +23,12 @@ import admin from 'firebase-admin';
 import { config as firebaseConfig } from './config/env.js';
 
 admin.initializeApp({
-  projectId: firebaseConfig.firebase.projectId,
-  credential: admin.credential.cert({
     projectId: firebaseConfig.firebase.projectId,
-    privateKey: firebaseConfig.firebase.privateKey,
-    clientEmail: firebaseConfig.firebase.clientEmail,
-  }),
+    credential: admin.credential.cert({
+        projectId: firebaseConfig.firebase.projectId,
+        privateKey: firebaseConfig.firebase.privateKey,
+        clientEmail: firebaseConfig.firebase.clientEmail,
+    }),
 });
 
 const app = express();
@@ -52,12 +52,12 @@ app.use('/api/matchmaking', matchmakingRoutes);
 
 // Health check
 app.get('/health', (req, res) => {
-  res.json({ status: 'ok', timestamp: new Date().toISOString() });
+    res.json({ status: 'ok', timestamp: new Date().toISOString() });
 });
 
 // 404 handler
 app.use((req, res) => {
-  res.status(404).json({ message: 'Route not found' });
+    res.status(404).json({ message: 'Route not found' });
 });
 
 // Global error handler
@@ -66,5 +66,5 @@ app.use(errorHandler);
 // Start server
 const PORT = config.port;
 app.listen(PORT, () => {
-  logger.info(`Server running on port ${PORT} in ${config.nodeEnv} mode`);
+    logger.info(`Server running on port ${PORT} in ${config.nodeEnv} mode`);
 });

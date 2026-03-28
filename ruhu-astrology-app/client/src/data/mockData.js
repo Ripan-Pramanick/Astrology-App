@@ -121,24 +121,7 @@ export const testimonials = [
   },
 ];
 
-export const articles = [
-  {
-    id: 1,
-    title: 'BJD-Consultant Rat Poses 6-Day Murugan Powertime',
-    excerpt:
-      'Join our Grand 7-Day Invocation of Murugan at His Divine Cosmic Weapon Vel featuring a Grand...',
-    image: '/placeholder.jpg',
-    date: 'Apr 15, 2020',
-  },
-  {
-    id: 2,
-    title: 'What\'s the news?',
-    excerpt:
-      '500-Coconut Vel Povers 6-Day Muruga Powertrain',
-    image: '/placeholder.jpg',
-    date: 'Apr 10, 2020',
-  },
-];
+
 
 export const panchang = {
   date: 'New Delhi, India',
