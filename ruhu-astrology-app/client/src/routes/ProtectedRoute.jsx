@@ -7,7 +7,7 @@ const ProtectedRoute = () => {
   const { user, loading } = useAuth();
 
   if (loading) {
-    // Optionally show a loading spinner
+    // Show a loading spinner while checking auth state
     return <div className="flex justify-center items-center h-screen">Loading...</div>;
   }
 
@@ -16,7 +16,7 @@ const ProtectedRoute = () => {
     return <Navigate to="/login" replace />;
   }
 
-  // Render child routes
+  // Render child routes if authenticated
   return <Outlet />;
 };
 

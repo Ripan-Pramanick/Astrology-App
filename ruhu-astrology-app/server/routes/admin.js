@@ -7,6 +7,7 @@ import {
   getRecentPayments,
   getAllUsers,
   deleteUser,
+  getAllOrders,
 } from '../controllers/adminController.js';
 
 const router = express.Router();
@@ -18,5 +19,6 @@ router.get('/stats', getStats);
 router.get('/recent-payments', getRecentPayments);
 router.get('/users', getAllUsers);
 router.delete('/users/:id', deleteUser);
+router.get('/orders', getAllOrders);
 
 export default router;

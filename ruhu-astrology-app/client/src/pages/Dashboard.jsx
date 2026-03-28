@@ -2,7 +2,9 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
-import axios from 'axios';
+import api from '../services/api';
+import Button from '../components/ui/Button';
+import Card from '../components/ui/Card';
 
 const Dashboard = () => {
   const { user, logout } = useAuth();
@@ -13,10 +15,7 @@ const Dashboard = () => {
   useEffect(() => {
     const fetchDashboardData = async () => {
       try {
-        const token = localStorage.getItem('authToken');
-        const response = await axios.get('/api/dashboard', {
-          headers: { Authorization: `Bearer ${token}` },
-        });
+        const response = await api.get('/dashboard'); // Protected endpoint
         setRequests(response.data.requests || []);
       } catch (err) {
         console.error(err);
@@ -28,32 +27,25 @@ const Dashboard = () => {
     fetchDashboardData();
   }, []);
 
-  if (!user) {
-    return <div className="text-center py-8">Please log in to view your dashboard.</div>;
-  }
+  if (!user) return null;
 
   return (
     <div className="max-w-4xl mx-auto px-4 py-8">
       <div className="flex justify-between items-center mb-6">
         <h1 className="text-2xl font-bold">Welcome, {user.name || user.phone}</h1>
-        <button
-          onClick={logout}
-          className="text-red-600 hover:text-red-800 text-sm"
-        >
-          Logout
-        </button>
+        <Button variant="outline" onClick={logout}>Logout</Button>
       </div>
 
-      <div className="bg-white shadow rounded-lg p-6 mb-8">
+      <Card className="mb-8">
         <h2 className="text-xl font-semibold mb-4">Your Profile</h2>
         <div className="space-y-2">
           <p><strong>Name:</strong> {user.name || 'Not set'}</p>
           <p><strong>Email:</strong> {user.email || 'Not set'}</p>
           <p><strong>Phone:</strong> {user.phone}</p>
         </div>
-      </div>
+      </Card>
 
-      <div className="bg-white shadow rounded-lg p-6">
+      <Card>
         <h2 className="text-xl font-semibold mb-4">Your Kundali Requests</h2>
         {loading && <p className="text-gray-500">Loading...</p>}
         {error && <p className="text-red-600">{error}</p>}
@@ -86,7 +78,7 @@ const Dashboard = () => {
             </table>
           </div>
         )}
-      </div>
+      </Card>
     </div>
   );
 };

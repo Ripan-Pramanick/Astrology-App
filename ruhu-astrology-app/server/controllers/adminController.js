@@ -1,44 +1,36 @@
 // server/controllers/adminController.js
 import { supabase } from '../utils/supabase.js';
 
-/**
- * Get dashboard stats
- * GET /api/admin/stats
- */
 export const getStats = async (req, res) => {
   try {
     // Count users
     const { count: totalUsers, error: usersError } = await supabase
       .from('users')
       .select('*', { count: 'exact', head: true });
-
     if (usersError) throw usersError;
 
     // Count payments
     const { count: totalPayments, error: paymentsError } = await supabase
       .from('payments')
       .select('*', { count: 'exact', head: true });
-
     if (paymentsError) throw paymentsError;
 
-    // Sum revenue (from completed payments)
+    // Sum revenue from completed payments
     const { data: revenueData, error: revenueError } = await supabase
       .from('payments')
       .select('amount')
       .eq('status', 'completed');
-
     if (revenueError) throw revenueError;
-    const totalRevenue = revenueData.reduce((sum, p) => sum + (p.amount || 0), 0) / 100; // assuming amount in paise
+    const totalRevenue = revenueData.reduce((sum, p) => sum + (p.amount || 0), 0) / 100; // amount in paise
 
     // Count pending kundali requests
     const { count: pendingRequests, error: pendingError } = await supabase
       .from('kundali_requests')
       .select('*', { count: 'exact', head: true })
       .eq('status', 'pending');
-
     if (pendingError) throw pendingError;
 
-    return res.status(200).json({
+    res.json({
       totalUsers: totalUsers || 0,
       totalPayments: totalPayments || 0,
       totalRevenue: Math.round(totalRevenue),
@@ -46,14 +38,10 @@ export const getStats = async (req, res) => {
     });
   } catch (error) {
     console.error('Admin stats error:', error);
-    return res.status(500).json({ message: 'Failed to fetch stats.' });
+    res.status(500).json({ message: 'Failed to fetch stats.' });
   }
 };
 
-/**
- * Get recent payments
- * GET /api/admin/recent-payments
- */
 export const getRecentPayments = async (req, res) => {
   try {
     const { data: payments, error } = await supabase
@@ -82,17 +70,13 @@ export const getRecentPayments = async (req, res) => {
       user_name: p.users?.name || p.user_id,
     }));
 
-    return res.status(200).json(formatted);
+    res.json(formatted);
   } catch (error) {
     console.error('Recent payments error:', error);
-    return res.status(500).json({ message: 'Failed to fetch recent payments.' });
+    res.status(500).json({ message: 'Failed to fetch recent payments.' });
   }
 };
 
-/**
- * Get all users (admin only)
- * GET /api/admin/users
- */
 export const getAllUsers = async (req, res) => {
   try {
     const { data: users, error } = await supabase
@@ -101,32 +85,57 @@ export const getAllUsers = async (req, res) => {
       .order('created_at', { ascending: false });
 
     if (error) throw error;
-    return res.status(200).json(users);
+    res.json(users);
   } catch (error) {
     console.error('Get all users error:', error);
-    return res.status(500).json({ message: 'Failed to fetch users.' });
+    res.status(500).json({ message: 'Failed to fetch users.' });
   }
 };
 
-/**
- * Delete a user
- * DELETE /api/admin/users/:id
- */
 export const deleteUser = async (req, res) => {
   try {
     const { id } = req.params;
-    // Optionally, also delete the Firebase user (requires Firebase Admin)
-    // For now, just delete from Supabase.
-
-    const { error } = await supabase
-      .from('users')
-      .delete()
-      .eq('id', id);
-
+    const { error } = await supabase.from('users').delete().eq('id', id);
     if (error) throw error;
-    return res.status(200).json({ message: 'User deleted successfully.' });
+    res.json({ message: 'User deleted successfully.' });
   } catch (error) {
     console.error('Delete user error:', error);
-    return res.status(500).json({ message: 'Failed to delete user.' });
+    res.status(500).json({ message: 'Failed to delete user.' });
+  }
+};
+
+export const getAllOrders = async (req, res) => {
+  try {
+    const { data: orders, error } = await supabase
+      .from('payments')
+      .select(`
+        id,
+        order_id,
+        amount,
+        status,
+        service,
+        created_at,
+        user_id,
+        users ( name )
+      `)
+      .order('created_at', { ascending: false });
+
+    if (error) throw error;
+
+    const formatted = orders.map(o => ({
+      id: o.id,
+      order_id: o.order_id,
+      amount: o.amount,
+      status: o.status,
+      service: o.service,
+      created_at: o.created_at,
+      user_id: o.user_id,
+      user_name: o.users?.name || o.user_id,
+    }));
+
+    res.json(formatted);
+  } catch (error) {
+    console.error('Get orders error:', error);
+    res.status(500).json({ message: 'Failed to fetch orders.' });
   }
 };

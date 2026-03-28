@@ -35,7 +35,6 @@ const Users = () => {
       await axios.delete(`/api/admin/users/${userId}`, {
         headers: { Authorization: `Bearer ${token}` },
       });
-      // Remove from list
       setUsers(users.filter(u => u.id !== userId));
     } catch (err) {
       console.error(err);
