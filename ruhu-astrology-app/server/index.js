@@ -15,7 +15,7 @@ import kundliRoutes from './routes/kundli.js';
 import paymentRoutes from './routes/payment.js';
 import aiRoutes from './routes/ai.js';
 import adminRoutes from './routes/admin.js';
-import dashboardRoutes from './routes/dashboard.js'; // We'll create later
+// import dashboardRoutes from './routes/dashboard.js'; // We'll create later
 import matchmakingRoutes from './routes/matchmaking.js';
 
 // Firebase Admin initialization (if needed)
@@ -47,7 +47,7 @@ app.use('/api/kundli', kundliRoutes);
 app.use('/api/payment', paymentRoutes);
 app.use('/api/ai', aiRoutes);
 app.use('/api/admin', adminRoutes);
-app.use('/api/dashboard', dashboardRoutes);
+// app.use('/api/dashboard', dashboardRoutes);
 app.use('/api/matchmaking', matchmakingRoutes);
 
 // Health check
