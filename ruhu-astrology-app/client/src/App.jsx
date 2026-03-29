@@ -30,10 +30,12 @@ import AdminOrders from './pages/admin/Orders';
 // Components
 import Navbar from './components/common/Navbar';
 import Footer from './components/common/Footer';
+import ScrollToTop from './components/common/ScrollToTop';
 
 function App() {
   return (
     <Router>
+      <ScrollToTop />
       <AuthProvider>
         <div className="flex flex-col min-h-screen">
           <Navbar />

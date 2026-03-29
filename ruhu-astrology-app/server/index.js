@@ -1,4 +1,5 @@
 // server/index.js
+import 'dotenv/config';
 import express from 'express';
 import cors from 'cors';
 import helmet from 'helmet';
@@ -17,6 +18,7 @@ import aiRoutes from './routes/ai.js';
 import adminRoutes from './routes/admin.js';
 // import dashboardRoutes from './routes/dashboard.js'; // We'll create later
 import matchmakingRoutes from './routes/matchmaking.js';
+import astrologyRoutes from './routes/astrology.routes.js'; // <-- এই লাইনটা যোগ করুন (আপনার ফাইলের নাম যদি শুধু astrology.js হয়, তাহলে সেটাই দেবেন)
 
 // Firebase Admin initialization (if needed)
 import admin from 'firebase-admin';
@@ -49,6 +51,7 @@ app.use('/api/ai', aiRoutes);
 app.use('/api/admin', adminRoutes);
 // app.use('/api/dashboard', dashboardRoutes);
 app.use('/api/matchmaking', matchmakingRoutes);
+app.use('/api/astrology', astrologyRoutes); // <-- এই লাইনটা এখানে যোগ করে দিন!
 
 // Health check
 app.get('/health', (req, res) => {

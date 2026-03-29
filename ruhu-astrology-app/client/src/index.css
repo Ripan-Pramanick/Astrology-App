@@ -3,3 +3,7 @@
 body {
   @apply bg-bg font-sans;
 }
+
+html {
+  scroll-behavior: smooth;
+}
