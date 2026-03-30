@@ -22,7 +22,9 @@ export const AuthProvider = ({ children }) => {
 
         // Verify token with backend and get user details
         try {
-          const response = await api.post('/auth/verify-phone', { idToken });
+          // 👉 ঠিক করা লাইন: { idToken } এর বদলে { token: idToken }
+          const response = await api.post('/auth/verify-phone', { token: idToken });
+          
           if (response.data.success) {
             setUser(response.data.user);
             localStorage.setItem('user', JSON.stringify(response.data.user));

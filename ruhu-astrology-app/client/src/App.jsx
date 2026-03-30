@@ -17,6 +17,7 @@ import OTPVerify from './pages/OTPVerify';
 import Dashboard from './pages/Dashboard';
 import Matchmaking from './pages/Matchmaking';
 import NotFound from './pages/NotFound'; // Ensure this file exists
+import Register from './pages/Register'; 
 
 // Blog Pages (Make sure these files exist in your pages folder)
 import Blog from './pages/Blog';
@@ -48,6 +49,7 @@ function App() {
               <Route path="/kundli/:id" element={<KundliResult />} />
               <Route path="/contact" element={<Contact />} />
               <Route path="/matchmaking" element={<Matchmaking />} />
+              <Route path="/register" element={<Register />} />
               <Route path="/login" element={<Login />} />
               <Route path="/verify-otp" element={<OTPVerify />} />
               

@@ -52,6 +52,49 @@ app.use('/api/admin', adminRoutes);
 // app.use('/api/dashboard', dashboardRoutes);
 app.use('/api/matchmaking', matchmakingRoutes);
 app.use('/api/astrology', astrologyRoutes); // <-- এই লাইনটা এখানে যোগ করে দিন!
+app.use(express.json()); // 👈 এই লাইনটা না থাকলে req.body ফাঁকা আসবে এবং 500 এরর দেবে!
+
+// server/index.js (যেখানে আপনার অন্যান্য API আছে)
+
+app.get('/api/dashboard', (req, res) => {
+  // আপনার ফ্রন্টএন্ড ঠিক যেই ফরম্যাটে ডাটা খুঁজছে (response.data.requests)
+  res.status(200).json({
+    success: true,
+    requests: [
+      { id: 'req_001', created_at: '2026-03-25T10:30:00Z', status: 'completed' },
+      { id: 'req_002', created_at: '2026-03-28T14:15:00Z', status: 'processing' },
+      { id: 'req_003', created_at: '2026-03-30T09:00:00Z', status: 'pending' }
+    ]
+  });
+});
+
+// server/index.js (বা আপনার controllers ফাইলে)
+
+app.put('/api/user/profile', async (req, res) => {
+  const { name, email, phone } = req.body; // ফ্রন্টএন্ড থেকে পাঠানো ডাটা
+
+  try {
+    // Supabase-এ ইউজার আপডেট করা
+    const { data, error } = await supabase
+      .from('users')
+      .update({ name, email })
+      .eq('phone', phone) // ফোন নম্বর দিয়ে ইউজারকে খুঁজে বের করবে
+      .select();
+
+    if (error) throw error;
+
+    res.status(200).json({
+      success: true,
+      message: "Profile updated successfully!",
+      user: data[0]
+    });
+  } catch (error) {
+    console.error("Update error:", error);
+    res.status(500).json({ success: false, message: "Error updating profile" });
+  }
+});
+
+
 
 // Health check
 app.get('/health', (req, res) => {
