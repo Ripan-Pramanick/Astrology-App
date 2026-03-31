@@ -2,50 +2,50 @@
 import admin from 'firebase-admin'; 
 import { supabase } from '../utils/supabase.js';
 
-export const verifyPhoneAuth = async (req, res) => {
-  try {
-    // ১. আপনার ফ্রন্টএন্ড থেকে 'token' আসছে, তাই 'token' ই পড়ুন
-    const { token } = req.body; 
+// export const verifyPhoneAuth = async (req, res) => {
+//   try {
+//     // ১. আপনার ফ্রন্টএন্ড থেকে 'token' আসছে, তাই 'token' ই পড়ুন
+//     const { token } = req.body; 
 
-    if (!token) {
-      console.log("❌ Token missing in request body");
-      return res.status(400).json({ success: false, message: 'Missing token.' });
-    }
+//     if (!token) {
+//       console.log("❌ Token missing in request body");
+//       return res.status(400).json({ success: false, message: 'Missing token.' });
+//     }
 
-    // ২. এখন 'admin' ডিফাইন করা আছে, তাই এটি কাজ করবে
-    let decodedToken;
-    try {
-      decodedToken = await admin.auth().verifyIdToken(token);
-    } catch (err) {
-      console.error('❌ Firebase Token Verification Failed:', err.message);
-      return res.status(401).json({ success: false, message: 'Invalid token.' });
-    }
+//     // ২. এখন 'admin' ডিফাইন করা আছে, তাই এটি কাজ করবে
+//     let decodedToken;
+//     try {
+//       decodedToken = await admin.auth().verifyIdToken(token);
+//     } catch (err) {
+//       console.error('❌ Firebase Token Verification Failed:', err.message);
+//       return res.status(401).json({ success: false, message: 'Invalid token.' });
+//     }
 
-    const { uid, phone_number } = decodedToken;
+//     const { uid, phone_number } = decodedToken;
 
-    // ৩. Supabase-এ ইউজার চেক এবং ইনসার্ট (আগের মতো)
-    const { data: user, error: dbError } = await supabase
-      .from('users')
-      .upsert({ 
-        firebase_uid: uid, 
-        phone: phone_number,
-        role: 'user'
-      }, { onConflict: 'firebase_uid' }) // অথবা onConflict: 'phone' যদি আপনার টেবিলে ফোন নম্বর ইউনিক হয়
-      .select()
-      .single();
+//     // ৩. Supabase-এ ইউজার চেক এবং ইনসার্ট (আগের মতো)
+//     const { data: user, error: dbError } = await supabase
+//       .from('users')
+//       .upsert({ 
+//         firebase_uid: uid, 
+//         phone: phone_number,
+//         role: 'user'
+//       }, { onConflict: 'firebase_uid' }) // অথবা onConflict: 'phone' যদি আপনার টেবিলে ফোন নম্বর ইউনিক হয়
+//       .select()
+//       .single();
 
-    if (dbError) {
-      console.error('❌ Supabase Error:', dbError);
-      return res.status(500).json({ success: false, message: 'Database error.' });
-    }
+//     if (dbError) {
+//       console.error('❌ Supabase Error:', dbError);
+//       return res.status(500).json({ success: false, message: 'Database error.' });
+//     }
 
-    return res.status(200).json({ success: true, user });
+//     return res.status(200).json({ success: true, user });
 
-  } catch (error) {
-    console.error('❌ Final Server Error:', error);
-    return res.status(500).json({ success: false, message: 'Server error.' });
-  }
-};
+//   } catch (error) {
+//     console.error('❌ Final Server Error:', error);
+//     return res.status(500).json({ success: false, message: 'Server error.' });
+//   }
+// };
 
 
 // 👇👇 এখান থেকে নতুন কোড শুরু 👇👇
@@ -101,5 +101,39 @@ export const registerUser = async (req, res) => {
   } catch (error) {
     console.error('❌ Registration Error:', error);
     return res.status(500).json({ success: false, message: 'সার্ভারে সমস্যা হয়েছে!' });
+  }
+};
+
+export const verifyPhoneAuth = async (req, res) => {
+  try {
+    const { token } = req.body; 
+    let decodedToken = await admin.auth().verifyIdToken(token);
+    const { uid, phone_number } = decodedToken;
+
+    // ১. আগে চেক করুন ইউজার কি ডাটাবেসে আছে? 
+    const { data: existingUser } = await supabase
+      .from('users')
+      .select('role')
+      .eq('phone', phone_number)
+      .maybeSingle();
+
+    // ২. যদি সে অ্যাডমিন হয় তবে সেই রোলটিই থাকবে, নতুবা 'user' হবে
+    const userRole = existingUser?.role || 'user';
+
+    const { data: user, error: dbError } = await supabase
+      .from('users')
+      .upsert({ 
+        firebase_uid: uid, 
+        phone: phone_number,
+        role: userRole // 👈 আপনার অ্যাডমিন পাওয়ার সুরক্ষিত থাকবে
+      }, { onConflict: 'phone' }) 
+      .select()
+      .single();
+
+    if (dbError) throw dbError;
+    return res.status(200).json({ success: true, user });
+  } catch (error) {
+    console.error('❌ Login Error:', error);
+    return res.status(500).json({ success: false, message: 'Server error.' });
   }
 };

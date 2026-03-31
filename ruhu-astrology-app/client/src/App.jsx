@@ -3,7 +3,7 @@ import React from 'react';
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import { AuthProvider } from './context/AuthContext';
 import ProtectedRoute from './routes/ProtectedRoute';
-import AdminRoute from './routes/AdminRoute'; 
+import AdminRoute from './routes/AdminRoute';
 
 // Pages
 import Home from './pages/Home';
@@ -17,7 +17,8 @@ import OTPVerify from './pages/OTPVerify';
 import Dashboard from './pages/Dashboard';
 import Matchmaking from './pages/Matchmaking';
 import NotFound from './pages/NotFound'; // Ensure this file exists
-import Register from './pages/Register'; 
+import Register from './pages/Register';
+import Orders from './pages/admin/Orders';
 
 // Blog Pages (Make sure these files exist in your pages folder)
 import Blog from './pages/Blog';
@@ -52,7 +53,7 @@ function App() {
               <Route path="/register" element={<Register />} />
               <Route path="/login" element={<Login />} />
               <Route path="/verify-otp" element={<OTPVerify />} />
-              
+
               <Route path="/blog" element={<Blog />} />
               <Route path="/blog/:id" element={<BlogDetails />} />
 
@@ -65,7 +66,7 @@ function App() {
               <Route element={<AdminRoute />}>
                 <Route path="/admin" element={<AdminDashboard />} />
                 <Route path="/admin/users" element={<AdminUsers />} />
-                <Route path="/admin/orders" element={<AdminOrders />} />
+                <Route path="/admin/orders" element={<AdminOrders />} /> {/* 👈 নতুন রুট */}
               </Route>
 
               <Route path="*" element={<NotFound />} />

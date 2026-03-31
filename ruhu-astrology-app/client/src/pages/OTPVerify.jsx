@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
-import { auth } from '../firebase'; // আপনার ফায়ারবেস ফাইল
-import { RecaptchaVerifier, signInWithPhoneNumber } from 'firebase/auth'; // 👈 ফায়ারবেসের ফাংশনগুলো
+import { auth } from '../firebase'; 
+import { RecaptchaVerifier, signInWithPhoneNumber } from 'firebase/auth'; 
 import { verifyPhoneToken } from '../services/auth'; 
 import { KeyRound, ArrowRight, ShieldCheck } from 'lucide-react';
 
@@ -12,7 +12,7 @@ const OTPVerify = () => {
   const [otp, setOtp] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
-  const [otpSent, setOtpSent] = useState(false); // OTP পাঠানো হয়েছে কি না তার স্টেট
+  const [otpSent, setOtpSent] = useState(false);
 
   const phoneNumber = location.state?.phone || sessionStorage.getItem('phoneNumber');
 
@@ -23,7 +23,7 @@ const OTPVerify = () => {
     }
   }, [phoneNumber, navigate]);
 
-  // 🚀 ১. ফায়ারবেস ReCAPTCHA সেটআপ (Spam ঠেকানোর জন্য)
+  // 🚀 ১. ফায়ারবেস ReCAPTCHA সেটআপ
   useEffect(() => {
     if (!window.recaptchaVerifier) {
       window.recaptchaVerifier = new RecaptchaVerifier(auth, 'recaptcha-container', {
@@ -35,7 +35,7 @@ const OTPVerify = () => {
     }
   }, []);
 
-  // 🚀 ২. পেজ লোড হলেই ইউজারের ফোনে OTP পাঠানোর ফাংশন
+  // 🚀 ২. পেজ লোড হলেই ইউজারের ফোনে OTP পাঠানো
   useEffect(() => {
     const sendOTP = async () => {
       if (!phoneNumber || window.confirmationResult || otpSent) return;
@@ -43,14 +43,9 @@ const OTPVerify = () => {
       try {
         setLoading(true);
         const appVerifier = window.recaptchaVerifier;
-        
-        // Firebase এ ফোন নম্বর পাঠানোর আগে +91 (country code) থাকা বাধ্যতামূলক
         const formattedPhone = phoneNumber.startsWith('+') ? phoneNumber : `+91${phoneNumber}`;
         
-        // ফায়ারবেসকে বলছি SMS পাঠাতে
         const confirmationResult = await signInWithPhoneNumber(auth, formattedPhone, appVerifier);
-        
-        // SMS পাঠানো সফল হলে সেশনটা সেভ করে রাখছি
         window.confirmationResult = confirmationResult;
         setOtpSent(true);
         setError('');
@@ -66,7 +61,7 @@ const OTPVerify = () => {
     sendOTP();
   }, [phoneNumber, otpSent]);
 
-  // 🚀 ৩. ইউজার যখন কোড বসিয়ে Submit করবে
+  // 🚀 ৩. ইউজার যখন কোড বসিয়ে Submit করবে (Role check added here!)
   const handleVerifyOTP = async (e) => {
     e.preventDefault();
     setError('');
@@ -79,25 +74,31 @@ const OTPVerify = () => {
         throw new Error('OTP সেশন পাওয়া যায়নি। পেজটি রিলোড করুন।');
       }
 
-      // ফায়ারবেসের সাথে OTP মেলানো হচ্ছে
       const result = await confirmationResult.confirm(otp);
-      
-      // ফায়ারবেস থেকে নিরাপদ ID Token নেওয়া
       const idToken = await result.user.getIdToken();
 
-      // আপনার ব্যাকএন্ডে টোকেন পাঠানো (যাতে ব্যাকএন্ড Firebase UID সেভ করতে পারে)
+      // ব্যাকএন্ডে টোকেন ভেরিফাই করা হচ্ছে
       const response = await verifyPhoneToken(idToken);
 
       if (response.success) {
+        // টোকেন এবং ইউজারের ডেটা লোকাল স্টোরেজে সেভ করা
         localStorage.setItem('authToken', idToken);
         localStorage.setItem('user', JSON.stringify(response.user));
 
-        // কাজ শেষ, পরিষ্কার পরিচ্ছন্নতা
         window.confirmationResult = null;
         sessionStorage.removeItem('phoneNumber');
 
-        // সোজাসুজি ড্যাশবোর্ডে!
-        navigate('/dashboard');
+        // 👇 আসল ম্যাজিক: ইউজার রোল অনুযায়ী রিডাইরেক্ট 👇
+        const userRole = response.user.role; 
+
+        if (userRole === 'admin') {
+            console.log("👑 Admin Detected. Redirecting to Observatory...");
+            navigate('/admin'); 
+        } else {
+            console.log("👤 User Detected. Redirecting to Dashboard...");
+            navigate('/dashboard'); 
+        }
+
       } else {
         setError(response.message || 'Authentication failed.');
       }
@@ -127,7 +128,7 @@ const OTPVerify = () => {
             Verify Your Stars
           </h2>
           <p className="text-slate-500 mt-2 font-medium">
-            We sent a cosmic code to <span className="font-bold text-[#b8860b]">{phoneNumber}</span>
+            We sent a cosmic code to <br/> <span className="font-bold text-[#b8860b] text-lg">{phoneNumber}</span>
           </p>
         </div>
 
@@ -147,8 +148,8 @@ const OTPVerify = () => {
                   maxLength="6"
                   required
                   value={otp}
-                  onChange={(e) => setOtp(e.target.value.replace(/\D/g, ''))} // শুধু নম্বর টাইপ করা যাবে
-                  className="block w-full pl-10 pr-3 py-3 border border-[#cf9f4a]/40 rounded-xl leading-5 bg-white/50 placeholder-slate-400 text-slate-800 text-center tracking-[0.5em] font-bold text-xl focus:outline-none focus:ring-2 focus:ring-[#d4af37]/50 focus:border-[#d4af37] transition-all"
+                  onChange={(e) => setOtp(e.target.value.replace(/\D/g, ''))} 
+                  className="block w-full pl-10 pr-3 py-3 border border-[#cf9f4a]/40 rounded-xl leading-5 bg-white/50 placeholder-slate-300 text-slate-800 text-center tracking-[0.5em] font-bold text-xl focus:outline-none focus:ring-2 focus:ring-[#d4af37]/50 focus:border-[#d4af37] transition-all"
                   placeholder="------" 
                 />
               </div>
@@ -156,7 +157,7 @@ const OTPVerify = () => {
 
             {/* Error Message */}
             {error && (
-              <div className="bg-red-50 text-red-500 text-sm font-semibold p-3 rounded-lg text-center border border-red-100">
+              <div className="bg-red-50 text-red-500 text-xs font-bold p-3 rounded-xl text-center border border-red-100 animate-pulse">
                 {error}
               </div>
             )}
@@ -171,18 +172,17 @@ const OTPVerify = () => {
               className="w-full flex justify-center items-center gap-2 py-3.5 px-4 border border-transparent rounded-xl shadow-[0_4px_15px_rgba(212,175,55,0.3)] text-sm font-bold text-white bg-gradient-to-r from-[#d4af37] to-[#e4b363] hover:from-[#b8860b] hover:to-[#d4af37] focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#d4af37] transition-all disabled:opacity-50 disabled:cursor-not-allowed mt-2"
             >
               {loading ? (
-                <span className="animate-pulse">Verifying...</span>
+                <span className="animate-pulse flex items-center gap-2">Verifying <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div></span>
               ) : (
                 <>Verify & Enter <ArrowRight size={18} /></>
               )}
             </button>
           </form>
           
-          {/* Resend Logic (Static for now) */}
           <div className="mt-6 text-center">
             <p className="text-sm text-slate-600 font-medium">
               Didn't receive the code?{' '}
-              <button onClick={() => window.location.reload()} className="font-bold text-[#b8860b] hover:text-[#d4af37] transition-colors">
+              <button onClick={() => window.location.reload()} className="font-bold text-[#b8860b] hover:text-[#d4af37] hover:underline underline-offset-4 transition-all">
                 Resend OTP
               </button>
             </p>

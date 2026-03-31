@@ -1,24 +1,23 @@
-// server/routes/admin.js
 import express from 'express';
-import { protect } from '../middleware/authMiddleware.js';
-import { adminOnly } from '../middleware/adminMiddleware.js';
-import {
-  getStats,
-  getRecentPayments,
-  getAllUsers,
-  deleteUser,
-  getAllOrders,
+import { 
+  getStats, 
+  getRecentPayments, 
+  getAllUsers, 
+  deleteUser, 
+  getAllOrders, 
+  updateUserRole 
 } from '../controllers/adminController.js';
 
 const router = express.Router();
 
-// All admin routes require authentication and admin role
-router.use(protect, adminOnly);
-
+// ড্যাশবোর্ডের স্ট্যাটস ও পেমেন্ট
 router.get('/stats', getStats);
 router.get('/recent-payments', getRecentPayments);
+router.get('/orders', getAllOrders);
+
+// ইউজার ম্যানেজমেন্ট
 router.get('/users', getAllUsers);
 router.delete('/users/:id', deleteUser);
-router.get('/orders', getAllOrders);
+router.put('/users/:id/role', updateUserRole); // 👈 অ্যাডমিন বানানোর ম্যাজিক রুট
 
 export default router;

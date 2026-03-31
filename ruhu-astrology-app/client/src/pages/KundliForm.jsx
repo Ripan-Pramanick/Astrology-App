@@ -3,6 +3,7 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { fetchAstroData, getGeoLocation } from '../services/astrology';
+import { Sparkles, MapPin, User, Send, ShieldCheck, Stars } from 'lucide-react';
 
 const KundliForm = () => {
   const navigate = useNavigate();
@@ -17,47 +18,29 @@ const KundliForm = () => {
     useCoordinates: false,
     longitude: { deg: '', min: '', sec: '' },
     latitude: { deg: '', min: '', sec: '' },
-    comment: '',
   });
 
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [success, setSuccess] = useState(false);
-
-  // Auto-Suggestion এর জন্য নতুন স্টেটগুলো
   const [suggestions, setSuggestions] = useState([]);
   const [showSuggestions, setShowSuggestions] = useState(false);
   const [isSearchingCity, setIsSearchingCity] = useState(false);
-  const [selectedExactLocation, setSelectedExactLocation] = useState(null); // ইউজার ক্লিক করে সিলেক্ট করলে ডেটা সেভ রাখার জন্য
+  const [selectedExactLocation, setSelectedExactLocation] = useState(null);
 
   const handleChange = (e, section, field) => {
     const value = e.target.value;
     if (section) {
       setFormData(prev => ({
         ...prev,
-        [section]: {
-          ...prev[section],
-          [field]: value,
-        },
+        [section]: { ...prev[section], [field]: value },
       }));
     } else {
       setFormData(prev => ({ ...prev, [field]: value }));
     }
   };
 
-  const handleCheckboxChange = (e) => {
-    setFormData(prev => ({
-      ...prev,
-      useCoordinates: e.target.checked,
-    }));
-  };
-
-  // ==========================================
-  // 🌍 লোকেশন অটো-সাজেশন লজিক (Debounce সহ)
-  // ==========================================
- // ==========================================
-  // 🌍 লোকেশন অটো-সাজেশন লজিক (Updated)
-  // ==========================================
+  // 🌍 লোকেশন অটো-সাজেশন লজিক
   useEffect(() => {
     if (formData.useCoordinates || formData.place.length < 3 || selectedExactLocation?.place_name === formData.place) {
       setSuggestions([]);
@@ -67,38 +50,14 @@ const KundliForm = () => {
 
     const delayDebounceFn = setTimeout(async () => {
       setIsSearchingCity(true);
-      
       try {
         const geoResult = await getGeoLocation(formData.place);
-        
-        // এই লাইনটা যোগ করুন, এটা পুরো ডেটাটাকে ভেঙে টেক্সট বানিয়ে কনসোলে দেখাবে
-        console.log("💥 RAW DATA:", JSON.stringify(geoResult.data)); 
-
-        
-        // AstrologyAPI রেসপন্স হ্যান্ডলিং (Updated)
-        // ওরা যদি সরাসরি Array পাঠায় (geoResult.data) অথবা Object-এর ভেতরে Array পাঠায় (geoResult.data.geonames)
         let placesList = [];
-        
-        // ২০০ আসার পর ডেটাটা ঠিক কোন বাক্সে আছে তা চেক করা হচ্ছে
         if (geoResult.success && geoResult.data) {
-          if (Array.isArray(geoResult.data.geonames)) {
-            placesList = geoResult.data.geonames;
-          } else if (Array.isArray(geoResult.data)) {
-            placesList = geoResult.data;
-          }
+          placesList = Array.isArray(geoResult.data.geonames) ? geoResult.data.geonames : (Array.isArray(geoResult.data) ? geoResult.data : []);
         }
-
-        console.log("🏙️ Final Places List:", placesList); // এটা চেক করবেন
-
-        if (placesList.length > 0) {
-          setSuggestions(placesList);
-          setShowSuggestions(true);
-        } else {
-          setSuggestions([]);
-          setShowSuggestions(false);
-        }
-
-      
+        setSuggestions(placesList);
+        setShowSuggestions(placesList.length > 0);
       } catch (error) {
         console.error("❌ Suggestion error:", error);
       } finally {
@@ -109,75 +68,38 @@ const KundliForm = () => {
     return () => clearTimeout(delayDebounceFn);
   }, [formData.place, formData.useCoordinates, selectedExactLocation]);
 
-  // ইউজার যখন লিস্ট থেকে কোনো শহর সিলেক্ট করবে
   const handleSelectSuggestion = (loc) => {
     setFormData(prev => ({ ...prev, place: loc.place_name }));
-    setSelectedExactLocation(loc); // সাবমিটের সময় API কল না করে সরাসরি এই ডেটাটা ব্যবহার করব
+    setSelectedExactLocation(loc);
     setShowSuggestions(false);
   };
 
-
-  // ==========================================
-  // 🚀 ফর্ম সাবমিট লজিক
-  // ==========================================
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError('');
-    setSuccess(false);
     setLoading(true);
-
-    if (!formData.name.trim()) return setError('Please enter your name.'), setLoading(false);
-    if (!formData.birthDate.day || !formData.birthDate.month || !formData.birthDate.year) return setError('Please enter complete birth date.'), setLoading(false);
-    if (!formData.birthTime.hour || !formData.birthTime.minute) return setError('Please enter complete birth time.'), setLoading(false);
-    if (!formData.place.trim() && !formData.useCoordinates) return setError('Please enter birth place or enable coordinates.'), setLoading(false);
 
     try {
       let finalLat, finalLon, finalTzone;
-
       if (!formData.useCoordinates) {
-        // যদি ইউজার ড্রপডাউন থেকে সিলেক্ট করে থাকে, তাহলে ডাইরেক্ট সেই ডেটা ব্যবহার করব (সময় বাঁচবে)
-        if (selectedExactLocation) {
-          finalLat = parseFloat(selectedExactLocation.latitude);
-          finalLon = parseFloat(selectedExactLocation.longitude);
-          finalTzone = parseFloat(selectedExactLocation.timezone || 5.5);
-        } else {
-          // যদি ড্রপডাউন থেকে সিলেক্ট না করে নিজে টাইপ করে সাবমিট মারে (ফলব্যাক)
+        let exactLoc = selectedExactLocation;
+        if (!exactLoc) {
           const geoResult = await getGeoLocation(formData.place);
-          if (geoResult.success && geoResult.data.geonames && geoResult.data.geonames.length > 0) {
-            const exactLoc = geoResult.data.geonames[0];
-            finalLat = parseFloat(exactLoc.latitude);
-            finalLon = parseFloat(exactLoc.longitude);
-            finalTzone = parseFloat(exactLoc.timezone || 5.5); 
-          } else {
-            throw new Error('City not found. Please select a valid city from the suggestions.');
-          }
+          exactLoc = (geoResult.success && geoResult.data.geonames) ? geoResult.data.geonames[0] : (geoResult.data ? geoResult.data[0] : null);
         }
-      }  else {
-          // যদি ড্রপডাউন থেকে সিলেক্ট না করে নিজে টাইপ করে সাবমিট মারে (ফলব্যাক)
-          const geoResult = await getGeoLocation(formData.place);
-          
-          let exactLoc = null;
-          if (geoResult.success && geoResult.data) {
-             if (Array.isArray(geoResult.data) && geoResult.data.length > 0) {
-                exactLoc = geoResult.data[0];
-             } else if (geoResult.data.geonames && geoResult.data.geonames.length > 0) {
-                exactLoc = geoResult.data.geonames[0];
-             }
-          }
-
-          if (exactLoc) {
-            finalLat = parseFloat(exactLoc.latitude);
-            finalLon = parseFloat(exactLoc.longitude);
-            finalTzone = parseFloat(exactLoc.timezone || 5.5); 
-          } else {
-            throw new Error('City not found. Please select a valid city from the suggestions.');
-          }
-        }
+        if (!exactLoc) throw new Error('City not found. Please select from suggestions.');
+        finalLat = parseFloat(exactLoc.latitude);
+        finalLon = parseFloat(exactLoc.longitude);
+        finalTzone = parseFloat(exactLoc.timezone || 5.5);
+      } else {
+        finalLat = parseFloat(formData.latitude.deg) + (parseFloat(formData.latitude.min) / 60);
+        finalLon = parseFloat(formData.longitude.deg) + (parseFloat(formData.longitude.min) / 60);
+        finalTzone = 5.5; 
+      }
 
       let hour24 = parseInt(formData.birthTime.hour);
-      const isPM = formData.birthTime.ampm === 'PM';
-      if (isPM && hour24 !== 12) hour24 += 12;
-      if (!isPM && hour24 === 12) hour24 = 0;
+      if (formData.birthTime.ampm === 'PM' && hour24 !== 12) hour24 += 12;
+      if (formData.birthTime.ampm === 'AM' && hour24 === 12) hour24 = 0;
 
       const astroPayload = {
         day: parseInt(formData.birthDate.day),
@@ -185,9 +107,7 @@ const KundliForm = () => {
         year: parseInt(formData.birthDate.year),
         hour: hour24,
         min: parseInt(formData.birthTime.minute),
-        lat: finalLat,
-        lon: finalLon,
-        tzone: finalTzone
+        lat: finalLat, lon: finalLon, tzone: finalTzone
       };
 
       const basicDetails = await fetchAstroData('birth_details', astroPayload);
@@ -195,190 +115,178 @@ const KundliForm = () => {
 
       if (basicDetails.success && planetsData.success) {
         setSuccess(true);
-        localStorage.setItem('kundliData', JSON.stringify({
-          basic: basicDetails.data,
-          planets: planetsData.data
-        }));
+        localStorage.setItem('kundliData', JSON.stringify({ basic: basicDetails.data, planets: planetsData.data }));
         setTimeout(() => navigate('/kundli-result'), 2000);
       } else {
-        setError('Failed to fetch astrology data from server.');
+        setError('Stars are misaligned. Failed to fetch cosmic data.');
       }
     } catch (err) {
-      setError(err.message || 'Failed to submit. Please try again.');
-      console.error(err);
+      setError(err.message || 'Submission failed.');
     } finally {
       setLoading(false);
     }
   };
 
   return (
-    <div className="max-w-4xl mx-auto px-4 py-8">
-      <h1 className="text-3xl font-bold text-center mb-2">Fill the form to get your kundali</h1>
-      <p className="text-center text-gray-600 mb-8">Please provide accurate birth details for precise analysis.</p>
+    <div className="min-h-screen bg-[#f8f5eb] py-16 px-4 relative overflow-hidden font-sans text-slate-800">
+      
+      {/* Decorative Stars */}
+      <div className="absolute top-10 left-10 text-[#d4af37]/20 animate-pulse"><Stars size={40} /></div>
+      <div className="absolute bottom-20 right-10 text-[#d4af37]/20 animate-bounce"><Sparkles size={30} /></div>
 
-      <form onSubmit={handleSubmit} className="bg-white shadow-lg rounded-lg p-6 space-y-6 border border-gray-100">
+      <div className="max-w-7xl mx-auto relative z-10">
         
-        {/* Name & Gender Row */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Name</label>
-            <input
-              type="text"
-              value={formData.name}
-              onChange={(e) => handleChange(e, null, 'name')}
-              className="block w-full border border-gray-300 rounded-md shadow-sm p-2.5 focus:ring-[#f98a2c] focus:border-[#f98a2c]"
-              placeholder="Your name here"
-            />
-          </div>
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Gender</label>
-            <div className="flex space-x-6 mt-2">
-              <label className="inline-flex items-center cursor-pointer">
-                <input type="radio" value="male" checked={formData.gender === 'male'} onChange={(e) => handleChange(e, null, 'gender')} className="w-4 h-4 text-[#f98a2c] focus:ring-[#f98a2c] border-gray-300" />
-                <span className="ml-2 text-gray-700">Male</span>
-              </label>
-              <label className="inline-flex items-center cursor-pointer">
-                <input type="radio" value="female" checked={formData.gender === 'female'} onChange={(e) => handleChange(e, null, 'gender')} className="w-4 h-4 text-[#f98a2c] focus:ring-[#f98a2c] border-gray-300" />
-                <span className="ml-2 text-gray-700">Female</span>
-              </label>
-            </div>
-          </div>
+        {/* Top Header Section (As per your design) */}
+        <div className="text-center mb-16 max-w-3xl mx-auto">
+          <h1 className="text-4xl md:text-5xl font-black text-[#1e293b] mb-4">
+            Every Problem Have A Solution
+          </h1>
+          <p className="text-lg text-slate-700 font-medium leading-relaxed">
+            We will provide the charges after reviewing the nature of your query & study required. <br className="hidden md:block"/>
+            An upfront token payment will be deducted from the total charges. <br className="hidden md:block"/>
+            Kindly proceed to submit your query.
+          </p>
         </div>
 
-        {/* Birth Date */}
-        <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">Date of Birth</label>
-          <div className="grid grid-cols-3 gap-4">
-            <select value={formData.birthDate.day} onChange={(e) => handleChange(e, 'birthDate', 'day')} className="border border-gray-300 rounded-md p-2.5 focus:ring-[#f98a2c] focus:border-[#f98a2c]">
-              <option value="">DD</option>
-              {[...Array(31)].map((_, i) => <option key={i+1} value={i+1}>{i+1}</option>)}
-            </select>
-            <select value={formData.birthDate.month} onChange={(e) => handleChange(e, 'birthDate', 'month')} className="border border-gray-300 rounded-md p-2.5 focus:ring-[#f98a2c] focus:border-[#f98a2c]">
-              <option value="">MM</option>
-              {[...Array(12)].map((_, i) => <option key={i+1} value={i+1}>{i+1}</option>)}
-            </select>
-            <select value={formData.birthDate.year} onChange={(e) => handleChange(e, 'birthDate', 'year')} className="border border-gray-300 rounded-md p-2.5 focus:ring-[#f98a2c] focus:border-[#f98a2c]">
-              <option value="">YYYY</option>
-              {[...Array(100)].map((_, i) => {
-                const year = new Date().getFullYear() - i;
-                return <option key={year} value={year}>{year}</option>;
-              })}
-            </select>
-          </div>
-        </div>
-
-        {/* Birth Time */}
-        <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">Time of Birth</label>
-          <div className="grid grid-cols-3 gap-4">
-            <select value={formData.birthTime.hour} onChange={(e) => handleChange(e, 'birthTime', 'hour')} className="border border-gray-300 rounded-md p-2.5 focus:ring-[#f98a2c] focus:border-[#f98a2c]">
-              <option value="">HH</option>
-              {[...Array(12)].map((_, i) => <option key={i+1} value={i+1}>{i+1}</option>)}
-            </select>
-            <select value={formData.birthTime.minute} onChange={(e) => handleChange(e, 'birthTime', 'minute')} className="border border-gray-300 rounded-md p-2.5 focus:ring-[#f98a2c] focus:border-[#f98a2c]">
-              <option value="">MM</option>
-              {[...Array(60)].map((_, i) => <option key={i} value={i}>{i.toString().padStart(2, '0')}</option>)}
-            </select>
-            <select value={formData.birthTime.ampm} onChange={(e) => handleChange(e, 'birthTime', 'ampm')} className="border border-gray-300 rounded-md p-2.5 focus:ring-[#f98a2c] focus:border-[#f98a2c]">
-              <option value="AM">AM</option>
-              <option value="PM">PM</option>
-            </select>
-          </div>
-        </div>
-
-        {/* 🌍 Auto-Suggestion Place of Birth */}
-        <div className="space-y-4 pt-2">
+        {/* Two Column Layout */}
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 lg:gap-20 items-center">
           
-          <div className="relative">
-            <label className="block text-sm font-medium text-gray-700 mb-1">Place of Birth</label>
-            <input
-              type="text"
-              value={formData.place}
-              onChange={(e) => {
-                handleChange(e, null, 'place');
-                setSelectedExactLocation(null); // নতুন কিছু টাইপ করলে আগের সিলেকশন মুছে যাবে
-              }}
-              className={`block w-full border border-gray-300 rounded-md shadow-sm p-2.5 focus:ring-[#f98a2c] focus:border-[#f98a2c] ${formData.useCoordinates ? 'bg-gray-100 text-gray-500' : ''}`}
-              placeholder="E.g., Kolkata, Delhi (Type 3 letters)"
-              disabled={formData.useCoordinates}
+          {/* Left Column: Image */}
+          <div className="flex justify-center">
+            {/* ⚠️ খেয়াল করুন: এখানে আপনার ছবির নাম দিন */}
+            <img 
+              src="/images/astrologer.jpg" 
+              alt="Cosmic Astrologer" 
+              className="w-full max-w-md lg:max-w-lg aspect-square object-cover rounded-[3rem] shadow-[0_20px_50px_rgba(212,175,55,0.2)] border-4 border-white"
             />
-            
-            {/* Loading Indicator */}
-            {isSearchingCity && (
-              <div className="absolute right-3 top-9 text-xs text-orange-500 font-medium animate-pulse">
-                Searching...
-              </div>
-            )}
-
-            {/* Suggestions Dropdown */}
-            {showSuggestions && suggestions.length > 0 && (
-              <ul className="absolute z-50 w-full bg-white border border-gray-200 shadow-xl max-h-60 rounded-md py-1 mt-1 overflow-auto">
-                {suggestions.map((loc, idx) => (
-                  <li
-                    key={idx}
-                    onClick={() => handleSelectSuggestion(loc)}
-                    className="cursor-pointer select-none relative py-3 pl-4 pr-9 hover:bg-orange-50 hover:text-[#f98a2c] text-gray-700 border-b border-gray-50 last:border-0 transition"
-                  >
-                    <div className="font-medium text-[15px]">{loc.place_name}</div>
-                  </li>
-                ))}
-              </ul>
-            )}
           </div>
 
-          <div className="flex items-center">
-            <input type="checkbox" id="useCoordinates" checked={formData.useCoordinates} onChange={handleCheckboxChange} className="h-4 w-4 text-[#f98a2c] focus:ring-[#f98a2c] border-gray-300 rounded cursor-pointer" />
-            <label htmlFor="useCoordinates" className="ml-2 block text-sm text-gray-900 cursor-pointer">
-              I have exact Coordinates (Longitude/Latitude)
-            </label>
-          </div>
-
-          {/* Manual Coordinates Logic (Hide if not checked) */}
-          {formData.useCoordinates && (
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 bg-orange-50 p-4 rounded-lg border border-orange-100">
-               {/* ... (লংগিচিউড আর ল্যাটিচিউডের আগের কোডগুলো এখানে থাকবে, জায়গা বাঁচানোর জন্য শর্ট করে দিয়েছি) ... */}
-               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Longitude</label>
-                <div className="grid grid-cols-3 gap-2">
-                  <input type="number" placeholder="Deg" value={formData.longitude.deg} onChange={(e) => handleChange(e, 'longitude', 'deg')} className="border border-gray-300 rounded-md p-2 text-sm" />
-                  <input type="number" placeholder="Min" value={formData.longitude.min} onChange={(e) => handleChange(e, 'longitude', 'min')} className="border border-gray-300 rounded-md p-2 text-sm" />
-                  <input type="number" placeholder="Sec" value={formData.longitude.sec} onChange={(e) => handleChange(e, 'longitude', 'sec')} className="border border-gray-300 rounded-md p-2 text-sm" />
-                </div>
+          {/* Right Column: Form */}
+          <div className="w-full max-w-lg mx-auto lg:mx-0">
+            <form onSubmit={handleSubmit} className="bg-white rounded-3xl p-8 shadow-2xl border border-slate-100 space-y-6">
+              
+              <div className="text-center mb-6">
+                <h2 className="text-2xl font-bold text-[#f98a2c]">Submit your query</h2>
+                <p className="text-sm text-slate-500">if it is a unique ask and not listed</p>
               </div>
+
+              {/* Name Input */}
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Latitude</label>
-                <div className="grid grid-cols-3 gap-2">
-                  <input type="number" placeholder="Deg" value={formData.latitude.deg} onChange={(e) => handleChange(e, 'latitude', 'deg')} className="border border-gray-300 rounded-md p-2 text-sm" />
-                  <input type="number" placeholder="Min" value={formData.latitude.min} onChange={(e) => handleChange(e, 'latitude', 'min')} className="border border-gray-300 rounded-md p-2 text-sm" />
-                  <input type="number" placeholder="Sec" value={formData.latitude.sec} onChange={(e) => handleChange(e, 'latitude', 'sec')} className="border border-gray-300 rounded-md p-2 text-sm" />
+                <label className="text-xs font-bold text-slate-500 uppercase ml-1">Name</label>
+                <div className="mt-1 relative">
+                  <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none text-slate-400"><User size={18} /></div>
+                  <input 
+                    type="text" required placeholder="Your name here"
+                    value={formData.name} onChange={(e) => handleChange(e, null, 'name')}
+                    className="w-full pl-12 pr-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-[#f98a2c]/50 outline-none font-medium transition-all"
+                  />
                 </div>
               </div>
-            </div>
-          )}
-        </div>
 
-        {/* Submit Button */}
-        <div className="pt-4">
-          <button
-            type="submit"
-            disabled={loading}
-            className="w-full bg-[#f98a2c] text-white py-3 px-4 rounded-md font-bold text-lg hover:bg-orange-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#f98a2c] disabled:opacity-70 flex justify-center items-center transition duration-300"
-          >
-            {loading ? (
-              <>
-                <svg className="animate-spin -ml-1 mr-3 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                  <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                  <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                </svg>
-                Generating Kundali...
-              </>
-            ) : 'Get Kundali'}
-          </button>
-          
-          {error && <div className="mt-4 p-3 bg-red-50 text-red-600 border border-red-200 rounded-md text-sm text-center">{error}</div>}
-          {success && <div className="mt-4 p-3 bg-green-50 text-green-600 border border-green-200 rounded-md text-sm text-center font-medium">Kundli Generated Successfully! Redirecting...</div>}
+              {/* Gender Selection */}
+              <div>
+                <label className="text-xs font-bold text-slate-500 uppercase ml-1">Gender</label>
+                <div className="flex gap-4 mt-1 bg-slate-50 p-1.5 rounded-xl border border-slate-200">
+                  {['male', 'female'].map((g) => (
+                    <button
+                      key={g} type="button"
+                      onClick={() => setFormData(prev => ({ ...prev, gender: g }))}
+                      className={`flex-1 py-2.5 rounded-lg font-bold capitalize transition-all text-sm ${formData.gender === g ? 'bg-white shadow-sm text-[#f98a2c] border border-slate-100' : 'text-slate-500 hover:text-slate-700'}`}
+                    >
+                      {g}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              {/* Birth Date */}
+              <div>
+                <label className="text-xs font-bold text-slate-500 uppercase ml-1">Birth Date</label>
+                <div className="grid grid-cols-3 gap-3 mt-1">
+                  <select value={formData.birthDate.day} onChange={(e) => handleChange(e, 'birthDate', 'day')} className="py-3 px-3 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-[#f98a2c]/50 outline-none font-medium text-sm">
+                    <option value="">DD</option>
+                    {[...Array(31)].map((_, i) => <option key={i+1} value={i+1}>{i+1}</option>)}
+                  </select>
+                  <select value={formData.birthDate.month} onChange={(e) => handleChange(e, 'birthDate', 'month')} className="py-3 px-3 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-[#f98a2c]/50 outline-none font-medium text-sm">
+                    <option value="">MM</option>
+                    {[...Array(12)].map((_, i) => <option key={i+1} value={i+1}>{i+1}</option>)}
+                  </select>
+                  <select value={formData.birthDate.year} onChange={(e) => handleChange(e, 'birthDate', 'year')} className="py-3 px-3 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-[#f98a2c]/50 outline-none font-medium text-sm">
+                    <option value="">YYYY</option>
+                    {[...Array(100)].map((_, i) => { const year = new Date().getFullYear() - i; return <option key={year} value={year}>{year}</option>; })}
+                  </select>
+                </div>
+              </div>
+
+              {/* Birth Time */}
+              <div>
+                <label className="text-xs font-bold text-slate-500 uppercase ml-1">Birth Time</label>
+                <div className="grid grid-cols-3 gap-3 mt-1">
+                  <select value={formData.birthTime.hour} onChange={(e) => handleChange(e, 'birthTime', 'hour')} className="py-3 px-3 bg-slate-50 border border-slate-200 rounded-xl outline-none font-medium text-sm">
+                    <option value="">HH</option>
+                    {[...Array(12)].map((_, i) => <option key={i+1} value={i+1}>{i+1}</option>)}
+                  </select>
+                  <select value={formData.birthTime.minute} onChange={(e) => handleChange(e, 'birthTime', 'minute')} className="py-3 px-3 bg-slate-50 border border-slate-200 rounded-xl outline-none font-medium text-sm">
+                    <option value="">MM</option>
+                    {[...Array(60)].map((_, i) => <option key={i} value={i}>{i.toString().padStart(2, '0')}</option>)}
+                  </select>
+                  <select value={formData.birthTime.ampm} onChange={(e) => handleChange(e, 'birthTime', 'ampm')} className="py-3 px-3 bg-slate-50 border border-slate-200 rounded-xl outline-none font-medium text-sm">
+                    <option value="AM">AM</option>
+                    <option value="PM">PM</option>
+                  </select>
+                </div>
+              </div>
+
+              {/* Place of Birth Input */}
+              <div className="relative">
+                <label className="text-xs font-bold text-slate-500 uppercase ml-1">Place of Birth</label>
+                <div className="mt-1 relative">
+                  <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none text-slate-400"><MapPin size={18} /></div>
+                  <input 
+                    type="text" required placeholder="Start typing & choose..."
+                    value={formData.place} disabled={formData.useCoordinates}
+                    onChange={(e) => { handleChange(e, null, 'place'); setSelectedExactLocation(null); }}
+                    className="w-full pl-12 pr-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-[#f98a2c]/50 outline-none font-medium transition-all text-sm"
+                  />
+                  {isSearchingCity && <div className="absolute right-4 top-3.5 animate-spin text-[#f98a2c]"><Sparkles size={16} /></div>}
+                  
+                  {/* Suggestions Dropdown */}
+                  {showSuggestions && suggestions.length > 0 && (
+                    <div className="absolute z-50 w-full bg-white border border-slate-200 rounded-xl shadow-xl mt-1 overflow-hidden max-h-48">
+                      {suggestions.map((loc, idx) => (
+                        <div key={idx} onClick={() => handleSelectSuggestion(loc)} className="px-4 py-3 hover:bg-orange-50 cursor-pointer font-medium text-slate-700 text-sm border-b border-slate-50 last:border-0 transition-colors">
+                          {loc.place_name}
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              </div>
+
+              {/* Submit Section / Price */}
+              <div className="pt-6 border-t border-slate-100 flex items-center justify-between">
+                <div>
+                  <div className="text-xs text-slate-400 line-through">Rs. 1500</div>
+                  <div className="text-xl font-black text-red-500">Rs. 1100/-</div>
+                </div>
+                <button 
+                  type="submit" disabled={loading}
+                  className="py-3 px-8 bg-[#f98a2c] text-white font-bold rounded-xl shadow-lg shadow-orange-500/30 hover:bg-orange-600 active:scale-95 transition-all disabled:opacity-70 flex items-center gap-2"
+                >
+                  {loading ? 'Processing...' : 'Pay Now'}
+                </button>
+              </div>
+
+              {error && <p className="text-center text-red-500 text-sm font-bold bg-red-50 py-2 rounded-lg">{error}</p>}
+              {success && <p className="text-center text-green-600 text-sm font-bold bg-green-50 py-2 rounded-lg flex items-center justify-center gap-2">
+                <ShieldCheck size={16} /> Redirecting to payment...
+              </p>}
+
+            </form>
+          </div>
+
         </div>
-      </form>
+      </div>
     </div>
   );
 };
