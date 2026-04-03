@@ -5,6 +5,19 @@ import { useAuth } from '../context/AuthContext';
 import { fetchAstroData, getGeoLocation } from '../services/astrology';
 import { Sparkles, MapPin, User, Send, ShieldCheck, Stars } from 'lucide-react';
 
+import astrologerImg from '../assets/kundliRishi.svg';
+
+// --- Razorpay Script লোড করার ফাংশন ---
+const loadRazorpayScript = () => {
+  return new Promise((resolve) => {
+    const script = document.createElement('script');
+    script.src = 'https://checkout.razorpay.com/v1/checkout.js';
+    script.onload = () => resolve(true);
+    script.onerror = () => resolve(false);
+    document.body.appendChild(script);
+  });
+};
+
 const KundliForm = () => {
   const navigate = useNavigate();
   const { user } = useAuth();
@@ -110,19 +123,74 @@ const KundliForm = () => {
         lat: finalLat, lon: finalLon, tzone: finalTzone
       };
 
+      // প্রথমে অ্যাস্ট্রোলজি ডাটা ফেচ করা
       const basicDetails = await fetchAstroData('birth_details', astroPayload);
       const planetsData = await fetchAstroData('planets', astroPayload);
 
       if (basicDetails.success && planetsData.success) {
-        setSuccess(true);
-        localStorage.setItem('kundliData', JSON.stringify({ basic: basicDetails.data, planets: planetsData.data }));
-        setTimeout(() => navigate('/kundli-result'), 2000);
+        
+        // --- পেমেন্ট লজিক শুরু ---
+        const res = await loadRazorpayScript();
+        if (!res) {
+          setError('Razorpay SDK failed to load. Check your internet connection.');
+          setLoading(false);
+          return;
+        }
+
+        // ব্যাকএন্ড থেকে অর্ডার ক্রিয়েট করা (আপনার সার্ভার পোর্টে)
+        const orderResponse = await fetch('http://localhost:5000/api/payment/create-order', { method: 'POST' });
+        const orderData = await orderResponse.json();
+
+        if (!orderData.success) throw new Error('Order creation failed on backend.');
+
+        // Razorpay পপআপ অপশন
+        const options = {
+          key: "rzp_test_SZ58CuarkpUXG2", 
+          amount: orderData.order.amount,
+          currency: "INR",
+          name: "RUHU Astrology",
+          description: "Premium Kundli Report",
+          // image: "/images/astrologer.jpg", <-- এই লাইনটা পাল্টে নিচেরটা দিন
+          image: "https://cdn-icons-png.flaticon.com/512/3592/3592033.png", // টেস্ট করার জন্য পাবলিক আইকন
+          order_id: orderData.order.id,
+          handler: function (response) {
+            // পেমেন্ট সফল হলে এই অংশ রান করবে
+            setSuccess(true);
+            
+            // ডাটা লোকাল স্টোরেজে সেভ করা
+            localStorage.setItem('kundliData', JSON.stringify({ basic: basicDetails.data, planets: planetsData.data }));
+            
+            console.log("Payment Successful! Payment ID:", response.razorpay_payment_id);
+            
+            // ২ সেকেন্ড পর রেজাল্ট পেজে রিডাইরেক্ট করা
+            setTimeout(() => navigate('/kundli-result/demo_123'), 2000);
+          },
+          prefill: {
+            name: formData.name,
+            contact: "9999999999" // এখানে ইউজারের ফোন নম্বর ডায়নামিক ভাবে দিতে পারেন
+          },
+          theme: {
+            color: "#f98a2c" // আপনার ওয়েবসাইটের থিম অরেঞ্জ কালার
+          }
+        };
+
+        const paymentObject = new window.Razorpay(options);
+        
+        paymentObject.on('payment.failed', function (response) {
+          setError("Payment Failed! " + response.error.description);
+          setLoading(false);
+        });
+        
+        // পপআপ ওপেন করা
+        paymentObject.open();
+        // --- পেমেন্ট লজিক শেষ ---
+
       } else {
         setError('Stars are misaligned. Failed to fetch cosmic data.');
+        setLoading(false);
       }
     } catch (err) {
       setError(err.message || 'Submission failed.');
-    } finally {
       setLoading(false);
     }
   };
@@ -136,7 +204,7 @@ const KundliForm = () => {
 
       <div className="max-w-7xl mx-auto relative z-10">
         
-        {/* Top Header Section (As per your design) */}
+        {/* Top Header Section */}
         <div className="text-center mb-16 max-w-3xl mx-auto">
           <h1 className="text-4xl md:text-5xl font-black text-[#1e293b] mb-4">
             Every Problem Have A Solution
@@ -153,9 +221,8 @@ const KundliForm = () => {
           
           {/* Left Column: Image */}
           <div className="flex justify-center">
-            {/* ⚠️ খেয়াল করুন: এখানে আপনার ছবির নাম দিন */}
             <img 
-              src="/images/astrologer.jpg" 
+              src={astrologerImg}
               alt="Cosmic Astrologer" 
               className="w-full max-w-md lg:max-w-lg aspect-square object-cover rounded-[3rem] shadow-[0_20px_50px_rgba(212,175,55,0.2)] border-4 border-white"
             />
@@ -279,7 +346,7 @@ const KundliForm = () => {
 
               {error && <p className="text-center text-red-500 text-sm font-bold bg-red-50 py-2 rounded-lg">{error}</p>}
               {success && <p className="text-center text-green-600 text-sm font-bold bg-green-50 py-2 rounded-lg flex items-center justify-center gap-2">
-                <ShieldCheck size={16} /> Redirecting to payment...
+                <ShieldCheck size={16} /> Form processed successfully!
               </p>}
 
             </form>

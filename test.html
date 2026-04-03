@@ -1,0 +1,391 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+  <title>Vedic Astrology Report | RIPAN PRAMANIK</title>
+  <!-- Google Fonts & simple reset -->
+  <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,300;14..32,400;14..32,500;14..32,600;14..32,700&display=swap" rel="stylesheet">
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      background: linear-gradient(145deg, #e9e6df 0%, #dcd6cc 100%);
+      font-family: 'Inter', sans-serif;
+      padding: 2rem 1.5rem;
+      color: #1e1b17;
+    }
+
+    /* main container */
+    .report-container {
+      max-width: 1280px;
+      margin: 0 auto;
+      background: #fefaf5;
+      border-radius: 2rem;
+      box-shadow: 0 25px 45px -12px rgba(0, 0, 0, 0.35), 0 2px 6px rgba(0, 0, 0, 0.05);
+      overflow: hidden;
+      transition: all 0.2s;
+    }
+
+    /* header branding */
+    .report-header {
+      background: #2c2a24;
+      padding: 1.4rem 2rem;
+      border-bottom: 4px solid #e6b34c;
+    }
+
+    .report-header h1 {
+      color: #f7e9cd;
+      font-weight: 600;
+      font-size: 1.9rem;
+      letter-spacing: -0.3px;
+      margin: 0;
+    }
+
+    .report-header p {
+      color: #cbc3ae;
+      margin-top: 0.35rem;
+      font-size: 0.9rem;
+      font-weight: 400;
+    }
+
+    /* card style sections */
+    .section-card {
+      background: white;
+      margin: 1.8rem 2rem;
+      border-radius: 1.5rem;
+      box-shadow: 0 8px 20px rgba(0, 0, 0, 0.03);
+      border: 1px solid #f0e7db;
+      overflow-x: auto;
+    }
+
+    .section-title {
+      font-size: 1.5rem;
+      font-weight: 600;
+      padding: 1.2rem 1.8rem 0.4rem 1.8rem;
+      color: #4a3727;
+      border-left: 5px solid #e6b34c;
+      margin-bottom: 0.5rem;
+      background: #fffbf5;
+    }
+
+    .section-sub {
+      padding: 0 1.8rem 0.8rem 1.8rem;
+      font-size: 0.8rem;
+      color: #8b765c;
+      letter-spacing: 0.3px;
+    }
+
+    /* table styling */
+    .data-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 0.9rem;
+    }
+
+    .data-table th {
+      background: #f8f3ea;
+      text-align: left;
+      padding: 0.9rem 1rem;
+      font-weight: 600;
+      color: #4e3b28;
+      border-bottom: 1px solid #e2d6c8;
+    }
+
+    .data-table td {
+      padding: 0.8rem 1rem;
+      border-bottom: 1px solid #f0e7dd;
+      color: #2e2a24;
+      font-weight: 450;
+    }
+
+    .data-table tr:last-child td {
+      border-bottom: none;
+    }
+
+    .badge-planet {
+      background: #f3ede5;
+      padding: 0.2rem 0.6rem;
+      border-radius: 30px;
+      font-size: 0.75rem;
+      font-weight: 500;
+      display: inline-block;
+      color: #ab7e4b;
+    }
+
+    .grid-2col {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      gap: 1rem;
+      padding: 0.5rem 1.8rem 1.8rem 1.8rem;
+    }
+
+    .info-chip {
+      background: #fefaf2;
+      border-radius: 1.2rem;
+      padding: 0.9rem 1.2rem;
+      border: 1px solid #f0e2d2;
+      box-shadow: 0 1px 2px rgba(0,0,0,0.02);
+    }
+
+    .info-chip strong {
+      color: #c28135;
+      font-weight: 600;
+      display: inline-block;
+      min-width: 85px;
+    }
+
+    .footer-note {
+      text-align: center;
+      font-size: 0.75rem;
+      padding: 1.5rem;
+      color: #a08c74;
+      border-top: 1px solid #ede3d7;
+      background: #fefaf5;
+      margin-top: 0.5rem;
+    }
+
+    @media (max-width: 700px) {
+      body {
+        padding: 1rem;
+      }
+      .section-card {
+        margin: 1rem;
+      }
+      .data-table td, .data-table th {
+        padding: 0.6rem 0.8rem;
+        font-size: 0.8rem;
+      }
+      .section-title {
+        font-size: 1.3rem;
+        padding: 1rem 1.2rem 0.2rem 1.2rem;
+      }
+    }
+
+    .highlight-accent {
+      color: #b46f2c;
+      font-weight: 500;
+    }
+
+    .nakshatra-text {
+      font-family: monospace;
+      font-size: 0.85rem;
+      background: #f7f1e9;
+      display: inline-block;
+      padding: 0.1rem 0.4rem;
+      border-radius: 12px;
+    }
+  </style>
+</head>
+<body>
+<div id="root"></div>
+
+<!-- React + ReactDOM from CDN (no JSX transform needed) -->
+<script src="https://cdn.jsdelivr.net/npm/react@18.2.0/umd/react.development.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/react-dom@18.2.0/umd/react-dom.development.js"></script>
+
+<script>
+  // ------------------------------
+  // DATA MIGRATION FROM PDF CONTENT
+  // ------------------------------
+  const birthData = {
+    fullName: "RIPAN PRAMANIK",
+    gender: "Male",
+    dateOfBirth: "12/9/2011",
+    timeOfBirth: "3:13 PM",
+    placeOfBirth: "कनकाल, West Bengal, India",
+    lagna: "Capricorn",
+    rashi: "Aquarius"
+  };
+
+  const avakhada = {
+    varna: "Shudra",
+    vashya: "Manushya",
+    yoni: "Lion",
+    gana: "Manushya",
+    nadi: "Adi",
+    signLord: "Saturn"
+  };
+
+  // Planetary Positions (based on PDF page 2)
+  const planetsData = [
+    { planet: "Ascendant", longitude: "10° 32' 10\" Capricorn", nakshatra: "Shravana", lord: "Moon", pada: "1", deg: "280° 32' 10\"" },
+    { planet: "Sun", longitude: "25° 16' 13\" Leo", nakshatra: "Poorva Phalguni", lord: "Venus", pada: "4", deg: "145° 16' 13\"" },
+    { planet: "Moon", longitude: "25° 23' 47\" Aquarius", nakshatra: "Purva Bhadrapada", lord: "Jupiter", pada: "2", deg: "325° 23' 47\"" },
+    { planet: "Mars", longitude: "1° 51' 24\" Cancer", nakshatra: "Punarvasu", lord: "Jupiter", pada: "4", deg: "91° 51' 24\"" },
+    { planet: "Mercury", longitude: "11° 10' 29\" Leo", nakshatra: "Magha", lord: "Ketu", pada: "4", deg: "131° 10' 29\"" },
+    { planet: "Jupiter", longitude: "16° 2' 52\" Aries", nakshatra: "Bharani", lord: "Venus", pada: "1", deg: "16° 2' 52\"" },
+    { planet: "Venus", longitude: "2° 36' 50\" Virgo", nakshatra: "Uttara Phalguni", lord: "Sun", pada: "2", deg: "152° 36' 50\"" },
+    { planet: "Saturn", longitude: "22° 24' 28\" Virgo", nakshatra: "Hasta", lord: "Moon", pada: "4", deg: "172° 24' 28\"" },
+    { planet: "Rahu", longitude: "24° 48' 38\" Scorpio", nakshatra: "Jyeshtha", lord: "Mercury", pada: "3", deg: "234° 48' 38\"" },
+    { planet: "Ketu", longitude: "24° 48' 38\" Taurus", nakshatra: "Mrigashirsha", lord: "Mars", pada: "1", deg: "54° 48' 38\"" }
+  ];
+
+  // House positions (Page 3)
+  const housesData = [
+    { house: "House 1", sign: "Capricorn", longitude: "10° 32' 10\"", nakshatra: "Shravana", lord: "Moon (Mo)", pada: "1", deg: "280° 32' 10\"" },
+    { house: "House 2", sign: "Aquarius", longitude: "10° 32' 10\"", nakshatra: "Shatabhisha", lord: "Rahu (Ra)", pada: "2", deg: "310° 32' 10\"" },
+    { house: "House 3", sign: "Pisces", longitude: "10° 32' 10\"", nakshatra: "Uttara Bhadrapada", lord: "Saturn (Sa)", pada: "3", deg: "340° 32' 10\"" },
+    { house: "House 4", sign: "Aries", longitude: "10° 32' 10\"", nakshatra: "Ashwini", lord: "Ketu (Ke)", pada: "4", deg: "10° 32' 10\"" },
+    { house: "House 5", sign: "Taurus", longitude: "10° 32' 10\"", nakshatra: "Rohini", lord: "Moon (Mo)", pada: "1", deg: "40° 32' 10\"" },
+    { house: "House 6", sign: "Gemini", longitude: "10° 32' 10\"", nakshatra: "Ardra", lord: "Rahu (Ra)", pada: "2", deg: "70° 32' 10\"" },
+    { house: "House 7", sign: "Cancer", longitude: "10° 32' 10\"", nakshatra: "Pushya", lord: "Saturn (Sa)", pada: "3", deg: "100° 32' 10\"" },
+    { house: "House 8", sign: "Leo", longitude: "10° 32' 10\"", nakshatra: "Magha", lord: "Ketu (Ke)", pada: "4", deg: "130° 32' 10\"" },
+    { house: "House 9", sign: "Virgo", longitude: "10° 32' 10\"", nakshatra: "Hasta", lord: "Moon (Mo)", pada: "1", deg: "160° 32' 10\"" },
+    { house: "House 10", sign: "Libra", longitude: "10° 32' 10\"", nakshatra: "Swati", lord: "Rahu (Ra)", pada: "2", deg: "190° 32' 10\"" },
+    { house: "House 11", sign: "Scorpio", longitude: "10° 32' 10\"", nakshatra: "Anuradha", lord: "Saturn (Sa)", pada: "3", deg: "220° 32' 10\"" },
+    { house: "House 12", sign: "Sagittarius", longitude: "10° 32' 10\"", nakshatra: "Mula", lord: "Ketu (Ke)", pada: "4", deg: "250° 32' 10\"" }
+  ];
+
+  // Navamsa D-9 positions
+  const navamsaData = [
+    { planet: "Ascendant", sign: "Aries", degree: "4° 50'", nakshatra: "Ashwini" },
+    { planet: "Sun", sign: "Scorpio", degree: "17° 26'", nakshatra: "Jyeshtha" },
+    { planet: "Moon", sign: "Taurus", degree: "18° 34'", nakshatra: "Rohini" },
+    { planet: "Mars", sign: "Cancer", degree: "16° 43'", nakshatra: "Ashlesha" },
+    { planet: "Mercury", sign: "Cancer", degree: "10° 34'", nakshatra: "Pushya" },
+    { planet: "Jupiter", sign: "Leo", degree: "24° 26'", nakshatra: "Purva Phalguni" },
+    { planet: "Venus", sign: "Capricorn", degree: "23° 32'", nakshatra: "Dhanishta" },
+    { planet: "Saturn", sign: "Cancer", degree: "21° 40'", nakshatra: "Ashlesha" },
+    { planet: "Rahu", sign: "Aquarius", degree: "13° 18'", nakshatra: "Shatabhisha" },
+    { planet: "Ketu", sign: "Leo", degree: "13° 18'", nakshatra: "Magha" }
+  ];
+
+  // Helper to render tables
+  const Table = ({ columns, data, renderRow }) => (
+    <table className="data-table">
+      <thead>
+        <tr>{columns.map((col, idx) => (<th key={idx}>{col}</th>))}</tr>
+      </thead>
+      <tbody>
+        {data.map((item, idx) => renderRow(item, idx))}
+      </tbody>
+    </table>
+  );
+
+  // React App Component
+  const AstroReport = () => {
+    return React.createElement('div', { className: 'report-container' },
+      // Header
+      React.createElement('div', { className: 'report-header' },
+        React.createElement('h1', {}, '✨ Comprehensive Astrological Report'),
+        React.createElement('p', {}, 'Vedic Astrology • Planetary Positions • Navamsa D-9')
+      ),
+      
+      // Birth Details Section
+      React.createElement('div', { className: 'section-card' },
+        React.createElement('div', { className: 'section-title' }, '📅 Birth Details'),
+        React.createElement('div', { className: 'grid-2col' },
+          React.createElement('div', { className: 'info-chip' }, 
+            React.createElement('strong', {}, 'Full Name'), ': ', birthData.fullName,
+            React.createElement('br'), React.createElement('strong', {}, 'Gender'), ': ', birthData.gender,
+            React.createElement('br'), React.createElement('strong', {}, 'Date of Birth'), ': ', birthData.dateOfBirth
+          ),
+          React.createElement('div', { className: 'info-chip' },
+            React.createElement('strong', {}, 'Time of Birth'), ': ', birthData.timeOfBirth,
+            React.createElement('br'), React.createElement('strong', {}, 'Place'), ': ', birthData.placeOfBirth,
+            React.createElement('br'), React.createElement('strong', {}, 'Lagna'), ': ', birthData.lagna, '  |  ', React.createElement('strong', {}, 'Rashi'), ': ', birthData.rashi
+          )
+        )
+      ),
+
+      // Avakhada Chakra
+      React.createElement('div', { className: 'section-card' },
+        React.createElement('div', { className: 'section-title' }, '🌀 Avakhada Chakra'),
+        React.createElement('div', { className: 'grid-2col' },
+          React.createElement('div', { className: 'info-chip' }, 
+            React.createElement('strong', {}, 'Varna'), ': ', avakhada.varna, '   ', React.createElement('strong', {}, 'Vashya'), ': ', avakhada.vashya,
+            React.createElement('br'), React.createElement('strong', {}, 'Yoni'), ': ', avakhada.yoni, '   ', React.createElement('strong', {}, 'Gana'), ': ', avakhada.gana
+          ),
+          React.createElement('div', { className: 'info-chip' },
+            React.createElement('strong', {}, 'Nadi'), ': ', avakhada.nadi, '   ', React.createElement('strong', {}, 'Sign Lord'), ': ', avakhada.signLord
+          )
+        )
+      ),
+
+      // Planetary Positions (main)
+      React.createElement('div', { className: 'section-card' },
+        React.createElement('div', { className: 'section-title' }, '🪐 Planetary Positions'),
+        React.createElement('div', { className: 'section-sub' }, 'Longitude, Nakshatra & Lords (Vedic Chart)'),
+        React.createElement(Table, {
+          columns: ['Planet', 'Longitude / Sign', 'Nakshatra', 'Nakshatra Lord', 'Pada', 'Full Degree'],
+          data: planetsData,
+          renderRow: (p, i) => React.createElement('tr', { key: i },
+            React.createElement('td', {}, React.createElement('span', { className: 'badge-planet' }, p.planet)),
+            React.createElement('td', {}, p.longitude),
+            React.createElement('td', {}, p.nakshatra),
+            React.createElement('td', {}, p.lord),
+            React.createElement('td', {}, p.pada),
+            React.createElement('td', {}, p.deg)
+          )
+        })
+      ),
+
+      // Houses (Bhava) Chart
+      React.createElement('div', { className: 'section-card' },
+        React.createElement('div', { className: 'section-title' }, '🏠 Bhavas (Houses)'),
+        React.createElement('div', { className: 'section-sub' }, 'House Cusps with Nakshatra details'),
+        React.createElement(Table, {
+          columns: ['House', 'Sign', 'Longitude', 'Nakshatra', 'Lord', 'Pada', 'Full Degree'],
+          data: housesData,
+          renderRow: (h, i) => React.createElement('tr', { key: i },
+            React.createElement('td', {}, React.createElement('span', { className: 'badge-planet' }, h.house)),
+            React.createElement('td', {}, h.sign),
+            React.createElement('td', {}, h.longitude),
+            React.createElement('td', {}, h.nakshatra),
+            React.createElement('td', {}, h.lord),
+            React.createElement('td', {}, h.pada),
+            React.createElement('td', {}, h.deg)
+          )
+        })
+      ),
+
+      // Navamsa (D-9) Chart
+      React.createElement('div', { className: 'section-card' },
+        React.createElement('div', { className: 'section-title' }, '🌟 Navamsa Planetary Positions (D-9)'),
+        React.createElement('div', { className: 'section-sub' }, 'Divisional chart for marriage, dharma, and inner strength'),
+        React.createElement(Table, {
+          columns: ['Graha / Lagna', 'Sign', 'Degree', 'Nakshatra'],
+          data: navamsaData,
+          renderRow: (n, i) => React.createElement('tr', { key: i },
+            React.createElement('td', {}, React.createElement('span', { className: 'badge-planet' }, n.planet)),
+            React.createElement('td', {}, n.sign),
+            React.createElement('td', {}, n.degree),
+            React.createElement('td', {}, n.nakshatra)
+          )
+        })
+      ),
+
+      // Additional details: Rashi, Nakshatra highlights from PDF page 1-2 (moon sign extra)
+      React.createElement('div', { className: 'section-card' },
+        React.createElement('div', { className: 'section-title' }, '🔮 Rashi & Nakshatra Highlights'),
+        React.createElement('div', { style: { padding: '0.5rem 1.8rem 1.5rem 1.8rem', display: 'flex', flexWrap: 'wrap', gap: '0.8rem' } },
+          React.createElement('div', { className: 'info-chip', style: { flex: '1 1 200px' } }, 
+            React.createElement('strong', {}, '🌙 Moon Sign (Rashi)'), React.createElement('br'), birthData.rashi, ' (Aquarius) · Purva Bhadrapada Nakshatra'
+          ),
+          React.createElement('div', { className: 'info-chip', style: { flex: '1 1 200px' } }, 
+            React.createElement('strong', {}, '⬆️ Ascendant'), React.createElement('br'), 'Capricorn 10° 32′ · Shravana Nakshatra (Lord Moon)'
+          ),
+          React.createElement('div', { className: 'info-chip', style: { flex: '1 1 200px' } }, 
+            React.createElement('strong', {}, '🌞 Sun Nakshatra'), React.createElement('br'), 'Poorva Phalguni · Lord Venus · Leo sign'
+          )
+        )
+      ),
+
+      React.createElement('div', { className: 'footer-note' },
+        '© 2026 VedicFeed - vedicfeed.com | Generated for RIPAN PRAMANIK based on birth data: 12 Sep 2011, 3:13 PM, कनकाल, WB | D-9 & planetary positions computed as per Vedic sidereal system.'
+      )
+    );
+  };
+
+  // Render React into root
+  const container = document.getElementById('root');
+  const root = ReactDOM.createRoot(container);
+  root.render(React.createElement(AstroReport));
+</script>
+</body>
+</html>

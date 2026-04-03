@@ -20,6 +20,7 @@ import NotFound from './pages/NotFound'; // Ensure this file exists
 import Register from './pages/Register';
 import Orders from './pages/admin/Orders';
 
+
 // Blog Pages (Make sure these files exist in your pages folder)
 import Blog from './pages/Blog';
 import BlogDetails from './pages/BlogDetails';
@@ -47,7 +48,8 @@ function App() {
               <Route path="/about" element={<About />} />
               <Route path="/services" element={<Services />} />
               <Route path="/kundli" element={<KundliForm />} />
-              <Route path="/kundli/:id" element={<KundliResult />} />
+              <Route path="/kundli-result" element={<KundliResult />} />
+              <Route path="/kundli-result/:id" element={<KundliResult />} />
               <Route path="/contact" element={<Contact />} />
               <Route path="/matchmaking" element={<Matchmaking />} />
               <Route path="/register" element={<Register />} />
