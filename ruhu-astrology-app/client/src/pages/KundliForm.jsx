@@ -127,6 +127,9 @@ const KundliForm = () => {
       const basicDetails = await fetchAstroData('birth_details', astroPayload);
       const planetsData = await fetchAstroData('planets', astroPayload);
 
+      console.log("🌟 API Response - Basic Details:", basicDetails.data);
+      console.log("🪐 API Response - Planets Data:", planetsData.data);
+
       if (basicDetails.success && planetsData.success) {
         
         // --- পেমেন্ট লজিক শুরু ---
@@ -138,14 +141,23 @@ const KundliForm = () => {
         }
 
         // ব্যাকএন্ড থেকে অর্ডার ক্রিয়েট করা (আপনার সার্ভার পোর্টে)
-        const orderResponse = await fetch('http://localhost:5000/api/payment/create-order', { method: 'POST' });
+      const orderResponse = await fetch('http://localhost:5000/api/payment/create-order', { method: 'POST' });
         const orderData = await orderResponse.json();
 
-        if (!orderData.success) throw new Error('Order creation failed on backend.');
+        // 🟢 PAYMENT BYPASS LOGIC (অ্যাড করা হলো) 🟢
+        console.log("⚠️ Bypassing Razorpay popup for testing!");
+        setSuccess(true);
+        
+        // ডাটা লোকাল স্টোরেজে সেভ করা (যাতে রেজাল্ট পেজ সেটা পায়)
+        localStorage.setItem('kundliData', JSON.stringify({ basic: basicDetails.data, planets: planetsData.data }));
+        
+        // ১.৫ সেকেন্ড পর রেজাল্ট পেজে রিডাইরেক্ট করা
+        setTimeout(() => navigate('/kundli-result/demo_123'), 1500);
+        return;
 
         // Razorpay পপআপ অপশন
         const options = {
-          key: "rzp_test_SZ58CuarkpUXG2", 
+          key: "PFCYtd7IlXxiCyrq56A05PAk", 
           amount: orderData.order.amount,
           currency: "INR",
           name: "RUHU Astrology",

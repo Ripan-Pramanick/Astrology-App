@@ -19,6 +19,7 @@ import Matchmaking from './pages/Matchmaking';
 import NotFound from './pages/NotFound'; // Ensure this file exists
 import Register from './pages/Register';
 import Orders from './pages/admin/Orders';
+import ViewReport from './pages/ViewReport';
 
 
 // Blog Pages (Make sure these files exist in your pages folder)
@@ -55,6 +56,7 @@ function App() {
               <Route path="/register" element={<Register />} />
               <Route path="/login" element={<Login />} />
               <Route path="/verify-otp" element={<OTPVerify />} />
+              <Route path="/report/:id" element={<ViewReport />} />
 
               <Route path="/blog" element={<Blog />} />
               <Route path="/blog/:id" element={<BlogDetails />} />
