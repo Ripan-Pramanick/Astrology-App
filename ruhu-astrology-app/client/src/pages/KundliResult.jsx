@@ -1,11 +1,12 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Download, ArrowLeft, Loader2, Sparkles } from 'lucide-react';
+import { Download, ArrowLeft, Loader2, Sparkles, AlertTriangle } from 'lucide-react';
 import { toPng } from 'html-to-image'; 
 import jsPDF from 'jspdf';
-import KundliChart from '../components/kundli/KundliChart'; 
+import KundliChart from '../pages/kundli/KundliChart'; 
+import PlanetTable from '../pages/kundli/PlanetTable';
 import { useAuth } from '../context/AuthContext'; 
-import api from '../services/api'; // 🟢 অরিজিনাল API ইমপোর্ট করা হলো
+import api from '../services/api';
 
 const KundliResult = () => {
   const navigate = useNavigate();
@@ -22,19 +23,17 @@ const KundliResult = () => {
 
   useEffect(() => {
     const storedData = localStorage.getItem('kundliData');
+    console.log("💾 Raw Data from LocalStorage:", storedData); // 🟢 ডিবাগিংয়ের জন্য
+    
     if (storedData) {
       setKundliData(JSON.parse(storedData));
     }
     setLoading(false);
   }, []);
 
-  // 🟢 রিয়েল AI Fetching & Auto-Save Logic
   useEffect(() => {
     const fetchAIAndSave = async () => {
-      // ইউজার এবং কুন্ডলী ডেটা না আসা পর্যন্ত অপেক্ষা করবে
       if (!kundliData || !user?.phone) return;
-      
-      // যদি আগে থেকেই সেভ করা রিপোর্ট থাকে (ড্যাশবোর্ড থেকে এলে)
       if (kundliData.basic?.ai_insights) {
           setAiInsights(kundliData.basic.ai_insights);
           return;
@@ -42,8 +41,6 @@ const KundliResult = () => {
 
       setIsAiLoading(true);
       try {
-        console.log("⏳ Asking AI for prediction...");
-        // ১. AI-এর থেকে ডেটা আনা
         const aiResponse = await api.post('/ai/interpret', {
           planets: kundliData.planets || [],
           basic: kundliData.basic || {}
@@ -53,23 +50,18 @@ const KundliResult = () => {
           const cleanText = aiResponse.data.interpretation.replace(/\*/g, '');
           setAiInsights(cleanText);
 
-          console.log("⏳ AI Done! Saving to Database...");
-          
-          // ২. ডেটাবেসে সেভ করা
           const saveResponse = await api.post('/reports/save', {
               user_phone: user.phone,
               name: user.name || "Seeker",
-              dob: "12/09/2011", // ডেমো ডেট
+              dob: "12/09/2011",
               basic_info: kundliData.basic,
               planets_data: kundliData.planets,
               ai_insights: cleanText
           });
 
           if (saveResponse.data.success) {
-             console.log("✅ BOOM! Report securely saved to Database!");
-             
-             // লোকাল স্টোরেজেও আপডেট করে দিচ্ছি যাতে রিফ্রেশ দিলে দুবার সেভ না হয়
              const updatedData = { ...kundliData };
+             updatedData.basic = updatedData.basic || {};
              updatedData.basic.ai_insights = cleanText;
              localStorage.setItem('kundliData', JSON.stringify(updatedData));
           }
@@ -77,7 +69,6 @@ const KundliResult = () => {
           setAiInsights("Could not load AI insights at the moment.");
         }
       } catch (err) {
-        console.error("❌ AI or Database Save Error:", err);
         setAiInsights("Failed to connect to the AI service or Database.");
       } finally {
         setIsAiLoading(false);
@@ -98,19 +89,43 @@ const KundliResult = () => {
       pdf.addImage(dataUrl, 'PNG', 0, 0, pdfWidth, pdfHeight);
       pdf.save('Premium_Vedic_Report.pdf');
     } catch (err) {
-      console.error("PDF Error:", err);
       alert("Failed to download PDF.");
     } finally {
       setIsDownloading(false);
     }
   };
 
-  const basicInfo = kundliData?.basic || {
+  if (loading) return <div className="min-h-screen flex items-center justify-center bg-[#e9e6df]">Loading...</div>;
+
+  // 🟢 Bulletproof Data Extraction Logic
+  let planetsList = [];
+  if (kundliData) {
+      if (Array.isArray(kundliData.planets)) planetsList = kundliData.planets;
+      else if (Array.isArray(kundliData.planets?.data)) planetsList = kundliData.planets.data;
+      else if (Array.isArray(kundliData.data?.planets)) planetsList = kundliData.data.planets;
+  }
+  
+  const basicInfo = kundliData?.basic || kundliData?.basic?.data || {
     ascendant: "Capricorn", sign: "Aquarius", Naksahtra: "Shravana", Varna: "Shudra", Gana: "Manushya"
   };
-  const planetsList = kundliData?.planets || [];
 
-  if (loading) return <div className="min-h-screen flex items-center justify-center bg-[#e9e6df]">Loading...</div>;
+  console.log("💡 Final Extracted Planets for Chart:", planetsList); // 🟢 চেক করার জন্য
+
+  // 🟢 যদি ডেটা ফাঁকা থাকে, তবে ইউজারকে ওয়ার্নিং দেখানো
+  if (!planetsList || planetsList.length === 0) {
+    return (
+      <div className="min-h-screen flex flex-col items-center justify-center bg-[#e9e6df] p-4 text-center">
+        <div className="bg-white p-8 rounded-2xl shadow-xl max-w-md border-t-4 border-red-500">
+          <AlertTriangle className="mx-auto text-red-500 mb-4" size={48} />
+          <h2 className="text-2xl font-bold text-[#4a3727] mb-2">Cosmic Data Missing!</h2>
+          <p className="text-slate-600 mb-6 font-medium">We couldn't find your planetary data. Please generate your Kundli again.</p>
+          <button onClick={() => navigate('/kundli')} className="bg-[#b46f2c] text-white font-bold px-6 py-3 rounded-xl hover:bg-[#8f551e] transition-colors shadow-md w-full">
+             Go back to Kundli Form
+          </button>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-[#e9e6df] to-[#dcd6cc] py-8 px-4 font-sans text-[#1e1b17]">
@@ -144,10 +159,10 @@ const KundliResult = () => {
           <div className="bg-white rounded-3xl border border-[#f0e7db] overflow-hidden">
             <div className="bg-[#fffbf5] border-l-[5px] border-[#e6b34c] text-[#4a3727] font-semibold text-lg py-3 px-6 border-b">🌀 Avakhada Chakra</div>
             <div className="p-6 grid grid-cols-2 gap-x-4 gap-y-2 text-sm">
+              <p><strong className="text-[#c28135]">Ascendant:</strong> {basicInfo.ascendant}</p>
+              <p><strong className="text-[#c28135]">Moon Sign:</strong> {basicInfo.sign}</p>
+              <p><strong className="text-[#c28135]">Nakshatra:</strong> {basicInfo.Naksahtra}</p>
               <p><strong className="text-[#c28135]">Varna:</strong> {basicInfo.Varna}</p>
-              <p><strong className="text-[#c28135]">Yoni:</strong> Lion</p>
-              <p><strong className="text-[#c28135]">Gana:</strong> {basicInfo.Gana}</p>
-              <p><strong className="text-[#c28135]">Nadi:</strong> Adi</p>
             </div>
           </div>
         </div>
@@ -157,18 +172,18 @@ const KundliResult = () => {
             <div className="bg-[#fffbf5] border-l-[5px] border-[#e6b34c] text-[#4a3727] font-semibold text-lg py-3 px-6 border-b text-center">
                🕉️ Astrological Charts
             </div>
-            <div className="p-8 flex flex-col md:flex-row gap-12 justify-center items-center">
-              <div className="w-full max-w-[350px]">
+            <div className="p-8 flex flex-col md:flex-row gap-12 justify-center items-start">
+              {/* 1. Kundli Chart */}
+              <div className="w-full max-w-[400px] mx-auto">
                 <h3 className="text-center font-bold text-[#4a3727] mb-4">Lagna Chart (D-1)</h3>
-                <div className="p-2 border border-orange-100 rounded-xl bg-[#fffdfa]">
+                <div className="p-2 border border-orange-100 rounded-xl bg-[#fffdfa] shadow-inner">
                   <KundliChart planets={planetsList} />
                 </div>
               </div>
-              <div className="w-full max-w-[350px]">
-                <h3 className="text-center font-bold text-[#4a3727] mb-4">Navamsa Chart (D-9)</h3>
-                <div className="p-2 border border-orange-100 rounded-xl bg-[#fffdfa]">
-                  <KundliChart planets={planetsList} /> 
-                </div>
+
+              {/* 2. Planet Table (নতুন যোগ করা হলো) */}
+              <div className="w-full max-w-[600px] mx-auto">
+                 <PlanetTable planets={planetsList} />
               </div>
             </div>
           </div>
@@ -190,34 +205,6 @@ const KundliResult = () => {
                   {aiInsights || "Your personalized AI insights could not be loaded."}
                 </div>
               )}
-            </div>
-          </div>
-        </div>
-
-        <div className="px-8 pb-4">
-          <div className="bg-white rounded-3xl border border-[#f0e7db] overflow-hidden shadow-sm">
-            <div className="bg-[#fffbf5] border-l-[5px] border-[#e6b34c] text-[#4a3727] font-semibold text-lg py-3 px-6 border-b">🪐 Planetary Positions</div>
-            <div className="overflow-x-auto">
-              <table className="w-full text-left text-sm">
-                <thead className="bg-[#f8f3ea]">
-                  <tr>
-                    <th className="p-4 border-b border-[#e2d6c8]">Planet</th>
-                    <th className="p-4 border-b border-[#e2d6c8]">Sign</th>
-                    <th className="p-4 border-b border-[#e2d6c8]">Degree</th>
-                    <th className="p-4 border-b border-[#e2d6c8]">House</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {planetsList.map((p, i) => (
-                    <tr key={i} className="hover:bg-[#fefaf5]">
-                      <td className="p-4 border-b border-[#f0e7dd] font-bold text-[#ab7e4b]">{p.name}</td>
-                      <td className="p-4 border-b border-[#f0e7dd]">{p.sign}</td>
-                      <td className="p-4 border-b border-[#f0e7dd]">{p.normDegree?.toFixed(2)}°</td>
-                      <td className="p-4 border-b border-[#f0e7dd]">{p.house || '-'}</td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
             </div>
           </div>
         </div>

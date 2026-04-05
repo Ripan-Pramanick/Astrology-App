@@ -1,19 +1,19 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { Download, ArrowLeft, Loader2, Sparkles } from 'lucide-react';
-import { toPng } from 'html-to-image'; 
+import { toPng } from 'html-to-image';
 import jsPDF from 'jspdf';
-import KundliChart from '../components/kundli/KundliChart'; 
+import KundliChart from '../components/kundli/KundliChart';
 import api from '../services/api';
 
 const ViewReport = () => {
   const { id } = useParams(); // URL থেকে রিপোর্টের ID নিলাম
   const navigate = useNavigate();
-  
+
   const [report, setReport] = useState(null);
   const [loading, setLoading] = useState(true);
   const [isDownloading, setIsDownloading] = useState(false);
-  const reportRef = useRef(null); 
+  const reportRef = useRef(null);
 
   useEffect(() => {
     const fetchSavedReport = async () => {
@@ -96,7 +96,9 @@ const ViewReport = () => {
             <div className="p-8 flex justify-center">
               <div className="w-full max-w-[350px]">
                 <div className="p-2 border border-orange-100 rounded-xl bg-[#fffdfa]">
-                  <KundliChart planets={planetsList} />
+                  <KundliChart
+                    planetsData={kundliData?.planets}
+                    basicDetails={kundliData?.basic} />
                 </div>
               </div>
             </div>
@@ -106,7 +108,7 @@ const ViewReport = () => {
         <div className="px-8 pb-8">
           <div className="bg-white rounded-3xl border border-[#f0e7db] overflow-hidden shadow-sm">
             <div className="bg-[#fffbf5] border-l-[5px] border-[#e6b34c] text-[#4a3727] font-semibold text-lg py-3 px-6 border-b flex items-center gap-2">
-              <Sparkles size={20} className="text-[#e6b34c]"/> AI Cosmic Insights
+              <Sparkles size={20} className="text-[#e6b34c]" /> AI Cosmic Insights
             </div>
             <div className="p-8">
               <div className="text-[#2e2a24] text-sm md:text-base leading-relaxed whitespace-pre-line font-medium bg-[#fefaf2] p-6 rounded-2xl border border-[#f0e2d2]">
