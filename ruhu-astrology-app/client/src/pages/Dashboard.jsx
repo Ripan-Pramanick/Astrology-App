@@ -2,6 +2,11 @@ import React, { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import api from '../services/api';
+import { 
+  User, Mail, Phone, Star, Calendar, Moon, Sun, Sparkles, 
+  LogOut, Edit2, Save, X, Eye, Plus, TrendingUp, 
+  Shield, Award, Clock, ChevronRight, Zap, Compass
+} from 'lucide-react';
 
 const Dashboard = () => {
     const { user, logout } = useAuth();
@@ -24,7 +29,6 @@ const Dashboard = () => {
         const fetchDashboardData = async () => {
             if (!user?.phone) return;
             try {
-                // আমরা ইউজারের ফোন নাম্বার দিয়ে তার সেভ করা রিপোর্টগুলো আনবো
                 const response = await api.get(`/reports/${user.phone}`);
                 if (response.data.success) {
                     setRequests(response.data.reports || []);
@@ -59,7 +63,6 @@ const Dashboard = () => {
 
     // 🟢 View Saved Report Handler
     const handleViewResult = (report) => {
-        // ডেটাবেসের ডেটা লোকাল স্টোরেজে রেখে রেজাল্ট পেজে নিয়ে যাওয়া
         localStorage.setItem('kundliData', JSON.stringify({
             basic: report.basic_info,
             planets: report.planets_data,
@@ -71,179 +74,304 @@ const Dashboard = () => {
     const displayName = (user.name || user.phone || "Seeker").split(' ')[0];
 
     return (
-        <div className="min-h-screen relative text-slate-700 font-sans">
-            <div className="starfield-bg"></div>
-
+        <div className="min-h-screen bg-gradient-to-br from-gray-50 via-white to-gray-100">
+            
             {/* --- TOP NAV --- */}
-            <header className="glass-nav sticky top-0 z-30 px-6 py-4 flex items-center justify-between">
+            <header className="sticky top-0 z-30 bg-white/80 backdrop-blur-md border-b border-gray-200 px-6 py-4 flex items-center justify-between shadow-sm">
                 <Link to="/" className="flex items-center gap-3 hover:opacity-80 transition cursor-pointer">
-                    <div className="w-8 h-8 rounded-full bg-gradient-to-tr from-[#d4af37] to-[#f4a460] flex items-center justify-center shadow-[0_0_10px_rgba(212,175,55,0.3)]">
+                    <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-orange-500 to-amber-500 flex items-center justify-center shadow-md">
                         <span className="text-white font-bold text-xl">☉</span>
                     </div>
-                    <h1 className="text-xl font-bold gold-gradient-text tracking-wide">JyotishAI</h1>
+                    <h1 className="text-xl font-bold bg-gradient-to-r from-orange-600 to-amber-600 bg-clip-text text-transparent tracking-wide">
+                        Kaal Chakra
+                    </h1>
                 </Link>
 
                 <div className="flex items-center gap-4">
-                    <div className="hidden sm:flex items-center gap-2 bg-amber-50/50 px-4 py-1.5 rounded-full border border-[#cf9f4a]/30 shadow-sm">
-                        <span>👤</span>
-                        <span className="text-sm font-bold text-[#b8860b]">Hi, {displayName}</span>
+                    <div className="hidden sm:flex items-center gap-2 bg-orange-50 px-4 py-2 rounded-full border border-orange-200 shadow-sm">
+                        <User className="w-4 h-4 text-orange-500" />
+                        <span className="text-sm font-semibold text-orange-700">Hi, {displayName}</span>
                     </div>
-                    <button onClick={logout} className="p-2 rounded-full hover:bg-amber-50 border border-transparent hover:border-[#cf9f4a]/50 transition-all text-[#b8860b]" title="Logout">
-                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" /><polyline points="16 17 21 12 16 7" /><line x1="21" y1="12" x2="9" y2="12" /></svg>
+                    <button 
+                        onClick={logout} 
+                        className="p-2 rounded-full hover:bg-orange-50 border border-gray-200 hover:border-orange-200 transition-all text-orange-600"
+                        title="Logout"
+                    >
+                        <LogOut className="w-5 h-5" />
                     </button>
                 </div>
             </header>
 
-            <main className="relative z-20 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+            <main className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+
+                {/* Welcome Banner */}
+                <div className="bg-gradient-to-r from-orange-500 to-amber-500 rounded-2xl p-6 mb-8 text-white shadow-lg">
+                    <div className="flex items-center justify-between flex-wrap gap-4">
+                        <div>
+                            <h2 className="text-2xl font-bold mb-1">Welcome back, {displayName}! 🌟</h2>
+                            <p className="text-orange-100">The stars are aligned in your favor today</p>
+                        </div>
+                        <div className="flex gap-2">
+                            <div className="bg-white/20 rounded-full px-4 py-2 text-sm font-semibold backdrop-blur-sm">
+                                <span className="inline-block w-2 h-2 rounded-full bg-green-400 mr-2 animate-pulse"></span>
+                                Premium Member
+                            </div>
+                        </div>
+                    </div>
+                </div>
 
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 auto-rows-min">
 
                     {/* --- 1. COSMIC PROFILE (Dynamic) --- */}
-                    <div className="glass-card rounded-2xl p-5 lg:col-span-1">
-                        <div className="flex justify-between items-start mb-4">
-                            <h3 className="font-bold text-lg text-slate-800 flex items-center gap-2">
-                                <span className="text-[#cf9f4a]">⭐</span> Cosmic Profile
+                    <div className="bg-white rounded-2xl shadow-md border border-gray-100 p-6 lg:col-span-1 hover:shadow-lg transition-shadow">
+                        <div className="flex justify-between items-start mb-5">
+                            <h3 className="font-bold text-lg text-gray-800 flex items-center gap-2">
+                                <Sparkles className="w-5 h-5 text-orange-500" />
+                                Cosmic Profile
                             </h3>
                             {!editMode && (
-                                <button onClick={() => setEditMode(true)} className="text-[#b8860b] hover:text-[#d4af37] text-sm font-semibold hover:underline">Edit</button>
+                                <button 
+                                    onClick={() => setEditMode(true)} 
+                                    className="text-orange-500 hover:text-orange-600 text-sm font-semibold flex items-center gap-1"
+                                >
+                                    <Edit2 className="w-3.5 h-3.5" /> Edit
+                                </button>
                             )}
                         </div>
 
                         <div className="space-y-4">
-                            <div className="bg-white/60 rounded-xl p-3 border border-[#cf9f4a]/20">
-                                <label className="text-xs uppercase tracking-wider text-[#b8860b] font-semibold block mb-1">Full Name</label>
+                            <div className="bg-gray-50 rounded-xl p-3 border border-gray-100">
+                                <label className="text-xs uppercase tracking-wider text-orange-600 font-semibold block mb-1 flex items-center gap-1">
+                                    <User className="w-3 h-3" /> Full Name
+                                </label>
                                 {editMode ? (
-                                    <input type="text" name="name" value={editForm.name} onChange={handleInputChange} className="w-full bg-white border border-[#cf9f4a]/50 rounded-lg px-3 py-1.5 text-slate-800 outline-none focus:border-[#d4af37] focus:ring-1 focus:ring-[#d4af37]" />
+                                    <input 
+                                        type="text" 
+                                        name="name" 
+                                        value={editForm.name} 
+                                        onChange={handleInputChange} 
+                                        className="w-full bg-white border border-gray-200 rounded-lg px-3 py-1.5 text-gray-800 outline-none focus:border-orange-400 focus:ring-1 focus:ring-orange-400"
+                                    />
                                 ) : (
-                                    <p className="text-slate-800 font-bold">{user.name || <span className="text-slate-400 italic font-normal">Not set</span>}</p>
+                                    <p className="text-gray-800 font-semibold">{user.name || <span className="text-gray-400 italic font-normal">Not set</span>}</p>
                                 )}
                             </div>
-                            <div className="bg-white/60 rounded-xl p-3 border border-[#cf9f4a]/20">
-                                <label className="text-xs uppercase tracking-wider text-[#b8860b] font-semibold block mb-1">Email</label>
+                            <div className="bg-gray-50 rounded-xl p-3 border border-gray-100">
+                                <label className="text-xs uppercase tracking-wider text-orange-600 font-semibold block mb-1 flex items-center gap-1">
+                                    <Mail className="w-3 h-3" /> Email
+                                </label>
                                 {editMode ? (
-                                    <input type="email" name="email" value={editForm.email} onChange={handleInputChange} className="w-full bg-white border border-[#cf9f4a]/50 rounded-lg px-3 py-1.5 text-slate-800 outline-none focus:border-[#d4af37] focus:ring-1 focus:ring-[#d4af37]" />
+                                    <input 
+                                        type="email" 
+                                        name="email" 
+                                        value={editForm.email} 
+                                        onChange={handleInputChange} 
+                                        className="w-full bg-white border border-gray-200 rounded-lg px-3 py-1.5 text-gray-800 outline-none focus:border-orange-400 focus:ring-1 focus:ring-orange-400"
+                                    />
                                 ) : (
-                                    <p className="text-slate-700 font-medium">{user.email || <span className="text-slate-400 italic font-normal">Not set</span>}</p>
+                                    <p className="text-gray-700 font-medium">{user.email || <span className="text-gray-400 italic font-normal">Not set</span>}</p>
                                 )}
                             </div>
-                            <div className="bg-white/60 rounded-xl p-3 border border-[#cf9f4a]/20">
-                                <label className="text-xs uppercase tracking-wider text-[#b8860b] font-semibold block mb-1">Mobile</label>
-                                <p className="text-slate-700 font-medium">{user.phone}</p>
+                            <div className="bg-gray-50 rounded-xl p-3 border border-gray-100">
+                                <label className="text-xs uppercase tracking-wider text-orange-600 font-semibold block mb-1 flex items-center gap-1">
+                                    <Phone className="w-3 h-3" /> Mobile
+                                </label>
+                                <p className="text-gray-700 font-medium">{user.phone}</p>
                             </div>
                         </div>
 
                         {editMode && (
-                            <div className="flex gap-2 mt-4">
-                                <button onClick={saveProfile} className="flex-1 bg-gradient-to-r from-[#d4af37] to-[#e4b363] text-white font-bold py-2 rounded-lg text-sm transition shadow-[0_0_10px_rgba(212,175,55,0.2)] hover:shadow-[0_0_15px_rgba(212,175,55,0.4)]">Save</button>
-                                <button onClick={() => setEditMode(false)} className="flex-1 bg-white hover:bg-slate-50 text-slate-700 font-semibold py-2 rounded-lg text-sm transition border border-[#cf9f4a]/30">Cancel</button>
+                            <div className="flex gap-3 mt-5">
+                                <button 
+                                    onClick={saveProfile} 
+                                    className="flex-1 bg-gradient-to-r from-orange-500 to-amber-500 text-white font-semibold py-2 rounded-xl text-sm transition shadow-md hover:shadow-lg flex items-center justify-center gap-2"
+                                >
+                                    <Save className="w-4 h-4" /> Save Changes
+                                </button>
+                                <button 
+                                    onClick={() => setEditMode(false)} 
+                                    className="flex-1 bg-white hover:bg-gray-50 text-gray-700 font-semibold py-2 rounded-xl text-sm transition border border-gray-200 flex items-center justify-center gap-2"
+                                >
+                                    <X className="w-4 h-4" /> Cancel
+                                </button>
                             </div>
                         )}
                     </div>
 
                     {/* --- 2. KUNDALI REQUESTS (Dynamic Real Data) --- */}
-                    <div className="glass-card rounded-2xl p-5 lg:col-span-2 flex flex-col">
-                        <div className="flex justify-between items-center mb-4">
-                            <h3 className="font-bold text-lg text-slate-800 flex items-center gap-2">
-                                <span className="text-[#cf9f4a]">📜</span> Your Kundali Reports
+                    <div className="bg-white rounded-2xl shadow-md border border-gray-100 p-6 lg:col-span-2 flex flex-col hover:shadow-lg transition-shadow">
+                        <div className="flex justify-between items-center mb-5 flex-wrap gap-3">
+                            <h3 className="font-bold text-lg text-gray-800 flex items-center gap-2">
+                                <Calendar className="w-5 h-5 text-orange-500" />
+                                Your Kundali Reports
                             </h3>
-                            <button onClick={() => navigate('/kundli')} className="bg-amber-50 hover:bg-amber-100 text-[#b8860b] border border-[#cf9f4a]/40 px-4 py-1.5 rounded-full text-sm font-bold transition-all shadow-sm">
-                                + Request New
+                            <button 
+                                onClick={() => navigate('/kundli')} 
+                                className="bg-orange-50 hover:bg-orange-100 text-orange-600 border border-orange-200 px-4 py-2 rounded-xl text-sm font-semibold transition-all shadow-sm flex items-center gap-2"
+                            >
+                                <Plus className="w-4 h-4" /> New Request
                             </button>
                         </div>
 
                         <div className="flex-1">
                             {loading ? (
-                                <p className="text-[#b8860b] font-medium text-center py-8 animate-pulse">Consulting the cosmic records...</p>
+                                <div className="text-center py-12">
+                                    <div className="inline-block animate-spin rounded-full h-8 w-8 border-3 border-orange-500 border-t-transparent"></div>
+                                    <p className="text-orange-600 font-medium mt-3">Consulting the cosmic records...</p>
+                                </div>
                             ) : requests.length === 0 ? (
-                                <div className="text-center py-10 bg-white/40 rounded-xl border border-dashed border-[#cf9f4a]/40">
-                                    <p className="text-slate-500 font-medium text-sm">No premium reports found. Begin your cosmic journey.</p>
+                                <div className="text-center py-12 bg-gray-50 rounded-xl border border-dashed border-gray-200">
+                                    <Sparkles className="w-12 h-12 text-gray-300 mx-auto mb-3" />
+                                    <p className="text-gray-500 font-medium">No premium reports found.</p>
+                                    <p className="text-gray-400 text-sm mt-1">Begin your cosmic journey by requesting a Kundali.</p>
                                 </div>
                             ) : (
-                                <div className="overflow-x-auto">
-                                    <table className="w-full text-sm text-left">
-                                        <thead className="text-xs text-[#b8860b] uppercase border-b border-[#cf9f4a]/20">
-                                            <tr>
-                                                <th className="pb-3 font-bold">Name / Date</th>
-                                                <th className="pb-3 font-bold">Status</th>
-                                                <th className="pb-3 font-bold text-right">Action</th>
-                                            </tr>
-                                        </thead>
-                                        <tbody className="divide-y divide-[#cf9f4a]/10">
-                                            {requests.map((req) => (
-                                                <tr key={req.id} className="hover:bg-amber-50/50 transition-colors">
-                                                    <td className="py-4 text-slate-700 font-medium">
-                                                        <div className="font-bold text-[#b8860b]">{req.name}</div>
-                                                        <div className="text-xs text-slate-500">Created: {new Date(req.created_at).toLocaleDateString()}</div>
-                                                    </td>
-                                                    <td className="py-4">
-                                                        <span className="px-3 py-1 rounded-full text-xs font-bold border bg-emerald-100 text-emerald-700 border-emerald-200">
-                                                            Completed
-                                                        </span>
-                                                    </td>
-                                                    <td className="py-4 text-right">
-                                                        {/* 🟢 Real View Result Button */}
-                                                        <button
-                                                            onClick={() => navigate(`/report/${req.id}`)}
-                                                            className="text-[#b8860b] hover:text-[#d4af37] font-bold text-sm underline transition-colors cursor-pointer"
-                                                        >
-                                                            View Report
-                                                        </button>
-                                                    </td>
-                                                </tr>
-                                            ))}
-                                        </tbody>
-                                    </table>
+                                <div className="space-y-3">
+                                    {requests.map((req) => (
+                                        <div 
+                                            key={req.id} 
+                                            className="flex items-center justify-between p-4 bg-gray-50 rounded-xl border border-gray-100 hover:border-orange-200 hover:shadow-sm transition-all"
+                                        >
+                                            <div className="flex-1">
+                                                <div className="flex items-center gap-3 mb-1">
+                                                    <span className="text-orange-500 text-lg">📜</span>
+                                                    <span className="font-bold text-gray-800">{req.name}</span>
+                                                    <span className="px-2 py-0.5 rounded-full text-xs font-semibold bg-emerald-100 text-emerald-700">
+                                                        Completed
+                                                    </span>
+                                                </div>
+                                                <div className="text-xs text-gray-400 ml-8">
+                                                    Created: {new Date(req.created_at).toLocaleDateString()}
+                                                </div>
+                                            </div>
+                                            <button
+                                                onClick={() => navigate(`/report/${req.id}`)}
+                                                className="text-orange-500 hover:text-orange-600 font-semibold text-sm flex items-center gap-1 transition-colors"
+                                            >
+                                                View Report <ChevronRight className="w-4 h-4" />
+                                            </button>
+                                        </div>
+                                    ))}
                                 </div>
                             )}
                         </div>
                     </div>
 
                     {/* --- 3. DAILY HOROSCOPE (Static UI) --- */}
-                    <div className="glass-card rounded-2xl p-5">
-                        <div className="flex justify-between items-start mb-3">
+                    <div className="bg-white rounded-2xl shadow-md border border-gray-100 p-6 hover:shadow-lg transition-shadow">
+                        <div className="flex justify-between items-start mb-4">
                             <div>
-                                <h3 className="font-bold text-lg text-slate-800 flex items-center gap-2">
-                                    <span className="text-[#cf9f4a]">✨</span> Daily Horoscope
+                                <h3 className="font-bold text-lg text-gray-800 flex items-center gap-2">
+                                    <Sun className="w-5 h-5 text-orange-500" />
+                                    Daily Horoscope
                                 </h3>
-                                <div className="flex items-center gap-2 mt-1">
-                                    <span className="text-xl">♈</span>
-                                    <span className="text-xs text-slate-500 font-semibold">Aries</span>
+                                <div className="flex items-center gap-2 mt-2">
+                                    <span className="text-2xl">♈</span>
+                                    <span className="text-sm text-gray-500 font-semibold">Aries • March 21 - April 19</span>
                                 </div>
                             </div>
+                            <TrendingUp className="w-5 h-5 text-emerald-500" />
                         </div>
-                        <div className="bg-white/60 rounded-xl p-3 border border-[#cf9f4a]/20">
-                            <p className="text-sm leading-relaxed text-slate-700 font-medium">The Moon in your 10th house brings career recognition. Trust your intuition but stay grounded in practical matters today.</p>
+                        <div className="bg-gradient-to-r from-orange-50 to-amber-50 rounded-xl p-4 border border-orange-100">
+                            <p className="text-sm leading-relaxed text-gray-700 font-medium">
+                                The Moon in your 10th house brings career recognition. Trust your intuition but stay grounded in practical matters today.
+                            </p>
                         </div>
-                        <div className="flex justify-between text-xs font-bold bg-amber-50 p-2.5 rounded-lg mt-3 border border-[#cf9f4a]/10 text-[#b8860b]">
-                            <span>🍀 #7</span>
-                            <span>🎨 Gold</span>
-                            <span>😊 Focused</span>
+                        <div className="flex justify-between text-xs font-semibold bg-gray-50 p-3 rounded-lg mt-4 text-gray-600">
+                            <span>🍀 Lucky #: 7</span>
+                            <span>🎨 Color: Gold</span>
+                            <span>😊 Mood: Focused</span>
                         </div>
                     </div>
 
                     {/* --- 4. PANCHANG (Static UI) --- */}
-                    <div className="glass-card rounded-2xl p-5">
-                        <h3 className="font-bold text-lg text-slate-800 flex items-center gap-2 mb-3">
-                            <span className="text-[#cf9f4a]">📆</span> Today's Panchang
+                    <div className="bg-white rounded-2xl shadow-md border border-gray-100 p-6 hover:shadow-lg transition-shadow">
+                        <h3 className="font-bold text-lg text-gray-800 flex items-center gap-2 mb-4">
+                            <Moon className="w-5 h-5 text-orange-500" />
+                            Today's Panchang
                         </h3>
-                        <div className="grid grid-cols-2 gap-3 text-sm text-slate-700 font-medium">
-                            <div className="bg-white/60 rounded-lg p-2.5 border border-[#cf9f4a]/10"><span className="text-[#b8860b] font-bold block text-xs uppercase">Tithi</span> Shukla Ekadashi</div>
-                            <div className="bg-white/60 rounded-lg p-2.5 border border-[#cf9f4a]/10"><span className="text-[#b8860b] font-bold block text-xs uppercase">Nakshatra</span> Rohini</div>
-                            <div className="bg-white/60 rounded-lg p-2.5 border border-[#cf9f4a]/10"><span className="text-[#b8860b] font-bold block text-xs uppercase">Yoga</span> Vishkumbha</div>
-                            <div className="bg-white/60 rounded-lg p-2.5 border border-[#cf9f4a]/10"><span className="text-[#b8860b] font-bold block text-xs uppercase">Moon</span> Taurus</div>
+                        <div className="grid grid-cols-2 gap-3">
+                            <div className="bg-gray-50 rounded-xl p-3 border border-gray-100">
+                                <span className="text-orange-600 font-bold block text-xs uppercase mb-1">Tithi</span>
+                                <span className="text-gray-700 font-medium text-sm">Shukla Ekadashi</span>
+                            </div>
+                            <div className="bg-gray-50 rounded-xl p-3 border border-gray-100">
+                                <span className="text-orange-600 font-bold block text-xs uppercase mb-1">Nakshatra</span>
+                                <span className="text-gray-700 font-medium text-sm">Rohini</span>
+                            </div>
+                            <div className="bg-gray-50 rounded-xl p-3 border border-gray-100">
+                                <span className="text-orange-600 font-bold block text-xs uppercase mb-1">Yoga</span>
+                                <span className="text-gray-700 font-medium text-sm">Vishkumbha</span>
+                            </div>
+                            <div className="bg-gray-50 rounded-xl p-3 border border-gray-100">
+                                <span className="text-orange-600 font-bold block text-xs uppercase mb-1">Moon Sign</span>
+                                <span className="text-gray-700 font-medium text-sm">Taurus</span>
+                            </div>
+                        </div>
+                        <div className="mt-4 pt-3 border-t border-gray-100 flex justify-between text-xs text-gray-500">
+                            <span>🌅 Sunrise: 6:18 AM</span>
+                            <span>🌇 Sunset: 5:57 PM</span>
                         </div>
                     </div>
 
                     {/* --- 5. AI INSIGHT (Static UI) --- */}
-                    <div className="glass-card rounded-2xl p-5">
-                        <h3 className="font-bold text-lg text-slate-800 flex items-center gap-2 mb-3">
-                            <span className="text-[#cf9f4a]">🤖</span> AI Insight
+                    <div className="bg-white rounded-2xl shadow-md border border-gray-100 p-6 hover:shadow-lg transition-shadow">
+                        <h3 className="font-bold text-lg text-gray-800 flex items-center gap-2 mb-4">
+                            <Zap className="w-5 h-5 text-orange-500" />
+                            AI Insight
                         </h3>
-                        <div className="text-sm leading-relaxed bg-amber-50 p-4 rounded-xl border-l-4 border-[#d4af37]">
-                            <p className="italic text-slate-700 font-medium">"Mercury retrograde ends next week, boosting communication. Jupiter in the 9th house signals travel and higher learning. Embrace spiritual practices."</p>
+                        <div className="bg-gradient-to-r from-purple-50 to-pink-50 p-4 rounded-xl border-l-4 border-orange-400">
+                            <p className="italic text-gray-700 text-sm leading-relaxed">
+                                "Mercury retrograde ends next week, boosting communication. Jupiter in the 9th house signals travel and higher learning. Embrace spiritual practices."
+                            </p>
+                        </div>
+                        <div className="mt-4 flex items-center gap-2 text-xs text-gray-400">
+                            <Shield className="w-3 h-3" />
+                            <span>AI-generated insight • Updated daily</span>
                         </div>
                     </div>
 
+                    {/* --- 6. QUICK ACTIONS (New Section) --- */}
+                    <div className="bg-white rounded-2xl shadow-md border border-gray-100 p-6 hover:shadow-lg transition-shadow">
+                        <h3 className="font-bold text-lg text-gray-800 flex items-center gap-2 mb-4">
+                            <Compass className="w-5 h-5 text-orange-500" />
+                            Quick Actions
+                        </h3>
+                        <div className="space-y-3">
+                            <button 
+                                onClick={() => navigate('/kundli')}
+                                className="w-full flex items-center justify-between p-3 bg-gray-50 rounded-xl hover:bg-orange-50 transition-colors group"
+                            >
+                                <span className="text-gray-700 font-medium">Generate New Kundali</span>
+                                <ChevronRight className="w-4 h-4 text-gray-400 group-hover:text-orange-500 group-hover:translate-x-1 transition-all" />
+                            </button>
+                            <button 
+                                onClick={() => navigate('/matchmaking')}
+                                className="w-full flex items-center justify-between p-3 bg-gray-50 rounded-xl hover:bg-orange-50 transition-colors group"
+                            >
+                                <span className="text-gray-700 font-medium">Matchmaking Compatibility</span>
+                                <ChevronRight className="w-4 h-4 text-gray-400 group-hover:text-orange-500 group-hover:translate-x-1 transition-all" />
+                            </button>
+                            <button 
+                                onClick={() => navigate('/horoscope')}
+                                className="w-full flex items-center justify-between p-3 bg-gray-50 rounded-xl hover:bg-orange-50 transition-colors group"
+                            >
+                                <span className="text-gray-700 font-medium">Daily Horoscope</span>
+                                <ChevronRight className="w-4 h-4 text-gray-400 group-hover:text-orange-500 group-hover:translate-x-1 transition-all" />
+                            </button>
+                        </div>
+                    </div>
+
+                </div>
+
+                {/* Footer Note */}
+                <div className="mt-8 text-center">
+                    <p className="text-gray-400 text-xs flex items-center justify-center gap-2">
+                        <Award className="w-3 h-3" />
+                        Trusted Vedic Astrology Platform
+                        <span className="w-1 h-1 rounded-full bg-gray-300"></span>
+                        24/7 Support Available
+                    </p>
                 </div>
             </main>
         </div>

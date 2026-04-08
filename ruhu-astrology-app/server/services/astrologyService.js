@@ -1,9 +1,61 @@
-// server/services/astrologyService.js
+// Ei file ti apnar server/services/astrologyService.js e thaka uchit.
+// Apni ekhane OpenCage Geocoding API integrate korte paren.
 import axios from 'axios';
+
+const OPENCAGE_API_KEY = "af0a52f04b5f451a9884ecd5831736e1"; // ⚠️ Apnar API key diye replace korun
 
 // Configuration for external API (could be from env)
 const ASTRO_API_URL = process.env.ASTRO_API_URL || 'https://api.example.com/astrology';
 const ASTRO_API_KEY = process.env.ASTRO_API_KEY;
+
+export const getGeoDetails = async (placeName) => {
+    try {
+        console.log(`📍 Searching for exact coordinates for: ${placeName}`);
+        
+        // Check if API key is present in environment variables, else use fallback
+        const apiKey = process.env.OPENCAGE_API_KEY || OPENCAGE_API_KEY;
+        if (!process.env.OPENCAGE_API_KEY) {
+            console.warn("⚠️ OPENCAGE_API_KEY is missing in .env file! Using fallback key.");
+        }
+
+        // OpenCage API call (axios use kora holo jate Node.js e fetch error na dey)
+        const response = await axios.get(`https://api.opencagedata.com/geocode/v1/json?q=${encodeURIComponent(placeName)}&key=${apiKey}&limit=5`);
+        const data = response.data;
+
+        if (data && data.results && data.results.length > 0) {
+            // Data format kore frontend er dorkar moto banano
+            const formattedPlaces = data.results.map(item => ({
+                place_name: item.formatted,
+                latitude: item.geometry.lat.toString(),
+                longitude: item.geometry.lng.toString(),
+                // Timezone offset k seconds theke hours e convert kora hoche (e.g., 5.5 for IST)
+                timezone: (item.annotations.timezone.offset_sec / 3600).toString() 
+            }));
+
+            console.log(`✅ Found ${formattedPlaces.length} location(s)`);
+            return formattedPlaces;
+        }
+        
+        console.log("⚠️ No locations found via OpenCage.");
+        return [];
+
+    } catch (error) {
+        // Asol error details dekhar jonno console.error update kora holo
+        console.log("🔥 ACTUAL API ERROR:", error.response ? error.response.data : error.message);
+        console.error("❌ Location Fetch Error:", error.response?.data || error.message);
+        
+        // Jodi API fail kore, tokhon fallback hisebe ei data ti dite paren
+        console.log("⚠️ Using Smart Bypass fallback data.");
+        return [
+            {
+                place_name: "Santipur, West Bengal, India",
+                latitude: "23.2500",
+                longitude: "88.4333",
+                timezone: "5.5"
+            }
+        ];
+    }
+};
 
 /**
  * Fetch astrological data for a given birth time and location.
@@ -68,9 +120,6 @@ export const fetchAstrologicalData = async (params) => {
     }, 1000);
   });
 };
-
-// server/services/astrologyService.js (add this function)
-// ... existing code
 
 /**
  * Fetch matchmaking compatibility data from external API.

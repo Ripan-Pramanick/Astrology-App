@@ -1,276 +1,437 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-    <title>Vedic Astrology Loading | Jyotish • Navagraha • Sacred Spiral</title>
-    <!-- Tailwind CSS v3 -->
-    <script src="https://cdn.tailwindcss.com"></script>
-    <!-- Custom Tailwind configuration for Vedic animations -->
-    <script>
-        tailwind.config = {
-            theme: {
-                extend: {
-                    animation: {
-                        // Vedic specific animations
-                        'vedic-spin': 'vedicSpin 20s linear infinite',
-                        'vedic-spin-reverse': 'vedicSpinReverse 24s linear infinite',
-                        'lotus-glow': 'lotusGlow 2.5s ease-in-out infinite alternate',
-                        'om-pulse': 'omPulse 2s ease-in-out infinite',
-                        'graha-orbit-1': 'grahaOrbit1 6s linear infinite',
-                        'graha-orbit-2': 'grahaOrbit2 8s linear infinite',
-                        'graha-orbit-3': 'grahaOrbit3 10s linear infinite',
-                        'graha-orbit-4': 'grahaOrbit4 7s linear infinite',
-                        'graha-orbit-5': 'grahaOrbit5 9s linear infinite',
-                        'graha-orbit-6': 'grahaOrbit6 5.5s linear infinite',
-                        'mala-slide': 'malaSlide 3s ease-in-out infinite',
-                        'sanskrit-float': 'sanskritFloat 3s ease-in-out infinite',
-                        'kundli-fade': 'kundliFade 1.8s ease-in-out infinite alternate',
-                        'swastika-spin': 'swastikaSpin 30s linear infinite',
-                        'diya-flicker': 'diyaFlicker 1.2s ease-in-out infinite alternate',
-                        'conch-pulse': 'conchPulse 2.2s ease-in-out infinite',
-                        'chakra-spin': 'chakraSpin 12s linear infinite',
-                    },
-                    keyframes: {
-                        vedicSpin: {
-                            '0%': { transform: 'rotate(0deg)' },
-                            '100%': { transform: 'rotate(360deg)' }
-                        },
-                        vedicSpinReverse: {
-                            '0%': { transform: 'rotate(360deg)' },
-                            '100%': { transform: 'rotate(0deg)' }
-                        },
-                        lotusGlow: {
-                            '0%': { filter: 'drop-shadow(0 0 5px #ff9933)', transform: 'scale(0.98)' },
-                            '100%': { filter: 'drop-shadow(0 0 20px #ff6600)', transform: 'scale(1.05)' }
-                        },
-                        omPulse: {
-                            '0%': { opacity: '0.6', textShadow: '0 0 5px #ff6600' },
-                            '100%': { opacity: '1', textShadow: '0 0 20px #ff9933, 0 0 5px #ff3300' }
-                        },
-                        grahaOrbit1: {
-                            '0%': { transform: 'rotate(0deg) translateX(75px) rotate(0deg)' },
-                            '100%': { transform: 'rotate(360deg) translateX(75px) rotate(-360deg)' }
-                        },
-                        grahaOrbit2: {
-                            '0%': { transform: 'rotate(60deg) translateX(60px) rotate(-60deg)' },
-                            '100%': { transform: 'rotate(420deg) translateX(60px) rotate(-420deg)' }
-                        },
-                        grahaOrbit3: {
-                            '0%': { transform: 'rotate(120deg) translateX(88px) rotate(-120deg)' },
-                            '100%': { transform: 'rotate(480deg) translateX(88px) rotate(-480deg)' }
-                        },
-                        grahaOrbit4: {
-                            '0%': { transform: 'rotate(180deg) translateX(50px) rotate(-180deg)' },
-                            '100%': { transform: 'rotate(540deg) translateX(50px) rotate(-540deg)' }
-                        },
-                        grahaOrbit5: {
-                            '0%': { transform: 'rotate(240deg) translateX(95px) rotate(-240deg)' },
-                            '100%': { transform: 'rotate(600deg) translateX(95px) rotate(-600deg)' }
-                        },
-                        grahaOrbit6: {
-                            '0%': { transform: 'rotate(300deg) translateX(68px) rotate(-300deg)' },
-                            '100%': { transform: 'rotate(660deg) translateX(68px) rotate(-660deg)' }
-                        },
-                        malaSlide: {
-                            '0%': { transform: 'translateX(-5px)', opacity: '0.5' },
-                            '100%': { transform: 'translateX(5px)', opacity: '1' }
-                        },
-                        sanskritFloat: {
-                            '0%': { transform: 'translateY(0px)', opacity: '0.5' },
-                            '100%': { transform: 'translateY(-8px)', opacity: '1' }
-                        },
-                        kundliFade: {
-                            '0%': { opacity: '0.3', transform: 'scale(0.95)' },
-                            '100%': { opacity: '0.8', transform: 'scale(1.05)' }
-                        },
-                        swastikaSpin: {
-                            '0%': { transform: 'rotate(0deg)' },
-                            '100%': { transform: 'rotate(360deg)' }
-                        },
-                        diyaFlicker: {
-                            '0%': { opacity: '0.7', transform: 'scale(0.95)' },
-                            '100%': { opacity: '1', transform: 'scale(1.08)' }
-                        },
-                        conchPulse: {
-                            '0%': { filter: 'drop-shadow(0 0 2px #ffcc66)' },
-                            '100%': { filter: 'drop-shadow(0 0 12px #ff9933)' }
-                        },
-                        chakraSpin: {
-                            '0%': { transform: 'rotate(0deg)' },
-                            '100%': { transform: 'rotate(360deg)' }
-                        }
-                    }
-                }
-            }
-        }
-    </script>
-    <style>
-        /* Vedic color palette - Saffron, Vermilion, Sandalwood */
-        body {
-            background: radial-gradient(ellipse at 30% 40%, #1a0a1a 0%, #0d050d 50%, #050208 100%);
-            font-family: 'Segoe UI', 'Poppins', 'Nirmala UI', 'Kalam', system-ui, sans-serif;
-        }
-        
-        /* Traditional rangoli pattern overlay */
-        .rangoli-bg {
-            position: fixed;
-            inset: 0;
-            pointer-events: none;
-            opacity: 0.08;
-            background-image: radial-gradient(circle at 25% 40%, #ff9933 1px, transparent 1px);
-            background-size: 40px 40px;
-        }
-        
-        /* Custom scroll / no scroll */
-        ::-webkit-scrollbar {
-            display: none;
-        }
-        
-        /* Diya flame inner glow */
-        .flame-glow {
-            animation: diyaFlicker 0.8s ease-in-out infinite alternate;
-        }
-        
-        @keyframes subtle-rangoli {
-            0% { opacity: 0.05; transform: scale(1); }
-            100% { opacity: 0.12; transform: scale(1.02); }
-        }
-    </style>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <title>Kaal Chakra | Cosmic Astrology Navigator</title>
+  <!-- Google Fonts for elegant serif + modern sans -->
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;500;600;700&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+  <!-- Tailwind CSS v3 + CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- Custom overrides for Tailwind to add gold palette and extended animations -->
+  <style>
+    /* Override Tailwind theme with cosmic gold & purple accents */
+    @layer base {
+      :root {
+        --gold-400: #FFD700;
+        --gold-500: #F5A623;
+        --deep-purple: #1a0a2e;
+        --cosmic-black: #0a0514;
+      }
+    }
+    /* Custom animations and glow effects */
+    @keyframes spin-slow {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
+    @keyframes pulse-glow {
+      0%, 100% { opacity: 0.5; filter: blur(0px); }
+      50% { opacity: 1; filter: blur(1px); }
+    }
+    @keyframes ping-slow {
+      0%, 100% { transform: scale(1); opacity: 0.9; }
+      50% { transform: scale(1.4); opacity: 0.4; }
+    }
+    @keyframes float-gold {
+      0% { text-shadow: 0 0 0px rgba(255,215,0,0.3); }
+      100% { text-shadow: 0 0 8px rgba(255,215,0,0.6); }
+    }
+    @keyframes shimmer {
+      0% { background-position: -200% 0; }
+      100% { background-position: 200% 0; }
+    }
+    .animate-spin-slow {
+      animation: spin-slow 20s linear infinite;
+      transform-origin: center;
+    }
+    .animate-pulse-glow {
+      animation: pulse-glow 3s ease-in-out infinite;
+    }
+    .animate-ping-slow {
+      animation: ping-slow 2s ease-in-out infinite;
+    }
+    .animate-float-gold {
+      animation: float-gold 2s ease-in-out infinite alternate;
+    }
+    .shimmer-text {
+      background: linear-gradient(120deg, #FFD700, #FFA500, #FFD700);
+      background-size: 200% auto;
+      -webkit-background-clip: text;
+      background-clip: text;
+      color: transparent;
+      animation: shimmer 3s linear infinite;
+    }
+    .glass-nav {
+      background: rgba(10, 5, 20, 0.6);
+      backdrop-filter: blur(12px);
+      border-bottom: 1px solid rgba(255, 215, 0, 0.2);
+    }
+    .glass-nav-scrolled {
+      background: rgba(0, 0, 0, 0.8);
+      backdrop-filter: blur(16px);
+      box-shadow: 0 10px 30px -10px rgba(106, 13, 173, 0.3);
+      border-bottom-color: rgba(255, 215, 0, 0.4);
+    }
+    .hover-glow {
+      transition: all 0.3s ease;
+    }
+    .hover-glow:hover {
+      text-shadow: 0 0 8px #FFD700, 0 0 12px #F5A623;
+      color: #FFD700;
+    }
+    .underline-gold {
+      position: relative;
+    }
+    .underline-gold::after {
+      content: '';
+      position: absolute;
+      bottom: -6px;
+      left: 0;
+      width: 0%;
+      height: 2px;
+      background: linear-gradient(90deg, #FFD700, #F5A623);
+      transition: width 0.3s ease;
+      border-radius: 2px;
+    }
+    .underline-gold:hover::after {
+      width: 100%;
+    }
+    /* Hide scrollbar on mobile menu but keep functionality */
+    .no-scrollbar::-webkit-scrollbar {
+      display: none;
+    }
+    .no-scrollbar {
+      -ms-overflow-style: none;
+      scrollbar-width: none;
+    }
+    /* custom gold border animation */
+    .gold-border-pulse {
+      box-shadow: 0 0 0px rgba(255,215,0,0);
+      transition: box-shadow 0.2s;
+    }
+    button:active .gold-border-pulse {
+      box-shadow: 0 0 12px rgba(255,215,0,0.6);
+    }
+    body {
+      background: radial-gradient(circle at 10% 20%, #0c071a, #03010a);
+      min-height: 100vh;
+      font-family: 'Inter', sans-serif;
+    }
+    .serif-font {
+      font-family: 'Cormorant Garamond', serif;
+    }
+    /* custom scroll */
+    ::-webkit-scrollbar {
+      width: 6px;
+    }
+    ::-webkit-scrollbar-track {
+      background: #1a0a2e;
+    }
+    ::-webkit-scrollbar-thumb {
+      background: #FFD700;
+      border-radius: 8px;
+    }
+  </style>
 </head>
-<body class="flex items-center justify-center min-h-screen p-4 overflow-hidden">
+<body class="overflow-x-hidden antialiased">
 
-    <!-- Sacred background elements -->
-    <div class="rangoli-bg"></div>
-    <div class="fixed inset-0 pointer-events-none opacity-20" style="background: repeating-linear-gradient(45deg, #ff993310 0px, #ff993310 2px, transparent 2px, transparent 8px);"></div>
-
-    <!-- Main Vedic Loading Card -->
-    <div class="relative z-10 w-full max-w-md mx-auto">
-        <div class="bg-gradient-to-br from-amber-950/30 via-orange-950/20 to-red-950/30 backdrop-blur-xl rounded-2xl border border-amber-600/30 shadow-2xl shadow-orange-900/20 p-6 md:p-8 transition-all duration-300">
-            
-            <!-- Sri Yantra / Sacred Geometry inspired chakra -->
-            <div class="relative flex justify-center mb-6">
-                <div class="relative w-56 h-56 md:w-64 md:h-64">
-                    <!-- Outer ring with vedic patterns -->
-                    <div class="absolute inset-0 rounded-full border-2 border-amber-500/40 animate-vedic-spin"></div>
-                    <div class="absolute inset-3 rounded-full border border-dashed border-orange-400/30 animate-vedic-spin-reverse"></div>
-                    <div class="absolute inset-6 rounded-full border border-amber-600/20 animate-vedic-spin" style="animation-duration: 15s;"></div>
-                    
-                    <!-- 12 zodiac markers (Rashis) in Vedic style -->
-                    <div class="absolute inset-0">
-                        <div class="absolute top-0 left-1/2 -translate-x-1/2 -translate-y-1 w-3 h-3 bg-orange-400 rounded-full shadow-glow"></div>
-                        <div class="absolute bottom-0 left-1/2 -translate-x-1/2 translate-y-1 w-3 h-3 bg-orange-400/60 rounded-full"></div>
-                        <div class="absolute left-0 top-1/2 -translate-y-1/2 -translate-x-1 w-3 h-3 bg-orange-400/60 rounded-full"></div>
-                        <div class="absolute right-0 top-1/2 -translate-y-1/2 translate-x-1 w-3 h-3 bg-orange-400/60 rounded-full"></div>
-                        <div class="absolute top-1/4 left-1/4 w-2 h-2 bg-amber-500/40 rounded-full"></div>
-                        <div class="absolute bottom-1/4 right-1/4 w-2 h-2 bg-amber-500/40 rounded-full"></div>
-                        <div class="absolute top-1/4 right-1/4 w-2 h-2 bg-amber-500/40 rounded-full"></div>
-                        <div class="absolute bottom-1/4 left-1/4 w-2 h-2 bg-amber-500/40 rounded-full"></div>
-                    </div>
-                    
-                    <!-- Lotus Petals (8 petal representation) -->
-                    <div class="absolute inset-8">
-                        <div class="absolute top-0 left-1/2 -translate-x-1/2 w-5 h-5 bg-gradient-to-b from-amber-400/60 to-orange-600/40 rounded-full blur-sm animate-lotus-glow" style="top: -6px;"></div>
-                        <div class="absolute bottom-0 left-1/2 -translate-x-1/2 w-5 h-5 bg-gradient-to-t from-amber-400/60 to-orange-600/40 rounded-full blur-sm animate-lotus-glow" style="bottom: -6px;"></div>
-                        <div class="absolute left-0 top-1/2 -translate-y-1/2 w-5 h-5 bg-gradient-to-r from-amber-400/60 to-orange-600/40 rounded-full blur-sm animate-lotus-glow" style="left: -6px;"></div>
-                        <div class="absolute right-0 top-1/2 -translate-y-1/2 w-5 h-5 bg-gradient-to-l from-amber-400/60 to-orange-600/40 rounded-full blur-sm animate-lotus-glow" style="right: -6px;"></div>
-                    </div>
-                    
-                    <!-- Central OM / Bindu with pulsating energy -->
-                    <div class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-16 h-16 bg-gradient-to-br from-orange-500/20 to-amber-600/20 rounded-full flex items-center justify-center backdrop-blur-sm border border-amber-400/50 shadow-xl">
-                        <span class="text-3xl font-bold text-amber-300 animate-om-pulse" style="font-family: 'Nirmala UI', 'Segoe UI Symbol', sans-serif;">ॐ</span>
-                    </div>
-                    
-                    <!-- Navagraha (9 planets) orbiting around -->
-                    <!-- Surya (Sun) -->
-                    <div class="absolute top-1/2 left-1/2 w-4 h-4 rounded-full bg-gradient-to-br from-yellow-400 to-orange-500 shadow-lg animate-graha-orbit-1" style="transform-origin: center; --radius: 75px;"></div>
-                    <!-- Chandra (Moon) -->
-                    <div class="absolute top-1/2 left-1/2 w-3.5 h-3.5 rounded-full bg-gradient-to-br from-gray-200 to-slate-300 shadow-md animate-graha-orbit-2" style="transform-origin: center; --radius: 60px;"></div>
-                    <!-- Mangal (Mars) -->
-                    <div class="absolute top-1/2 left-1/2 w-4 h-4 rounded-full bg-gradient-to-br from-red-500 to-red-700 shadow-lg animate-graha-orbit-3" style="transform-origin: center; --radius: 88px;"></div>
-                    <!-- Budh (Mercury) -->
-                    <div class="absolute top-1/2 left-1/2 w-3 h-3 rounded-full bg-gradient-to-br from-emerald-400 to-teal-600 shadow-md animate-graha-orbit-4" style="transform-origin: center; --radius: 50px;"></div>
-                    <!-- Guru (Jupiter) -->
-                    <div class="absolute top-1/2 left-1/2 w-5 h-5 rounded-full bg-gradient-to-br from-amber-300 to-yellow-600 shadow-lg animate-graha-orbit-5" style="transform-origin: center; --radius: 95px;"></div>
-                    <!-- Shukra (Venus) -->
-                    <div class="absolute top-1/2 left-1/2 w-3.5 h-3.5 rounded-full bg-gradient-to-br from-pink-300 to-rose-500 shadow-md animate-graha-orbit-6" style="transform-origin: center; --radius: 68px;"></div>
-                </div>
-            </div>
-            
-            
-        <!-- Vedic Footer Note -->
-        <div class="text-center mt-4 text-amber-600/40 text-[10px] tracking-wider">
-            श्री गणेशाय नमः • Vedic Astrology Loading
+  <!-- MAIN NAVIGATION BAR (Kaal Chakra) -->
+  <nav id="kaalNavbar" class="fixed top-0 left-0 w-full z-50 transition-all duration-500 glass-nav">
+    <div class="max-w-7xl mx-auto px-5 sm:px-8 lg:px-10">
+      <div class="flex items-center justify-between h-[72px] md:h-20">
+        
+        <!-- LEFT: Logo + Brand -->
+        <div class="flex items-center gap-3 group cursor-pointer">
+          <!-- SVG Cosmic Logo (Zodiac wheel + Mystical Eye) -->
+          <div class="relative w-10 h-10 md:w-12 md:h-12">
+            <svg viewBox="0 0 100 100" class="w-full h-full animate-spin-slow drop-shadow-lg">
+              <defs>
+                <linearGradient id="goldEdge" x1="0%" y1="0%" x2="100%" y2="100%">
+                  <stop offset="0%" stop-color="#FFD700" />
+                  <stop offset="50%" stop-color="#F5A623" />
+                  <stop offset="100%" stop-color="#FFD700" />
+                </linearGradient>
+                <radialGradient id="coreEnergy" cx="50%" cy="50%" r="50%">
+                  <stop offset="0%" stop-color="#FFE55C" stop-opacity="0.9" />
+                  <stop offset="40%" stop-color="#F5A623" stop-opacity="0.6" />
+                  <stop offset="100%" stop-color="#B87333" stop-opacity="0" />
+                </radialGradient>
+                <filter id="goldGlow" x="-30%" y="-30%" width="160%" height="160%">
+                  <feGaussianBlur stdDeviation="2.5" result="blur" />
+                  <feMerge>
+                    <feMergeNode in="blur" />
+                    <feMergeNode in="SourceGraphic" />
+                  </feMerge>
+                </filter>
+              </defs>
+              <!-- Outer zodiac ring with dash pattern -->
+              <circle cx="50" cy="50" r="44" fill="none" stroke="url(#goldEdge)" stroke-width="2.2" stroke-dasharray="8 6" filter="url(#goldGlow)" class="animate-pulse-glow" />
+              <!-- Inner subtle ring -->
+              <circle cx="50" cy="50" r="37" fill="none" stroke="url(#goldEdge)" stroke-width="1.2" stroke-opacity="0.5" />
+              <!-- 12 zodiac marker dots -->
+              <g fill="#FFD700" opacity="0.9">
+                <circle cx="50" cy="8" r="1.8" />
+                <circle cx="76.5" cy="17.5" r="1.8" />
+                <circle cx="92" cy="42" r="1.8" />
+                <circle cx="92" cy="58" r="1.8" />
+                <circle cx="76.5" cy="82.5" r="1.8" />
+                <circle cx="50" cy="92" r="1.8" />
+                <circle cx="23.5" cy="82.5" r="1.8" />
+                <circle cx="8" cy="58" r="1.8" />
+                <circle cx="8" cy="42" r="1.8" />
+                <circle cx="23.5" cy="17.5" r="1.8" />
+                <circle cx="35" cy="9" r="1.6" />
+                <circle cx="65" cy="9" r="1.6" />
+              </g>
+              <!-- Mystical Eye / Energy Core -->
+              <circle cx="50" cy="50" r="22" fill="url(#coreEnergy)" class="animate-pulse" />
+              <ellipse cx="50" cy="48" rx="8" ry="5.5" fill="#FFD700" opacity="0.9" />
+              <circle cx="50" cy="48" r="3.2" fill="#1c0a2e" />
+              <circle cx="50" cy="48" r="1.5" fill="#FFEAA0" class="animate-ping-slow" />
+              <!-- Energy rays from center -->
+              <line x1="50" y1="30" x2="50" y2="24" stroke="#FFD700" stroke-width="1.5" opacity="0.7" />
+              <line x1="50" y1="70" x2="50" y2="76" stroke="#FFD700" stroke-width="1.5" opacity="0.7" />
+              <line x1="30" y1="50" x2="24" y2="50" stroke="#FFD700" stroke-width="1.5" opacity="0.7" />
+              <line x1="70" y1="50" x2="76" y2="50" stroke="#FFD700" stroke-width="1.5" opacity="0.7" />
+              <line x1="36" y1="36" x2="31" y2="31" stroke="#FFD700" stroke-width="1.2" opacity="0.6" />
+              <line x1="64" y1="36" x2="69" y2="31" stroke="#FFD700" stroke-width="1.2" opacity="0.6" />
+              <line x1="36" y1="64" x2="31" y2="69" stroke="#FFD700" stroke-width="1.2" opacity="0.6" />
+              <line x1="64" y1="64" x2="69" y2="69" stroke="#FFD700" stroke-width="1.2" opacity="0.6" />
+            </svg>
+          </div>
+          <!-- Brand text + tagline -->
+          <div class="flex flex-col">
+            <span class="text-xl md:text-2xl font-bold tracking-wider shimmer-text serif-font">Kaal Chakra</span>
+            <span class="text-[9px] md:text-[10px] tracking-[0.2em] text-amber-300/60 font-light -mt-0.5 hidden xs:flex">TIME KNOWS YOUR DESTINY</span>
+          </div>
         </div>
+
+        
+
+        
+      </div>
     </div>
-    
-    <!-- Floating Particles (Akshata - Rice grain vibes) -->
-    <script>
-        // Create subtle floating sacred particles
-        function createVedicParticles() {
-            const particleContainer = document.body;
-            const particleCount = 40;
-            for (let i = 0; i < particleCount; i++) {
-                const particle = document.createElement('div');
-                particle.className = 'fixed pointer-events-none rounded-full';
-                const size = Math.random() * 3 + 1;
-                particle.style.width = size + 'px';
-                particle.style.height = size + 'px';
-                particle.style.background = `radial-gradient(circle, rgba(255, 153, 51, ${Math.random() * 0.5 + 0.2}), rgba(255, 102, 0, 0.2))`;
-                particle.style.left = Math.random() * 100 + '%';
-                particle.style.top = Math.random() * 100 + '%';
-                particle.style.animation = `floatVedic ${Math.random() * 5 + 4}s infinite ease-in-out`;
-                particle.style.opacity = Math.random() * 0.6 + 0.2;
-                particleContainer.appendChild(particle);
-            }
+  </nav>
+
+  <script>
+    (function() {
+      // DOM elements
+      const navbar = document.getElementById('kaalNavbar');
+      const menuBtn = document.getElementById('menuBtn');
+      const overlay = document.getElementById('mobileMenuOverlay');
+      const panel = document.getElementById('mobilePanel');
+      const backdrop = document.getElementById('mobileBackdrop');
+      const line1 = document.getElementById('line1');
+      const line2 = document.getElementById('line2');
+      const line3 = document.getElementById('line3');
+      
+      let isMenuOpen = false;
+      
+      // scroll effect for navbar glass morphism
+      window.addEventListener('scroll', () => {
+        if (window.scrollY > 30) {
+          navbar.classList.add('glass-nav-scrolled');
+          navbar.classList.remove('glass-nav');
+        } else {
+          navbar.classList.remove('glass-nav-scrolled');
+          navbar.classList.add('glass-nav');
         }
-        
-        // Add floating keyframe dynamically
-        const styleSheet = document.createElement("style");
-        styleSheet.textContent = `
-            @keyframes floatVedic {
-                0% { transform: translateY(0px) translateX(0px) rotate(0deg); opacity: 0.2; }
-                50% { transform: translateY(-25px) translateX(12px) rotate(180deg); opacity: 0.7; }
-                100% { transform: translateY(-5px) translateX(-5px) rotate(360deg); opacity: 0.3; }
-            }
-            .shadow-glow {
-                box-shadow: 0 0 8px #ff9933;
-            }
-        `;
-        document.head.appendChild(styleSheet);
-        
-        createVedicParticles();
-        
-        // Add subtle Vedic mantra console greeting
-        console.log("%c🕉 ॐ नमो भगवते वासुदेवाय • Vedic Astrology Loading  🕉", "color: #ff9933; font-size: 14px; font-family: monospace;");
-        
-        // Adding nakshatra (star) extra
-        const starContainer = document.createElement('div');
-        starContainer.className = 'fixed inset-0 pointer-events-none opacity-30';
-        starContainer.style.backgroundImage = `radial-gradient(1px 1px at 15px 40px, #ffcc77, transparent), radial-gradient(1.5px 1.5px at 70px 120px, #ffaa66, transparent)`;
-        starContainer.style.backgroundSize = '100px 100px, 150px 150px';
-        starContainer.style.backgroundRepeat = 'repeat';
-        document.body.appendChild(starContainer);
-    </script>
-    
-    <style>
-        /* Fix orbit CSS variable binding for planets */
-        [class*="animate-graha-orbit-"] {
-            transform-origin: center;
-            will-change: transform;
+      });
+      
+      // Toggle mobile menu
+      function openMenu() {
+        overlay.classList.remove('invisible', 'opacity-0');
+        overlay.classList.add('visible', 'opacity-100');
+        panel.classList.remove('translate-x-full');
+        panel.classList.add('translate-x-0');
+        // animate hamburger to X
+        line1.classList.add('rotate-45', 'top-[7px]');
+        line1.classList.remove('top-0');
+        line2.classList.add('opacity-0');
+        line3.classList.add('-rotate-45', 'top-[7px]');
+        line3.classList.remove('top-[14px]');
+        document.body.style.overflow = 'hidden';
+        isMenuOpen = true;
+      }
+      
+      function closeMenu() {
+        overlay.classList.add('invisible', 'opacity-0');
+        overlay.classList.remove('visible', 'opacity-100');
+        panel.classList.add('translate-x-full');
+        panel.classList.remove('translate-x-0');
+        // revert hamburger
+        line1.classList.remove('rotate-45', 'top-[7px]');
+        line1.classList.add('top-0');
+        line2.classList.remove('opacity-0');
+        line3.classList.remove('-rotate-45', 'top-[7px]');
+        line3.classList.add('top-[14px]');
+        document.body.style.overflow = '';
+        isMenuOpen = false;
+      }
+      
+      menuBtn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        if (isMenuOpen) {
+          closeMenu();
+        } else {
+          openMenu();
         }
-        
-        /* Additional traditional border effect on card */
-        .bg-gradient-to-br {
-            background-attachment: fixed;
+      });
+      
+      backdrop.addEventListener('click', closeMenu);
+      
+      // close on nav link click (mobile)
+      document.querySelectorAll('.mobile-nav-link').forEach(link => {
+        link.addEventListener('click', (e) => {
+          e.preventDefault();
+          closeMenu();
+          // optional: scroll to section simulation
+          console.log('navigate to', link.innerText);
+        });
+      });
+      
+      // close on escape key
+      document.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape' && isMenuOpen) {
+          closeMenu();
         }
-        
-        /* Diya & Conch animations refined */
-        @keyframes floatVedic {
-            0% { transform: translateY(0px) translateX(0px); opacity: 0.2; }
-            50% { transform: translateY(-20px) translateX(10px); opacity: 0.6; }
-            100% { transform: translateY(0px) translateX(0px); opacity: 0.2; }
+      });
+      
+      // handle resize: if window becomes >768px and menu open, force close
+      window.addEventListener('resize', () => {
+        if (window.innerWidth >= 768 && isMenuOpen) {
+          closeMenu();
         }
-    </style>
+      });
+      
+      // initial active state class for desktop links: add subtle glow on hover is already done via CSS
+      // Also add initial class for navbar glass
+      navbar.classList.add('glass-nav');
+      
+      // minor hover effect for desktop nav links: additional cosmic glow
+      const desktopLinks = document.querySelectorAll('.underline-gold');
+      desktopLinks.forEach(link => {
+        link.addEventListener('mouseenter', () => {
+          link.style.textShadow = '0 0 6px #F5A623';
+        });
+        link.addEventListener('mouseleave', () => {
+          link.style.textShadow = 'none';
+        });
+      });
+      
+      // For mobile panel transition delay: set initial style on nav links for staggered effect
+      // Add custom staggered transition style when panel opens
+      const mobileNavLinks = document.querySelectorAll('.mobile-nav-link');
+      function applyStaggeredTransition() {
+        if (isMenuOpen) {
+          mobileNavLinks.forEach((link, idx) => {
+            link.style.transitionDelay = `${idx * 0.05}s`;
+            link.style.opacity = '1';
+            link.style.transform = 'translateX(0)';
+          });
+        } else {
+          mobileNavLinks.forEach((link) => {
+            link.style.transitionDelay = '0s';
+            link.style.opacity = '';
+            link.style.transform = '';
+          });
+        }
+      }
+      
+      // override openMenu to apply staggered effects
+      const originalOpen = openMenu;
+      window.openMenu = openMenu;
+      // patch open/close
+      const superOpen = function() {
+        originalOpen();
+        setTimeout(() => {
+          mobileNavLinks.forEach((link, idx) => {
+            link.style.transition = 'all 0.3s cubic-bezier(0.2,0.9,0.4,1.1)';
+            link.style.opacity = '1';
+            link.style.transform = 'translateX(0)';
+          });
+        }, 50);
+      };
+      const superClose = function() {
+        closeMenu();
+        mobileNavLinks.forEach((link) => {
+          link.style.opacity = '';
+          link.style.transform = '';
+          link.style.transitionDelay = '';
+        });
+      };
+      
+      // rebind events with enhanced animation
+      menuBtn.removeEventListener('click', () => {});
+      backdrop.removeEventListener('click', () => {});
+      
+      // rebind properly
+      const newMenuHandler = () => {
+        if (isMenuOpen) {
+          superClose();
+        } else {
+          superOpen();
+        }
+      };
+      menuBtn.addEventListener('click', newMenuHandler);
+      backdrop.addEventListener('click', superClose);
+      
+      // ensure mobile navlinks opacity on open
+      // init for links default
+      mobileNavLinks.forEach(link => {
+        link.style.transition = 'all 0.3s ease';
+      });
+      
+      // tiny extra: add floating starfield effect just for premium ambiance? Not needed but adds mystic vibe.
+      // also scroll behavior smooth
+      document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+        anchor.addEventListener('click', function(e) {
+          const targetId = this.getAttribute('href');
+          if (targetId === '#') return;
+          const target = document.querySelector(targetId);
+          if (target) {
+            e.preventDefault();
+            target.scrollIntoView({ behavior: 'smooth' });
+          }
+        });
+      });
+      
+      // ensure that initial state for mobile panel is hidden
+      panel.classList.add('translate-x-full');
+      overlay.classList.add('invisible', 'opacity-0');
+    })();
+  </script>
+  <!-- extra style for xs breakpoint to show tagline on very small but not too small -->
+  <style>
+    @media (min-width: 480px) {
+      .xs\:flex {
+        display: flex;
+      }
+    }
+    .xs\:flex {
+      display: none;
+    }
+    /* smooth scroll behavior */
+    html {
+      scroll-behavior: smooth;
+    }
+    /* custom underline animation enhanced */
+    .underline-gold {
+      position: relative;
+    }
+    .underline-gold::after {
+      content: '';
+      position: absolute;
+      bottom: -4px;
+      left: 0;
+      width: 0;
+      height: 2px;
+      background: linear-gradient(90deg, #FFD700, #F5A623);
+      transition: width 0.25s ease-out;
+    }
+    .underline-gold:hover::after {
+      width: 100%;
+    }
+  </style>
 </body>
 </html>

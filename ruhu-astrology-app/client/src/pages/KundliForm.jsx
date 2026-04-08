@@ -107,21 +107,28 @@ const KundliForm = () => {
       } else {
         finalLat = parseFloat(formData.latitude.deg) + (parseFloat(formData.latitude.min) / 60);
         finalLon = parseFloat(formData.longitude.deg) + (parseFloat(formData.longitude.min) / 60);
-        finalTzone = 5.5; 
+        finalTzone = 5.5;
       }
 
       let hour24 = parseInt(formData.birthTime.hour);
       if (formData.birthTime.ampm === 'PM' && hour24 !== 12) hour24 += 12;
       if (formData.birthTime.ampm === 'AM' && hour24 === 12) hour24 = 0;
 
-      const astroPayload = {
-        day: parseInt(formData.birthDate.day),
-        month: parseInt(formData.birthDate.month),
-        year: parseInt(formData.birthDate.year),
-        hour: hour24,
-        min: parseInt(formData.birthTime.minute),
-        lat: finalLat, lon: finalLon, tzone: finalTzone
+      // ইউজারের ফর্ম ডেটা তৈরি করা
+      const userFormDetails = {
+        name: formData.name,
+        gender: formData.gender,
+        dob: `${formData.birthDate.day}/${formData.birthDate.month}/${formData.birthDate.year}`,
+        time: `${formData.birthTime.hour}:${formData.birthTime.minute} ${formData.birthTime.ampm}`,
+        place: formData.place
       };
+
+      // ডাটা লোকাল স্টোরেজে সেভ করা (ইউজার ডিটেইলস সহ)
+      localStorage.setItem('kundliData', JSON.stringify({
+        userDetails: userFormDetails, // নতুন যোগ করা হলো
+        basic: basicDetails.data,
+        planets: planetsData.data
+      }));
 
       // প্রথমে অ্যাস্ট্রোলজি ডাটা ফেচ করা
       const basicDetails = await fetchAstroData('birth_details', astroPayload);
@@ -131,7 +138,7 @@ const KundliForm = () => {
       console.log("🪐 API Response - Planets Data:", planetsData.data);
 
       if (basicDetails.success && planetsData.success) {
-        
+
         // --- পেমেন্ট লজিক শুরু ---
         const res = await loadRazorpayScript();
         if (!res) {
@@ -141,23 +148,22 @@ const KundliForm = () => {
         }
 
         // ব্যাকএন্ড থেকে অর্ডার ক্রিয়েট করা (আপনার সার্ভার পোর্টে)
-      const orderResponse = await fetch('http://localhost:5000/api/payment/create-order', { method: 'POST' });
+        const orderResponse = await fetch('http://localhost:5000/api/payment/create-order', { method: 'POST' });
         const orderData = await orderResponse.json();
 
         // 🟢 PAYMENT BYPASS LOGIC (অ্যাড করা হলো) 🟢
         console.log("⚠️ Bypassing Razorpay popup for testing!");
         setSuccess(true);
-        
-        // ডাটা লোকাল স্টোরেজে সেভ করা (যাতে রেজাল্ট পেজ সেটা পায়)
+
+        // ডাটা লোকাল স্টোরেজে সেভ করা 
         localStorage.setItem('kundliData', JSON.stringify({ basic: basicDetails.data, planets: planetsData.data }));
-        
         // ১.৫ সেকেন্ড পর রেজাল্ট পেজে রিডাইরেক্ট করা
         setTimeout(() => navigate('/kundli-result/demo_123'), 1500);
         return;
 
         // Razorpay পপআপ অপশন
         const options = {
-          key: "PFCYtd7IlXxiCyrq56A05PAk", 
+          key: "PFCYtd7IlXxiCyrq56A05PAk",
           amount: orderData.order.amount,
           currency: "INR",
           name: "RUHU Astrology",
@@ -168,12 +174,12 @@ const KundliForm = () => {
           handler: function (response) {
             // পেমেন্ট সফল হলে এই অংশ রান করবে
             setSuccess(true);
-            
+
             // ডাটা লোকাল স্টোরেজে সেভ করা
             localStorage.setItem('kundliData', JSON.stringify({ basic: basicDetails.data, planets: planetsData.data }));
-            
+
             console.log("Payment Successful! Payment ID:", response.razorpay_payment_id);
-            
+
             // ২ সেকেন্ড পর রেজাল্ট পেজে রিডাইরেক্ট করা
             setTimeout(() => navigate('/kundli-result/demo_123'), 2000);
           },
@@ -187,12 +193,12 @@ const KundliForm = () => {
         };
 
         const paymentObject = new window.Razorpay(options);
-        
+
         paymentObject.on('payment.failed', function (response) {
           setError("Payment Failed! " + response.error.description);
           setLoading(false);
         });
-        
+
         // পপআপ ওপেন করা
         paymentObject.open();
         // --- পেমেন্ট লজিক শেষ ---
@@ -209,33 +215,33 @@ const KundliForm = () => {
 
   return (
     <div className="min-h-screen bg-[#f8f5eb] py-16 px-4 relative overflow-hidden font-sans text-slate-800">
-      
+
       {/* Decorative Stars */}
       <div className="absolute top-10 left-10 text-[#d4af37]/20 animate-pulse"><Stars size={40} /></div>
       <div className="absolute bottom-20 right-10 text-[#d4af37]/20 animate-bounce"><Sparkles size={30} /></div>
 
       <div className="max-w-7xl mx-auto relative z-10">
-        
+
         {/* Top Header Section */}
         <div className="text-center mb-16 max-w-3xl mx-auto">
           <h1 className="text-4xl md:text-5xl font-black text-[#1e293b] mb-4">
             Every Problem Have A Solution
           </h1>
           <p className="text-lg text-slate-700 font-medium leading-relaxed">
-            We will provide the charges after reviewing the nature of your query & study required. <br className="hidden md:block"/>
-            An upfront token payment will be deducted from the total charges. <br className="hidden md:block"/>
+            We will provide the charges after reviewing the nature of your query & study required. <br className="hidden md:block" />
+            An upfront token payment will be deducted from the total charges. <br className="hidden md:block" />
             Kindly proceed to submit your query.
           </p>
         </div>
 
         {/* Two Column Layout */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 lg:gap-20 items-center">
-          
+
           {/* Left Column: Image */}
           <div className="flex justify-center">
-            <img 
+            <img
               src={astrologerImg}
-              alt="Cosmic Astrologer" 
+              alt="Cosmic Astrologer"
               className="w-full max-w-md lg:max-w-lg aspect-square object-cover rounded-[3rem] shadow-[0_20px_50px_rgba(212,175,55,0.2)] border-4 border-white"
             />
           </div>
@@ -243,7 +249,7 @@ const KundliForm = () => {
           {/* Right Column: Form */}
           <div className="w-full max-w-lg mx-auto lg:mx-0">
             <form onSubmit={handleSubmit} className="bg-white rounded-3xl p-8 shadow-2xl border border-slate-100 space-y-6">
-              
+
               <div className="text-center mb-6">
                 <h2 className="text-2xl font-bold text-[#f98a2c]">Submit your query</h2>
                 <p className="text-sm text-slate-500">if it is a unique ask and not listed</p>
@@ -254,7 +260,7 @@ const KundliForm = () => {
                 <label className="text-xs font-bold text-slate-500 uppercase ml-1">Name</label>
                 <div className="mt-1 relative">
                   <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none text-slate-400"><User size={18} /></div>
-                  <input 
+                  <input
                     type="text" required placeholder="Your name here"
                     value={formData.name} onChange={(e) => handleChange(e, null, 'name')}
                     className="w-full pl-12 pr-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-[#f98a2c]/50 outline-none font-medium transition-all"
@@ -284,11 +290,11 @@ const KundliForm = () => {
                 <div className="grid grid-cols-3 gap-3 mt-1">
                   <select value={formData.birthDate.day} onChange={(e) => handleChange(e, 'birthDate', 'day')} className="py-3 px-3 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-[#f98a2c]/50 outline-none font-medium text-sm">
                     <option value="">DD</option>
-                    {[...Array(31)].map((_, i) => <option key={i+1} value={i+1}>{i+1}</option>)}
+                    {[...Array(31)].map((_, i) => <option key={i + 1} value={i + 1}>{i + 1}</option>)}
                   </select>
                   <select value={formData.birthDate.month} onChange={(e) => handleChange(e, 'birthDate', 'month')} className="py-3 px-3 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-[#f98a2c]/50 outline-none font-medium text-sm">
                     <option value="">MM</option>
-                    {[...Array(12)].map((_, i) => <option key={i+1} value={i+1}>{i+1}</option>)}
+                    {[...Array(12)].map((_, i) => <option key={i + 1} value={i + 1}>{i + 1}</option>)}
                   </select>
                   <select value={formData.birthDate.year} onChange={(e) => handleChange(e, 'birthDate', 'year')} className="py-3 px-3 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-[#f98a2c]/50 outline-none font-medium text-sm">
                     <option value="">YYYY</option>
@@ -303,7 +309,7 @@ const KundliForm = () => {
                 <div className="grid grid-cols-3 gap-3 mt-1">
                   <select value={formData.birthTime.hour} onChange={(e) => handleChange(e, 'birthTime', 'hour')} className="py-3 px-3 bg-slate-50 border border-slate-200 rounded-xl outline-none font-medium text-sm">
                     <option value="">HH</option>
-                    {[...Array(12)].map((_, i) => <option key={i+1} value={i+1}>{i+1}</option>)}
+                    {[...Array(12)].map((_, i) => <option key={i + 1} value={i + 1}>{i + 1}</option>)}
                   </select>
                   <select value={formData.birthTime.minute} onChange={(e) => handleChange(e, 'birthTime', 'minute')} className="py-3 px-3 bg-slate-50 border border-slate-200 rounded-xl outline-none font-medium text-sm">
                     <option value="">MM</option>
@@ -321,14 +327,14 @@ const KundliForm = () => {
                 <label className="text-xs font-bold text-slate-500 uppercase ml-1">Place of Birth</label>
                 <div className="mt-1 relative">
                   <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none text-slate-400"><MapPin size={18} /></div>
-                  <input 
+                  <input
                     type="text" required placeholder="Start typing & choose..."
                     value={formData.place} disabled={formData.useCoordinates}
                     onChange={(e) => { handleChange(e, null, 'place'); setSelectedExactLocation(null); }}
                     className="w-full pl-12 pr-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-[#f98a2c]/50 outline-none font-medium transition-all text-sm"
                   />
                   {isSearchingCity && <div className="absolute right-4 top-3.5 animate-spin text-[#f98a2c]"><Sparkles size={16} /></div>}
-                  
+
                   {/* Suggestions Dropdown */}
                   {showSuggestions && suggestions.length > 0 && (
                     <div className="absolute z-50 w-full bg-white border border-slate-200 rounded-xl shadow-xl mt-1 overflow-hidden max-h-48">
@@ -348,7 +354,7 @@ const KundliForm = () => {
                   <div className="text-xs text-slate-400 line-through">Rs. 1500</div>
                   <div className="text-xl font-black text-red-500">Rs. 1100/-</div>
                 </div>
-                <button 
+                <button
                   type="submit" disabled={loading}
                   className="py-3 px-8 bg-[#f98a2c] text-white font-bold rounded-xl shadow-lg shadow-orange-500/30 hover:bg-orange-600 active:scale-95 transition-all disabled:opacity-70 flex items-center gap-2"
                 >

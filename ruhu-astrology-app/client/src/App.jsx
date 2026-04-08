@@ -20,6 +20,8 @@ import NotFound from './pages/NotFound'; // Ensure this file exists
 import Register from './pages/Register';
 import Orders from './pages/admin/Orders';
 import ViewReport from './pages/ViewReport';
+import Horoscope from './pages/Horoscope';
+import Panchang from './pages/Panchang';
 
 
 // Blog Pages (Make sure these files exist in your pages folder)
@@ -57,6 +59,9 @@ function App() {
               <Route path="/login" element={<Login />} />
               <Route path="/verify-otp" element={<OTPVerify />} />
               <Route path="/report/:id" element={<ViewReport />} />
+              <Route path="/match-making" element={<Matchmaking />} />
+              <Route path="/horoscope" element={<Horoscope />} />
+              <Route path="/panchang" element={<Panchang />} />
 
               <Route path="/blog" element={<Blog />} />
               <Route path="/blog/:id" element={<BlogDetails />} />
