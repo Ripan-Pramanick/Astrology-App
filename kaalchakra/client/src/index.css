@@ -3,10 +3,11 @@
 @theme {
   /* Ekhane tomar custom color define koro */
   --color-bg: #1a0b2e; /* Ekhane tomar choice-er hex code dao */
+  --color-accent: #ffd700;
 }
 
 body {
-  @apply bg-bg font-sans;
+  @apply bg-[#1a0b2e] font-sans;
 }
 
 html {
