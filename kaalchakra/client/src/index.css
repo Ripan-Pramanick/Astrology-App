@@ -1,6 +1,9 @@
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
+@import "tailwindcss";
+
+@theme {
+  /* Ekhane tomar custom color define koro */
+  --color-bg: #1a0b2e; /* Ekhane tomar choice-er hex code dao */
+}
 
 body {
   @apply bg-bg font-sans;
