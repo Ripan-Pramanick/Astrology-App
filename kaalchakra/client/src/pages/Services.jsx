@@ -1,7 +1,7 @@
 // client/src/pages/Services.jsx
 import React from 'react';
 import { Link } from 'react-router-dom';
-import Button from '../components/ui/Button';
+import Button from '../components/ui/Button.jsx';
 
 // Reusable Service Card Component
 const ServiceCard = ({ icon, title, subtitle, oldPrice, newPrice }) => {

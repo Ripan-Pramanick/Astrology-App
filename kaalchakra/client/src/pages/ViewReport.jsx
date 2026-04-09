@@ -3,8 +3,8 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { Download, ArrowLeft, Loader2, Sparkles } from 'lucide-react';
 import { toPng } from 'html-to-image';
 import jsPDF from 'jspdf';
-import KundliChart from '../components/kundli/KundliChart';
-import api from '../services/api';
+import KundliChart from '../components/kundli/KundliChart.jsx';
+import api from '../services/api.js';
 
 const ViewReport = () => {
   const { id } = useParams(); // URL থেকে রিপোর্টের ID নিলাম

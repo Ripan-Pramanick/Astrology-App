@@ -3,7 +3,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import { User, Mail, ArrowRight, ShieldCheck } from 'lucide-react';
 import PhoneInput from 'react-phone-input-2';
 import 'react-phone-input-2/lib/style.css';
-import api from '../services/api';
+import api from '../services/api.js';
 
 const Register = () => {
     const navigate = useNavigate();

@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { useAuth } from '../context/AuthContext';
-import api from '../services/api';
+import { useAuth } from '../context/AuthContext.jsx';
+import api from '../services/api.js';
 import { 
   User, Mail, Phone, Star, Calendar, Moon, Sun, Sparkles, 
   LogOut, Edit2, Save, X, Eye, Plus, TrendingUp, 

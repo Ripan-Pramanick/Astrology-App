@@ -1,7 +1,7 @@
 // client/src/pages/Blog.jsx
 import React from 'react';
-import BlogCard from '../components/blog/BlogCard';
-import { articles } from '../data/mockData';
+import BlogCard from '../components/blog/BlogCard.jsx';
+import { articles } from '../data/mockData.js';
 
 const Blog = () => {
   // Enhanced mock articles with additional fields

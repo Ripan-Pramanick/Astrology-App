@@ -1,7 +1,7 @@
 import React from 'react';
 import { useParams, Link } from 'react-router-dom';
-import PageHeader from '../components/common/PageHeader';
-import Card from '../components/ui/Card';
+import PageHeader from '../components/common/PageHeader.jsx';
+import Card from '../components/ui/Card.jsx';
 import { FaFacebook, FaTwitter, FaLinkedin } from 'react-icons/fa';
 
 // ১. স্ট্যাটিক ডেটা কম্পোনেন্টের বাইরে রাখা হলো (পারফরম্যান্স অপটিমাইজেশন)

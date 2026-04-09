@@ -3,10 +3,10 @@ import { useNavigate } from 'react-router-dom';
 import { Download, ArrowLeft, Loader2, Sparkles, AlertTriangle } from 'lucide-react';
 import { toPng } from 'html-to-image';
 import jsPDF from 'jspdf';
-import KundliChart from '../pages/kundli/KundliChart';
-import PlanetTable from '../pages/kundli/PlanetTable';
-import { useAuth } from '../context/AuthContext';
-import api from '../services/api';
+import KundliChart from '../pages/kundli/KundliChart.jsx';
+import PlanetTable from '../pages/kundli/PlanetTable.jsx';
+import { useAuth } from '../context/AuthContext.jsx';
+import api from '../services/api.js';
 
 const KundliResult = () => {
   const navigate = useNavigate();

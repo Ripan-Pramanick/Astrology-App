@@ -1,6 +1,6 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
-import { panchang } from '../../data/mockData';
+import { panchang } from '../../data/mockData.js';
 
 const TimeCard = ({ title, time, icon, bgColor }) => (
   <div className={`${bgColor} rounded-2xl p-5 flex flex-col items-center justify-center shadow-lg hover:shadow-xl transition-shadow duration-300`}>

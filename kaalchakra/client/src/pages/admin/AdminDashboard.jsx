@@ -3,7 +3,7 @@ import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { Link } from 'react-router-dom';
 import { Users, CreditCard, IndianRupee, Crown, Clock, ArrowRight, Activity, LogOut } from 'lucide-react';
-import { useAuth } from '../../context/AuthContext'; // লগআউটের জন্য
+import { useAuth } from '../../context/AuthContext.jsx'; // লগআউটের জন্য
 
 const AdminDashboard = () => {
   const { logout } = useAuth(); // AuthContext থেকে লগআউট আনছি

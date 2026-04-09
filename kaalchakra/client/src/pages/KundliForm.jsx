@@ -1,8 +1,8 @@
 // client/src/pages/KundliForm.jsx
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { useAuth } from '../context/AuthContext';
-import { fetchAstroData, getGeoLocation } from '../services/astrology';
+import { useAuth } from '../context/AuthContext.jsx';
+import { fetchAstroData, getGeoLocation } from '../services/astrology.js';
 import { Sparkles, MapPin, User, Send, ShieldCheck, Stars } from 'lucide-react';
 
 import astrologerImg from '../assets/kundliRishi.svg';

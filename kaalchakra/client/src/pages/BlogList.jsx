@@ -1,7 +1,7 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
-import PageHeader from '../components/common/PageHeader';
-import Card from '../components/ui/Card';
+import PageHeader from '../components/common/PageHeader.jsx';
+import Card from '../components/ui/Card.jsx';
 
 const blogs = [
   {

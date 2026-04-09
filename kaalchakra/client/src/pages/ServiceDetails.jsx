@@ -1,7 +1,7 @@
 import React from 'react';
 import { useParams } from 'react-router-dom';
-import PageHeader from '../components/common/PageHeader';
-import Button from '../components/ui/Button';
+import PageHeader from '../components/common/PageHeader.jsx';
+import Button from '../components/ui/Button.jsx';
 
 const ServiceDetails = () => {
   const { id } = useParams();

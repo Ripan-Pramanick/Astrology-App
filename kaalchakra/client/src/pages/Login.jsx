@@ -4,7 +4,7 @@ import { useNavigate, Link } from 'react-router-dom';
 import { RecaptchaVerifier, signInWithPhoneNumber } from 'firebase/auth';
 import { auth } from '../firebase';
 import PhoneInput from 'react-phone-input-2';
-import 'react-phone-input-2/lib/style.css'; // ডিফল্ট স্টাইল
+import 'react-phone-input-2/lib/style.css'; // ডিফল্ট স্টাইল    
 import { Star, ArrowRight, MessageSquareQuote } from 'lucide-react';
 
 const Login = () => {
