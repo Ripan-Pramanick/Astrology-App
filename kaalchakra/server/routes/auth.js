@@ -1,10 +1,22 @@
+// server/routes/auth.js
 import express from 'express';
-// দুটো ফাংশনই ইমপোর্ট করতে হবে
-import { verifyPhoneAuth, registerUser } from '../controllers/authController.js'; 
+import {
+  registerUser,
+  verifyPhoneAuth,
+  sendOTP,
+  getUserProfile,
+  updateUserProfile
+} from '../controllers/authController.js';
 
 const router = express.Router();
 
-router.post('/verify-phone', verifyPhoneAuth);
-router.post('/register', registerUser); // 👈 এই লাইনটা যেন থাকে
+// Authentication routes
+router.post('/register', registerUser);
+router.post('/verify-phone', verifyPhoneAuth);  // 👈 Make sure this exists
+router.post('/send-otp', sendOTP);
+
+// Profile routes
+router.get('/profile/:phone', getUserProfile);
+router.put('/profile/:phone', updateUserProfile);
 
 export default router;

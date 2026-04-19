@@ -1,70 +1,6 @@
-// client/src/pages/About.jsx
-import React, { useState } from 'react';
-import { Star, Quote, Sparkles, Compass, Heart, Users, Award, Clock, MapPin, ChevronRight } from 'lucide-react';
-
-// Testimonials Data
-const testimonials = [
-  {
-    id: 1,
-    name: "Priya Sharma",
-    role: "Marketing Professional",
-    zodiac: "Virgo",
-    content: "The personalized birth chart reading was incredibly accurate. It helped me understand my career path better and gave me confidence to pursue my dreams.",
-    rating: 5,
-    avatar: "PS",
-    location: "Mumbai, India"
-  },
-  {
-    id: 2,
-    name: "Rajesh Mehta",
-    role: "Business Owner",
-    zodiac: "Taurus",
-    content: "Matchmaking service was exceptional. The detailed analysis and compatibility report helped our families make an informed decision. Highly recommended!",
-    rating: 5,
-    avatar: "RM",
-    location: "Delhi, India"
-  },
-  {
-    id: 3,
-    name: "Ananya Krishnan",
-    role: "Software Engineer",
-    zodiac: "Pisces",
-    content: "The muhurata consultation for our house warming was spot on. Everything went smoothly and auspiciously. Thank you for your guidance.",
-    rating: 4,
-    avatar: "AK",
-    location: "Bangalore, India"
-  },
-  {
-    id: 4,
-    name: "Vikram Singh",
-    role: "Entrepreneur",
-    zodiac: "Leo",
-    content: "The career consultation gave me clarity on business timing. Following the advice led to successful funding rounds.",
-    rating: 5,
-    avatar: "VS",
-    location: "Jaipur, India"
-  },
-  {
-    id: 5,
-    name: "Neha Gupta",
-    role: "Teacher",
-    zodiac: "Cancer",
-    content: "Name correction service brought positive changes in my life. The process was professional and well-explained.",
-    rating: 5,
-    avatar: "NG",
-    location: "Lucknow, India"
-  },
-  {
-    id: 6,
-    name: "Arjun Nair",
-    role: "Doctor",
-    zodiac: "Sagittarius",
-    content: "Excellent insights into health and wellbeing. The planetary remedies suggested have shown remarkable results.",
-    rating: 4,
-    avatar: "AN",
-    location: "Chennai, India"
-  }
-];
+import React, { useState, useEffect } from 'react';
+import { Star, Quote, Sparkles, Compass, Heart, Users, Award, Clock, MapPin, ChevronRight, Loader2, AlertCircle } from 'lucide-react';
+import api from '../services/api.js';
 
 // Stat Card Component
 const StatCard = ({ icon: Icon, value, label, color }) => (
@@ -80,12 +16,10 @@ const StatCard = ({ icon: Icon, value, label, color }) => (
 // Testimonial Card Component
 const TestimonialCard = ({ testimonial, index }) => (
   <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6 hover:shadow-lg transition-all duration-300 hover:-translate-y-1 group">
-    {/* Quote Icon */}
     <div className="mb-4">
       <Quote className="w-8 h-8 text-orange-200 group-hover:text-orange-300 transition-colors" />
     </div>
     
-    {/* Rating Stars */}
     <div className="flex gap-1 mb-3">
       {[...Array(5)].map((_, i) => (
         <Star 
@@ -95,17 +29,14 @@ const TestimonialCard = ({ testimonial, index }) => (
       ))}
     </div>
     
-    {/* Content */}
     <p className="text-gray-600 text-sm leading-relaxed mb-4">
       "{testimonial.content}"
     </p>
     
-    {/* Divider */}
     <div className="border-t border-gray-100 pt-4 mt-2">
-      {/* Avatar */}
       <div className="flex items-center gap-3 mb-2">
         <div className="w-10 h-10 rounded-full bg-gradient-to-br from-orange-500 to-amber-500 flex items-center justify-center text-white font-semibold text-sm shadow-sm">
-          {testimonial.avatar}
+          {testimonial.avatar || testimonial.name?.charAt(0) || 'C'}
         </div>
         <div>
           <p className="font-semibold text-gray-800">{testimonial.name}</p>
@@ -113,7 +44,6 @@ const TestimonialCard = ({ testimonial, index }) => (
         </div>
       </div>
       
-      {/* Details */}
       <div className="flex items-center gap-3 text-xs text-gray-400 mt-2">
         <span className="flex items-center gap-1">
           <MapPin className="w-3 h-3" /> {testimonial.location}
@@ -121,6 +51,32 @@ const TestimonialCard = ({ testimonial, index }) => (
         <span className="flex items-center gap-1">
           <Star className="w-3 h-3" /> {testimonial.zodiac}
         </span>
+      </div>
+    </div>
+  </div>
+);
+
+// Loading Skeleton for Testimonial Card
+const TestimonialCardSkeleton = () => (
+  <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6 animate-pulse">
+    <div className="w-8 h-8 bg-gray-200 rounded mb-4"></div>
+    <div className="flex gap-1 mb-3">
+      {[...Array(5)].map((_, i) => (
+        <div key={i} className="w-4 h-4 bg-gray-200 rounded"></div>
+      ))}
+    </div>
+    <div className="space-y-2 mb-4">
+      <div className="h-4 bg-gray-200 rounded w-full"></div>
+      <div className="h-4 bg-gray-200 rounded w-11/12"></div>
+      <div className="h-4 bg-gray-200 rounded w-10/12"></div>
+    </div>
+    <div className="border-t border-gray-100 pt-4 mt-2">
+      <div className="flex items-center gap-3 mb-2">
+        <div className="w-10 h-10 bg-gray-200 rounded-full"></div>
+        <div>
+          <div className="h-4 bg-gray-200 rounded w-24 mb-1"></div>
+          <div className="h-3 bg-gray-200 rounded w-20"></div>
+        </div>
       </div>
     </div>
   </div>
@@ -140,6 +96,87 @@ const TeamMember = ({ name, role, expertise, avatar, color }) => (
 
 const About = () => {
   const [activeTab, setActiveTab] = useState('mission');
+  const [aboutData, setAboutData] = useState(null);
+  const [testimonials, setTestimonials] = useState([]);
+  const [stats, setStats] = useState({
+    happyClients: '50K+',
+    expertAstrologers: '15+',
+    yearsOfService: '25+',
+    satisfactionRate: '100%'
+  });
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState('');
+
+  useEffect(() => {
+    fetchAboutData();
+    fetchTestimonials();
+    fetchStats();
+  }, []);
+
+  const fetchAboutData = async () => {
+    try {
+      const response = await api.get('/about');
+      if (response.data.success) {
+        setAboutData(response.data.data);
+      }
+    } catch (err) {
+      console.error('Error fetching about data:', err);
+    }
+  };
+
+  const fetchTestimonials = async () => {
+    try {
+      const response = await api.get('/testimonials?is_approved=true&limit=6');
+      if (response.data.success) {
+        setTestimonials(response.data.testimonials);
+      }
+    } catch (err) {
+      console.error('Error fetching testimonials:', err);
+    }
+  };
+
+  const fetchStats = async () => {
+    try {
+      const response = await api.get('/about/stats');
+      if (response.data.success) {
+        setStats(response.data.stats);
+      }
+    } catch (err) {
+      console.error('Error fetching stats:', err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  if (loading && !aboutData) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 py-12 px-4 sm:px-6 flex items-center justify-center">
+        <div className="text-center">
+          <Loader2 className="w-12 h-12 text-orange-500 animate-spin mx-auto mb-4" />
+          <p className="text-gray-500">Loading cosmic wisdom...</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (error && !aboutData) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 py-12 px-4 sm:px-6">
+        <div className="max-w-7xl mx-auto text-center">
+          <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-red-100 mb-4">
+            <AlertCircle className="w-8 h-8 text-red-500" />
+          </div>
+          <p className="text-red-500 mb-4">{error}</p>
+          <button 
+            onClick={() => window.location.reload()} 
+            className="bg-orange-500 hover:bg-orange-600 text-white font-semibold px-6 py-2 rounded-full"
+          >
+            Try Again
+          </button>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 py-12 px-4 sm:px-6">
@@ -156,7 +193,7 @@ const About = () => {
             </div>
           </div>
           <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold text-gray-800 mb-4 tracking-tight">
-            About Vedic Astrology
+            {aboutData?.title || "About Vedic Astrology"}
           </h1>
           <div className="flex items-center justify-center gap-2 mb-6">
             <div className="w-16 h-px bg-gradient-to-r from-transparent to-orange-300"></div>
@@ -164,18 +201,16 @@ const About = () => {
             <div className="w-16 h-px bg-gradient-to-l from-transparent to-orange-300"></div>
           </div>
           <p className="text-gray-600 text-lg max-w-3xl mx-auto leading-relaxed">
-            Vedic astrology, also known as <span className="font-semibold text-gray-800">Jyotish Shastra</span>, is a traditional system of astrology 
-            that originated in ancient India. Based on the Vedas, the oldest sacred texts of Hinduism, 
-            it has been guiding humanity for thousands of years.
+            {aboutData?.description || "Vedic astrology, also known as Jyotish Shastra, is a traditional system of astrology that originated in ancient India. Based on the Vedas, the oldest sacred texts of Hinduism, it has been guiding humanity for thousands of years."}
           </p>
         </div>
 
-        {/* Stats Section */}
+        {/* Stats Section - Now from Database */}
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-16">
-          <StatCard icon={Users} value="50K+" label="Happy Clients" color="bg-gradient-to-br from-orange-500 to-amber-500" />
-          <StatCard icon={Star} value="15+" label="Expert Astrologers" color="bg-gradient-to-br from-purple-500 to-pink-500" />
-          <StatCard icon={Clock} value="25+" label="Years of Service" color="bg-gradient-to-br from-blue-500 to-cyan-500" />
-          <StatCard icon={Award} value="100%" label="Satisfaction Rate" color="bg-gradient-to-br from-emerald-500 to-green-500" />
+          <StatCard icon={Users} value={stats.happyClients} label="Happy Clients" color="bg-gradient-to-br from-orange-500 to-amber-500" />
+          <StatCard icon={Star} value={stats.expertAstrologers} label="Expert Astrologers" color="bg-gradient-to-br from-purple-500 to-pink-500" />
+          <StatCard icon={Clock} value={stats.yearsOfService} label="Years of Service" color="bg-gradient-to-br from-blue-500 to-cyan-500" />
+          <StatCard icon={Award} value={stats.satisfactionRate} label="Satisfaction Rate" color="bg-gradient-to-br from-emerald-500 to-green-500" />
         </div>
 
         {/* Main Content Grid */}
@@ -187,22 +222,16 @@ const About = () => {
                 <div className="w-8 h-8 rounded-lg bg-orange-100 flex items-center justify-center">
                   <Sparkles className="w-4 h-4 text-orange-500" />
                 </div>
-                <h2 className="text-xl font-bold text-gray-800">The Science of Light</h2>
+                <h2 className="text-xl font-bold text-gray-800">{aboutData?.scienceTitle || "The Science of Light"}</h2>
               </div>
               <p className="text-gray-700 leading-relaxed mb-4">
-                Astrology or Jyotisha connects human life with cosmic order and karmic patterns. 
-                It is not just about making predictions or analyzing personality traits, but about understanding 
-                the cosmic play of karma, the soul's journey, and the individual's role in the greater scheme of the universe.
+                {aboutData?.scienceDescription1 || "Astrology or Jyotisha connects human life with cosmic order and karmic patterns. It is not just about making predictions or analyzing personality traits, but about understanding the cosmic play of karma, the soul's journey, and the individual's role in the greater scheme of the universe."}
               </p>
               <p className="text-gray-700 leading-relaxed mb-4">
-                Vedic astrology offers guidance, self-awareness, and a deeper understanding of life's purpose and challenges. 
-                Rooted in ancient wisdom, it provides insights into the karmic forces at play and helps us live more fulfilling 
-                and purposeful lives, making informed choices leading to material and spiritual success.
+                {aboutData?.scienceDescription2 || "Vedic astrology offers guidance, self-awareness, and a deeper understanding of life's purpose and challenges. Rooted in ancient wisdom, it provides insights into the karmic forces at play and helps us live more fulfilling and purposeful lives, making informed choices leading to material and spiritual success."}
               </p>
               <p className="text-gray-700 leading-relaxed">
-                At <span className="font-semibold text-orange-500">Kaal-Chakra</span>, we combine traditional Jyotish knowledge 
-                with modern technology to provide accurate and personalized astrological services. Our team of experienced 
-                astrologers is dedicated to helping you navigate life's complexities.
+                {aboutData?.brandStatement || "At Kaal-Chakra, we combine traditional Jyotish knowledge with modern technology to provide accurate and personalized astrological services. Our team of experienced astrologers is dedicated to helping you navigate life's complexities."}
               </p>
             </div>
 
@@ -245,14 +274,12 @@ const About = () => {
                 {activeTab === 'mission' && (
                   <div className="space-y-3">
                     <p className="text-gray-700 leading-relaxed">
-                      To empower individuals with the wisdom of the stars, helping them make informed decisions 
-                      and live in harmony with cosmic rhythms.
+                      {aboutData?.mission || "To empower individuals with the wisdom of the stars, helping them make informed decisions and live in harmony with cosmic rhythms."}
                     </p>
                     <div className="flex items-start gap-3 mt-4 pt-3 border-t border-gray-100">
                       <Heart className="w-5 h-5 text-orange-400 mt-0.5" />
                       <p className="text-gray-600 text-sm">
-                        We believe everyone deserves access to authentic astrological guidance that respects 
-                        both ancient wisdom and modern needs.
+                        {aboutData?.missionSubtext || "We believe everyone deserves access to authentic astrological guidance that respects both ancient wisdom and modern needs."}
                       </p>
                     </div>
                   </div>
@@ -260,44 +287,55 @@ const About = () => {
                 {activeTab === 'vision' && (
                   <div className="space-y-3">
                     <p className="text-gray-700 leading-relaxed">
-                      To be a trusted bridge between ancient Vedic wisdom and modern seekers, offering clarity 
-                      and direction in all aspects of life.
+                      {aboutData?.vision || "To be a trusted bridge between ancient Vedic wisdom and modern seekers, offering clarity and direction in all aspects of life."}
                     </p>
                     <div className="flex items-start gap-3 mt-4 pt-3 border-t border-gray-100">
                       <Compass className="w-5 h-5 text-orange-400 mt-0.5" />
                       <p className="text-gray-600 text-sm">
-                        Creating a global community where astrological knowledge is accessible, accurate, 
-                        and applied for positive transformation.
+                        {aboutData?.visionSubtext || "Creating a global community where astrological knowledge is accessible, accurate, and applied for positive transformation."}
                       </p>
                     </div>
                   </div>
                 )}
                 {activeTab === 'values' && (
                   <div className="space-y-3">
-                    <div className="flex items-start gap-3">
-                      <div className="w-5 h-5 rounded-full bg-green-100 flex items-center justify-center mt-0.5">
-                        <span className="text-green-500 text-xs">✓</span>
-                      </div>
-                      <p className="text-gray-700">Authenticity in Vedic traditions</p>
-                    </div>
-                    <div className="flex items-start gap-3">
-                      <div className="w-5 h-5 rounded-full bg-green-100 flex items-center justify-center mt-0.5">
-                        <span className="text-green-500 text-xs">✓</span>
-                      </div>
-                      <p className="text-gray-700">Compassion and confidentiality</p>
-                    </div>
-                    <div className="flex items-start gap-3">
-                      <div className="w-5 h-5 rounded-full bg-green-100 flex items-center justify-center mt-0.5">
-                        <span className="text-green-500 text-xs">✓</span>
-                      </div>
-                      <p className="text-gray-700">Continuous learning and accuracy</p>
-                    </div>
-                    <div className="flex items-start gap-3">
-                      <div className="w-5 h-5 rounded-full bg-green-100 flex items-center justify-center mt-0.5">
-                        <span className="text-green-500 text-xs">✓</span>
-                      </div>
-                      <p className="text-gray-700">Empowerment through knowledge</p>
-                    </div>
+                    {aboutData?.values ? (
+                      aboutData.values.split(',').map((value, idx) => (
+                        <div key={idx} className="flex items-start gap-3">
+                          <div className="w-5 h-5 rounded-full bg-green-100 flex items-center justify-center mt-0.5">
+                            <span className="text-green-500 text-xs">✓</span>
+                          </div>
+                          <p className="text-gray-700">{value.trim()}</p>
+                        </div>
+                      ))
+                    ) : (
+                      <>
+                        <div className="flex items-start gap-3">
+                          <div className="w-5 h-5 rounded-full bg-green-100 flex items-center justify-center mt-0.5">
+                            <span className="text-green-500 text-xs">✓</span>
+                          </div>
+                          <p className="text-gray-700">Authenticity in Vedic traditions</p>
+                        </div>
+                        <div className="flex items-start gap-3">
+                          <div className="w-5 h-5 rounded-full bg-green-100 flex items-center justify-center mt-0.5">
+                            <span className="text-green-500 text-xs">✓</span>
+                          </div>
+                          <p className="text-gray-700">Compassion and confidentiality</p>
+                        </div>
+                        <div className="flex items-start gap-3">
+                          <div className="w-5 h-5 rounded-full bg-green-100 flex items-center justify-center mt-0.5">
+                            <span className="text-green-500 text-xs">✓</span>
+                          </div>
+                          <p className="text-gray-700">Continuous learning and accuracy</p>
+                        </div>
+                        <div className="flex items-start gap-3">
+                          <div className="w-5 h-5 rounded-full bg-green-100 flex items-center justify-center mt-0.5">
+                            <span className="text-green-500 text-xs">✓</span>
+                          </div>
+                          <p className="text-gray-700">Empowerment through knowledge</p>
+                        </div>
+                      </>
+                    )}
                   </div>
                 )}
               </div>
@@ -315,9 +353,17 @@ const About = () => {
                 <h2 className="text-xl font-bold text-gray-800">Meet Our Experts</h2>
               </div>
               <div className="grid grid-cols-2 md:grid-cols-3 gap-6">
-                <TeamMember name="Dr. Suresh Rao" role="Chief Astrologer" expertise="Vedic & KP" avatar="SR" color="bg-gradient-to-br from-orange-500 to-amber-500" />
-                <TeamMember name="Pt. Rajesh Sharma" role="Senior Astrologer" expertise="Marriage & Career" avatar="RS" color="bg-gradient-to-br from-purple-500 to-pink-500" />
-                <TeamMember name="Ms. Geeta M" role="Vedic Counselor" expertise="Remedies & Mantras" avatar="GM" color="bg-gradient-to-br from-blue-500 to-cyan-500" />
+                {aboutData?.teamMembers ? (
+                  JSON.parse(aboutData.teamMembers).map((member, idx) => (
+                    <TeamMember key={idx} {...member} />
+                  ))
+                ) : (
+                  <>
+                    <TeamMember name="Dr. Suresh Rao" role="Chief Astrologer" expertise="Vedic & KP" avatar="SR" color="bg-gradient-to-br from-orange-500 to-amber-500" />
+                    <TeamMember name="Pt. Rajesh Sharma" role="Senior Astrologer" expertise="Marriage & Career" avatar="RS" color="bg-gradient-to-br from-purple-500 to-pink-500" />
+                    <TeamMember name="Ms. Geeta M" role="Vedic Counselor" expertise="Remedies & Mantras" avatar="GM" color="bg-gradient-to-br from-blue-500 to-cyan-500" />
+                  </>
+                )}
               </div>
             </div>
 
@@ -328,32 +374,43 @@ const About = () => {
                 Why Choose Kaal-Chakra?
               </h3>
               <div className="space-y-3">
-                <div className="flex items-center gap-2 text-sm text-gray-700">
-                  <ChevronRight className="w-4 h-4 text-orange-500" />
-                  <span>Authentic Vedic traditions & calculations</span>
-                </div>
-                <div className="flex items-center gap-2 text-sm text-gray-700">
-                  <ChevronRight className="w-4 h-4 text-orange-500" />
-                  <span>Experienced & certified astrologers</span>
-                </div>
-                <div className="flex items-center gap-2 text-sm text-gray-700">
-                  <ChevronRight className="w-4 h-4 text-orange-500" />
-                  <span>Personalized guidance & remedies</span>
-                </div>
-                <div className="flex items-center gap-2 text-sm text-gray-700">
-                  <ChevronRight className="w-4 h-4 text-orange-500" />
-                  <span>Confidential & compassionate service</span>
-                </div>
-                <div className="flex items-center gap-2 text-sm text-gray-700">
-                  <ChevronRight className="w-4 h-4 text-orange-500" />
-                  <span>Follow-up support & detailed reports</span>
-                </div>
+                {aboutData?.whyChooseUs ? (
+                  aboutData.whyChooseUs.split(',').map((reason, idx) => (
+                    <div key={idx} className="flex items-center gap-2 text-sm text-gray-700">
+                      <ChevronRight className="w-4 h-4 text-orange-500" />
+                      <span>{reason.trim()}</span>
+                    </div>
+                  ))
+                ) : (
+                  <>
+                    <div className="flex items-center gap-2 text-sm text-gray-700">
+                      <ChevronRight className="w-4 h-4 text-orange-500" />
+                      <span>Authentic Vedic traditions & calculations</span>
+                    </div>
+                    <div className="flex items-center gap-2 text-sm text-gray-700">
+                      <ChevronRight className="w-4 h-4 text-orange-500" />
+                      <span>Experienced & certified astrologers</span>
+                    </div>
+                    <div className="flex items-center gap-2 text-sm text-gray-700">
+                      <ChevronRight className="w-4 h-4 text-orange-500" />
+                      <span>Personalized guidance & remedies</span>
+                    </div>
+                    <div className="flex items-center gap-2 text-sm text-gray-700">
+                      <ChevronRight className="w-4 h-4 text-orange-500" />
+                      <span>Confidential & compassionate service</span>
+                    </div>
+                    <div className="flex items-center gap-2 text-sm text-gray-700">
+                      <ChevronRight className="w-4 h-4 text-orange-500" />
+                      <span>Follow-up support & detailed reports</span>
+                    </div>
+                  </>
+                )}
               </div>
             </div>
           </div>
         </div>
 
-        {/* Testimonials Section */}
+        {/* Testimonials Section - Now from Database */}
         <div className="mt-8">
           <div className="text-center mb-10">
             <h2 className="text-2xl md:text-3xl font-bold text-gray-800 mb-3">
@@ -367,11 +424,17 @@ const About = () => {
             <p className="text-gray-500 mt-3">Trusted by thousands for authentic astrological guidance</p>
           </div>
           
-          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {testimonials.map((testimonial, index) => (
-              <TestimonialCard key={testimonial.id} testimonial={testimonial} index={index} />
-            ))}
-          </div>
+          {testimonials.length > 0 ? (
+            <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+              {testimonials.map((testimonial, index) => (
+                <TestimonialCard key={testimonial.id} testimonial={testimonial} index={index} />
+              ))}
+            </div>
+          ) : (
+            <div className="text-center py-12">
+              <p className="text-gray-500">Testimonials coming soon...</p>
+            </div>
+          )}
         </div>
 
         {/* Call to Action */}
@@ -379,7 +442,10 @@ const About = () => {
           <div className="bg-gradient-to-r from-orange-500 to-amber-500 rounded-2xl p-8 shadow-lg">
             <h3 className="text-2xl font-bold text-white mb-2">Ready to Begin Your Journey?</h3>
             <p className="text-orange-100 mb-6">Let the stars guide you toward clarity and purpose</p>
-            <button className="bg-white text-orange-500 font-semibold px-8 py-3 rounded-xl shadow-md hover:shadow-lg transition-all duration-300 hover:scale-105">
+            <button 
+              onClick={() => window.location.href = '/contact'}
+              className="bg-white text-orange-500 font-semibold px-8 py-3 rounded-xl shadow-md hover:shadow-lg transition-all duration-300 hover:scale-105"
+            >
               Consult an Astrologer
             </button>
           </div>

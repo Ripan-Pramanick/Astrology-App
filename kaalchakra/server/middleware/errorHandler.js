@@ -1,13 +1,12 @@
 // server/middleware/errorHandler.js
+import logger from '../utils/logger.js';
+
 export const errorHandler = (err, req, res, next) => {
-  console.error(err.stack);
-
-  const statusCode = err.statusCode || 500;
-  const message = err.message || 'Internal Server Error';
-
-  res.status(statusCode).json({
-    success: false,
-    message,
-    ...(process.env.NODE_ENV === 'development' && { stack: err.stack }),
-  });
+    logger.error(err.stack);
+    
+    res.status(err.status || 500).json({
+        success: false,
+        message: err.message || 'Internal Server Error',
+        ...(process.env.NODE_ENV === 'development' && { stack: err.stack })
+    });
 };

@@ -1,12 +1,72 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import { ArrowRight, Sparkles, Star, Compass } from 'lucide-react';
+import { ArrowRight, Sparkles, Star, Compass, Loader2 } from 'lucide-react';
+import api from '../services/api.js';
 
 // Note: Replace this with your actual Ganesha SVG import
 import ganesha from '../../assets/ganesa.svg';
 
 const HeroSection = () => {
-  
+  const [heroData, setHeroData] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [stats, setStats] = useState({
+    happyClients: '50,000+',
+    yearsOfService: '25+',
+    certifiedAstrologers: 'Certified',
+    support: '24/7'
+  });
+
+  useEffect(() => {
+    fetchHeroData();
+    fetchStats();
+  }, []);
+
+  const fetchHeroData = async () => {
+    try {
+      const response = await api.get('/hero');
+      if (response.data.success) {
+        setHeroData(response.data.data);
+      }
+    } catch (error) {
+      console.error('Error fetching hero data:', error);
+      // Use fallback data if API fails
+      setHeroData({
+        title: "ॐ गन् गणपत् र नमो नमः",
+        subtitle: "॥ श्री सिद्धि विनायक नमो नमः ॥",
+        description: "ॐ गन गणपतए नमो नमः श्री सिद्धि विनायक नमो नमः अष्टविनायक नमो नमः गणपति बाप्पा मोरया",
+        buttonText: "Explore Services",
+        buttonLink: "/services",
+        secondaryButtonText: "Consult Now",
+        secondaryButtonLink: "/contact"
+      });
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const fetchStats = async () => {
+    try {
+      const response = await api.get('/hero/stats');
+      if (response.data.success) {
+        setStats(response.data.stats);
+      }
+    } catch (error) {
+      console.error('Error fetching stats:', error);
+      // Keep default stats
+    }
+  };
+
+  if (loading) {
+    return (
+      <div className="relative min-h-[90vh] flex items-center justify-center overflow-hidden bg-gradient-to-br from-gray-50 via-white to-gray-100">
+        <div className="text-center">
+          <Loader2 className="w-12 h-12 text-orange-500 animate-spin mx-auto mb-4" />
+          <p className="text-gray-500">Loading cosmic energy...</p>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="relative min-h-[90vh] flex items-center justify-center overflow-hidden bg-gradient-to-br from-gray-50 via-white to-gray-100">
       
@@ -45,9 +105,11 @@ const HeroSection = () => {
             {/* Icon Container */}
             <div className="relative w-full h-full bg-gradient-to-br from-orange-50 to-amber-50 rounded-full shadow-xl flex items-center justify-center border border-orange-200">
               <div className="w-24 h-40 md:w-28 md:h-40 lg:w-32 lg:h-55">
-                <img src={ganesha} 
-                className='w-full h-full object-cover'
-                alt="Ganesha" />
+                <img 
+                  src={ganesha} 
+                  className='w-full h-full object-cover'
+                  alt="Ganesha" 
+                />
               </div>
             </div>
           </div>
@@ -61,58 +123,59 @@ const HeroSection = () => {
             <div className="w-12 h-px bg-gradient-to-l from-transparent to-orange-300"></div>
           </div>
           <h1 className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-bold text-gray-800 mb-4 leading-tight">
-            ॐ गन् गणपत् र नमो नमः
+            {heroData?.title || "ॐ गन् गणपत् र नमो नमः"}
           </h1>
           <div className="flex items-center justify-center gap-3">
             <div className="w-8 h-px bg-gradient-to-r from-transparent to-orange-200"></div>
-            <span className="text-orange-300 text-sm">॥ श्री सिद्धि विनायक नमो नमः ॥</span>
+            <span className="text-orange-300 text-sm">
+              {heroData?.subtitle || "॥ श्री सिद्धि विनायक नमो नमः ॥"}
+            </span>
             <div className="w-8 h-px bg-gradient-to-l from-transparent to-orange-200"></div>
           </div>
         </div>
 
         {/* Description Text */}
         <p className="text-gray-600 text-base sm:text-lg md:text-xl max-w-3xl mx-auto mb-10 md:mb-12 leading-relaxed">
-          ॐ गन गणपतए नमो नमः श्री सिद्धि विनायक नमो नमः 
-          अष्टविनायक नमो नमः गणपति बाप्पा मोरया
+          {heroData?.description || "ॐ गन गणपतए नमो नमः श्री सिद्धि विनायक नमो नमः अष्टविनायक नमो नमः गणपति बाप्पा मोरया"}
         </p>
 
         {/* CTA Button with Hover Effect */}
         <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
           <Link
-            to="/services"
+            to={heroData?.buttonLink || "/services"}
             className="group inline-flex items-center gap-2 bg-gradient-to-r from-orange-500 to-amber-500 hover:from-orange-600 hover:to-amber-600 text-white font-semibold px-8 py-3.5 rounded-xl shadow-md hover:shadow-lg transition-all duration-300 hover:scale-105"
           >
-            <span>Explore Services</span>
+            <span>{heroData?.buttonText || "Explore Services"}</span>
             <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
           </Link>
           
           <Link
-            to="/contact"
+            to={heroData?.secondaryButtonLink || "/contact"}
             className="inline-flex items-center gap-2 bg-white text-gray-700 font-medium px-8 py-3.5 rounded-xl shadow-sm border border-gray-200 hover:shadow-md hover:border-orange-200 transition-all duration-300"
           >
             <Compass className="w-4 h-4 text-orange-500" />
-            <span>Consult Now</span>
+            <span>{heroData?.secondaryButtonText || "Consult Now"}</span>
           </Link>
         </div>
 
-        {/* Trust Badges */}
+        {/* Trust Badges - Now from Database */}
         <div className="mt-12 pt-8 border-t border-gray-200">
           <div className="flex flex-wrap items-center justify-center gap-6 text-gray-500 text-sm">
             <div className="flex items-center gap-2">
               <div className="w-1.5 h-1.5 rounded-full bg-orange-400"></div>
-              <span>50,000+ Happy Clients</span>
+              <span>{stats.happyClients} Happy Clients</span>
             </div>
             <div className="flex items-center gap-2">
               <div className="w-1.5 h-1.5 rounded-full bg-orange-400"></div>
-              <span>25+ Years of Service</span>
+              <span>{stats.yearsOfService} Years of Service</span>
             </div>
             <div className="flex items-center gap-2">
               <div className="w-1.5 h-1.5 rounded-full bg-orange-400"></div>
-              <span>Certified Astrologers</span>
+              <span>{stats.certifiedAstrologers} Astrologers</span>
             </div>
             <div className="flex items-center gap-2">
               <div className="w-1.5 h-1.5 rounded-full bg-orange-400"></div>
-              <span>24/7 Support</span>
+              <span>{stats.support} Support</span>
             </div>
           </div>
         </div>

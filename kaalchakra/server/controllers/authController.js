@@ -1,76 +1,38 @@
 // server/controllers/authController.js
-import admin from 'firebase-admin'; 
+import admin from 'firebase-admin';
 import { supabase } from '../utils/supabase.js';
 
-// export const verifyPhoneAuth = async (req, res) => {
-//   try {
-//     // ১. আপনার ফ্রন্টএন্ড থেকে 'token' আসছে, তাই 'token' ই পড়ুন
-//     const { token } = req.body; 
-
-//     if (!token) {
-//       console.log("❌ Token missing in request body");
-//       return res.status(400).json({ success: false, message: 'Missing token.' });
-//     }
-
-//     // ২. এখন 'admin' ডিফাইন করা আছে, তাই এটি কাজ করবে
-//     let decodedToken;
-//     try {
-//       decodedToken = await admin.auth().verifyIdToken(token);
-//     } catch (err) {
-//       console.error('❌ Firebase Token Verification Failed:', err.message);
-//       return res.status(401).json({ success: false, message: 'Invalid token.' });
-//     }
-
-//     const { uid, phone_number } = decodedToken;
-
-//     // ৩. Supabase-এ ইউজার চেক এবং ইনসার্ট (আগের মতো)
-//     const { data: user, error: dbError } = await supabase
-//       .from('users')
-//       .upsert({ 
-//         firebase_uid: uid, 
-//         phone: phone_number,
-//         role: 'user'
-//       }, { onConflict: 'firebase_uid' }) // অথবা onConflict: 'phone' যদি আপনার টেবিলে ফোন নম্বর ইউনিক হয়
-//       .select()
-//       .single();
-
-//     if (dbError) {
-//       console.error('❌ Supabase Error:', dbError);
-//       return res.status(500).json({ success: false, message: 'Database error.' });
-//     }
-
-//     return res.status(200).json({ success: true, user });
-
-//   } catch (error) {
-//     console.error('❌ Final Server Error:', error);
-//     return res.status(500).json({ success: false, message: 'Server error.' });
-//   }
-// };
-
-
-// 👇👇 এখান থেকে নতুন কোড শুরু 👇👇
-
-// Route: POST /api/auth/register
+// ==========================================
+// REGISTER USER - Step 1
+// ==========================================
 export const registerUser = async (req, res) => {
   try {
-    // 👇 এই লাইনটা বসিয়ে দেখুন ডেটা ব্যাকএন্ডে পৌঁছাচ্ছে কি না
-    console.log("➡️ Frontend theke data asche:", req.body); 
+    console.log("📝 Registration request received:", req.body);
 
     const { name, email, phone } = req.body;
-    
-    // ... বাকি কোড ...
 
-    // ১. ভ্যালিডেশন
+    // Validation
     if (!name || !email || !phone) {
-      return res.status(400).json({ success: false, message: 'নাম, ইমেইল এবং ফোন নম্বর আবশ্যক!' });
+      return res.status(400).json({ 
+        success: false, 
+        message: 'নাম, ইমেইল এবং ফোন নম্বর আবশ্যক!' 
+      });
     }
 
-   // ২. চেক করুন এই ফোন নম্বরটি আগে থেকেই ডাটাবেসে আছে কি না
+    // Check if user already exists
     const { data: existingUser, error: searchError } = await supabase
       .from('users')
       .select('*')
       .eq('phone', phone)
-      .maybeSingle(); // 👈 .single() এর বদলে .maybeSingle() দিন
+      .maybeSingle();
+
+    if (searchError) {
+      console.error('❌ Search error:', searchError);
+      return res.status(500).json({ 
+        success: false, 
+        message: 'ডাটাবেস চেক করতে সমস্যা হয়েছে।' 
+      });
+    }
 
     if (existingUser) {
       return res.status(400).json({ 
@@ -79,61 +41,319 @@ export const registerUser = async (req, res) => {
       });
     }
 
-    // ৩. নতুন ইউজারের বেসিক ডেটা ডাটাবেসে সেভ করুন 
-    // (firebase_uid পরে verifyPhoneAuth এর সময় আপডেট হয়ে যাবে)
+    // Create new user
     const { data: newUser, error: insertError } = await supabase
       .from('users')
-      .insert([{ name, email, phone, role: 'user' }])
+      .insert([{ 
+        name, 
+        email, 
+        phone, 
+        role: 'user',
+        created_at: new Date().toISOString()
+      }])
       .select()
       .single();
 
     if (insertError) {
       console.error('❌ Supabase Insert Error:', insertError);
-      return res.status(500).json({ success: false, message: 'ডাটাবেসে সেভ করতে সমস্যা হয়েছে।' });
+      return res.status(500).json({ 
+        success: false, 
+        message: 'ডাটাবেসে সেভ করতে সমস্যা হয়েছে: ' + insertError.message 
+      });
     }
 
-    // ৪. সাকসেস রেসপন্স
     return res.status(200).json({ 
       success: true, 
-      message: 'সফলভাবে অ্যাকাউন্ট তৈরি হয়েছে! এবার OTP ভেরিফাই করুন।' 
+      message: 'সফলভাবে অ্যাকাউন্ট তৈরি হয়েছে! এবার OTP ভেরিফাই করুন।',
+      user: newUser
     });
 
   } catch (error) {
     console.error('❌ Registration Error:', error);
-    return res.status(500).json({ success: false, message: 'সার্ভারে সমস্যা হয়েছে!' });
+    return res.status(500).json({ 
+      success: false, 
+      message: 'সার্ভারে সমস্যা হয়েছে! ' + error.message 
+    });
   }
 };
 
+// ==========================================
+// VERIFY PHONE / LOGIN - Step 2 (FIXED)
+// ==========================================
 export const verifyPhoneAuth = async (req, res) => {
   try {
-    const { token } = req.body; 
-    let decodedToken = await admin.auth().verifyIdToken(token);
+    console.log("📱 Verify phone request received:", req.body);
+
+    const { token } = req.body;
+
+    if (!token) {
+      return res.status(400).json({ 
+        success: false, 
+        message: 'Token is required' 
+      });
+    }
+
+    // Verify Firebase token
+    let decodedToken;
+    try {
+      decodedToken = await admin.auth().verifyIdToken(token);
+      console.log("✅ Firebase token verified for UID:", decodedToken.uid);
+    } catch (firebaseError) {
+      console.error('❌ Firebase verification error:', firebaseError);
+      return res.status(401).json({ 
+        success: false, 
+        message: 'Invalid or expired token: ' + firebaseError.message 
+      });
+    }
+
     const { uid, phone_number } = decodedToken;
 
-    // ১. আগে চেক করুন ইউজার কি ডাটাবেসে আছে? 
-    const { data: existingUser } = await supabase
+    if (!phone_number) {
+      return res.status(400).json({ 
+        success: false, 
+        message: 'Phone number not found in token' 
+      });
+    }
+
+    // Check if user exists in database
+    const { data: existingUser, error: searchError } = await supabase
       .from('users')
-      .select('role')
+      .select('*')
       .eq('phone', phone_number)
       .maybeSingle();
 
-    // ২. যদি সে অ্যাডমিন হয় তবে সেই রোলটিই থাকবে, নতুবা 'user' হবে
-    const userRole = existingUser?.role || 'user';
+    if (searchError) {
+      console.error('❌ Database search error:', searchError);
+      return res.status(500).json({ 
+        success: false, 
+        message: 'Database error: ' + searchError.message 
+      });
+    }
 
-    const { data: user, error: dbError } = await supabase
+    let user;
+    
+    if (existingUser) {
+      // Update existing user with Firebase UID
+      const { data: updatedUser, error: updateError } = await supabase
+        .from('users')
+        .update({ 
+          firebase_uid: uid,
+          updated_at: new Date().toISOString()
+        })
+        .eq('phone', phone_number)
+        .select()
+        .single();
+
+      if (updateError) {
+        console.error('❌ Update error:', updateError);
+        // Continue with existing user even if update fails
+        user = existingUser;
+      } else {
+        user = updatedUser;
+      }
+      
+      console.log("✅ Existing user logged in:", user.phone);
+      
+      return res.status(200).json({ 
+        success: true, 
+        message: 'Login successful',
+        user: {
+          id: user.id,
+          name: user.name,
+          email: user.email,
+          phone: user.phone,
+          role: user.role,
+          firebase_uid: user.firebase_uid
+        }
+      });
+      
+    } else {
+      // Create new user
+      const { data: newUser, error: insertError } = await supabase
+        .from('users')
+        .insert([{ 
+          firebase_uid: uid,
+          phone: phone_number,
+          role: 'user',
+          name: `User_${phone_number.slice(-4)}`, // Temporary name
+          created_at: new Date().toISOString()
+        }])
+        .select()
+        .single();
+
+      if (insertError) {
+        console.error('❌ Insert error:', insertError);
+        return res.status(500).json({ 
+          success: false, 
+          message: 'Failed to create user: ' + insertError.message 
+        });
+      }
+
+      console.log("✅ New user created:", newUser.phone);
+      
+      return res.status(200).json({ 
+        success: true, 
+        message: 'User created successfully',
+        user: {
+          id: newUser.id,
+          name: newUser.name,
+          email: newUser.email,
+          phone: newUser.phone,
+          role: newUser.role,
+          firebase_uid: newUser.firebase_uid
+        }
+      });
+    }
+
+  } catch (error) {
+    console.error('❌ Verify phone error:', error);
+    return res.status(500).json({ 
+      success: false, 
+      message: 'Server error: ' + error.message 
+    });
+  }
+};
+
+// ==========================================
+// SEND OTP
+// ==========================================
+export const sendOTP = async (req, res) => {
+  try {
+    const { phoneNumber } = req.body;
+    
+    if (!phoneNumber) {
+      return res.status(400).json({ 
+        success: false, 
+        message: 'Phone number is required' 
+      });
+    }
+
+    // Check if user exists
+    const { data: existingUser, error: searchError } = await supabase
       .from('users')
-      .upsert({ 
-        firebase_uid: uid, 
-        phone: phone_number,
-        role: userRole // 👈 আপনার অ্যাডমিন পাওয়ার সুরক্ষিত থাকবে
-      }, { onConflict: 'phone' }) 
+      .select('*')
+      .eq('phone', phoneNumber)
+      .maybeSingle();
+
+    if (searchError) {
+      console.error('❌ Database search error:', searchError);
+    }
+
+    return res.status(200).json({ 
+      success: true, 
+      exists: !!existingUser,
+      message: existingUser ? 'Existing user' : 'New user'
+    });
+
+  } catch (error) {
+    console.error('❌ Send OTP error:', error);
+    return res.status(500).json({ 
+      success: false, 
+      message: 'Server error: ' + error.message 
+    });
+  }
+};
+
+// ==========================================
+// GET USER PROFILE
+// ==========================================
+export const getUserProfile = async (req, res) => {
+  try {
+    const { phone } = req.params;
+    
+    if (!phone) {
+      return res.status(400).json({ 
+        success: false, 
+        message: 'Phone number is required' 
+      });
+    }
+
+    const { data: user, error: searchError } = await supabase
+      .from('users')
+      .select('*')
+      .eq('phone', phone)
+      .maybeSingle();
+
+    if (searchError) {
+      console.error('❌ Database error:', searchError);
+      return res.status(500).json({ 
+        success: false, 
+        message: 'Database error' 
+      });
+    }
+
+    if (!user) {
+      return res.status(404).json({ 
+        success: false, 
+        message: 'User not found' 
+      });
+    }
+
+    return res.status(200).json({ 
+      success: true, 
+      user: {
+        id: user.id,
+        name: user.name,
+        email: user.email,
+        phone: user.phone,
+        role: user.role
+      }
+    });
+
+  } catch (error) {
+    console.error('❌ Get profile error:', error);
+    return res.status(500).json({ 
+      success: false, 
+      message: 'Server error' 
+    });
+  }
+};
+
+// ==========================================
+// UPDATE USER PROFILE
+// ==========================================
+export const updateUserProfile = async (req, res) => {
+  try {
+    const { phone } = req.params;
+    const { name, email } = req.body;
+
+    if (!phone) {
+      return res.status(400).json({ 
+        success: false, 
+        message: 'Phone number is required' 
+      });
+    }
+
+    const { data: updatedUser, error: updateError } = await supabase
+      .from('users')
+      .update({ 
+        name, 
+        email,
+        updated_at: new Date().toISOString()
+      })
+      .eq('phone', phone)
       .select()
       .single();
 
-    if (dbError) throw dbError;
-    return res.status(200).json({ success: true, user });
+    if (updateError) {
+      console.error('❌ Update error:', updateError);
+      return res.status(500).json({ 
+        success: false, 
+        message: 'Failed to update profile' 
+      });
+    }
+
+    return res.status(200).json({ 
+      success: true, 
+      message: 'Profile updated successfully',
+      user: updatedUser
+    });
+
   } catch (error) {
-    console.error('❌ Login Error:', error);
-    return res.status(500).json({ success: false, message: 'Server error.' });
+    console.error('❌ Update profile error:', error);
+    return res.status(500).json({ 
+      success: false, 
+      message: 'Server error' 
+    });
   }
 };

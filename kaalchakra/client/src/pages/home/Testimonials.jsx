@@ -1,75 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { Star, Quote, ChevronLeft, ChevronRight, Sparkles, User, MapPin } from 'lucide-react';
-
-// Sample testimonials data (replace with your actual import)
-const testimonials = [
-  {
-    id: 1,
-    name: "Priya Sharma",
-    role: "Marketing Professional",
-    zodiac: "Virgo",
-    location: "Mumbai, India",
-    content: "The personalized birth chart reading was incredibly accurate. It helped me understand my career path better and gave me confidence to pursue my dreams. The astrologer's insights were spot on!",
-    rating: 5,
-    avatar: "PS",
-    date: "March 2024"
-  },
-  {
-    id: 2,
-    name: "Rajesh Mehta",
-    role: "Business Owner",
-    zodiac: "Taurus",
-    location: "Delhi, India",
-    content: "Matchmaking service was exceptional. The detailed analysis and compatibility report helped our families make an informed decision. Highly recommended for anyone serious about marriage.",
-    rating: 5,
-    avatar: "RM",
-    date: "February 2024"
-  },
-  {
-    id: 3,
-    name: "Ananya Krishnan",
-    role: "Software Engineer",
-    zodiac: "Pisces",
-    location: "Bangalore, India",
-    content: "The muhurata consultation for our house warming was spot on. Everything went smoothly and auspiciously. Thank you for your wonderful guidance and support throughout.",
-    rating: 4,
-    avatar: "AK",
-    date: "January 2024"
-  },
-  {
-    id: 4,
-    name: "Vikram Singh",
-    role: "Entrepreneur",
-    zodiac: "Leo",
-    location: "Jaipur, India",
-    content: "The career consultation gave me clarity on business timing. Following the advice led to successful funding rounds. Truly life-changing experience!",
-    rating: 5,
-    avatar: "VS",
-    date: "March 2024"
-  },
-  {
-    id: 5,
-    name: "Neha Gupta",
-    role: "Teacher",
-    zodiac: "Cancer",
-    location: "Lucknow, India",
-    content: "Name correction service brought positive changes in my life. The process was professional and well-explained. I've noticed significant improvements in my confidence.",
-    rating: 5,
-    avatar: "NG",
-    date: "February 2024"
-  },
-  {
-    id: 6,
-    name: "Arjun Nair",
-    role: "Doctor",
-    zodiac: "Sagittarius",
-    location: "Chennai, India",
-    content: "Excellent insights into health and wellbeing. The planetary remedies suggested have shown remarkable results. Very grateful for the guidance.",
-    rating: 4,
-    avatar: "AN",
-    date: "January 2024"
-  }
-];
+import { Star, Quote, ChevronLeft, ChevronRight, Sparkles, User, MapPin, Loader2, AlertCircle } from 'lucide-react';
+import api from '../services/api.js';
 
 // Star Rating Component
 const StarRating = ({ rating }) => {
@@ -115,7 +46,7 @@ const TestimonialCard = ({ testimonial, index }) => {
         {/* User Info */}
         <div className="flex items-center gap-3 mb-2">
           <div className={`w-10 h-10 rounded-full bg-gradient-to-br ${isHovered ? 'from-orange-500 to-amber-500' : 'from-gray-400 to-gray-500'} flex items-center justify-center text-white font-semibold text-sm shadow-sm transition-all duration-300`}>
-            {testimonial.avatar}
+            {testimonial.avatar || testimonial.name?.charAt(0) || 'U'}
           </div>
           <div>
             <p className="font-semibold text-gray-800">{testimonial.name}</p>
@@ -137,31 +68,76 @@ const TestimonialCard = ({ testimonial, index }) => {
   );
 };
 
+// Loading Skeleton
+const TestimonialCardSkeleton = () => (
+  <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6 animate-pulse">
+    <div className="w-8 h-8 bg-gray-200 rounded mb-4"></div>
+    <div className="flex gap-1 mb-3">
+      {[...Array(5)].map((_, i) => (
+        <div key={i} className="w-4 h-4 bg-gray-200 rounded"></div>
+      ))}
+    </div>
+    <div className="space-y-2 mb-5">
+      <div className="h-4 bg-gray-200 rounded w-full"></div>
+      <div className="h-4 bg-gray-200 rounded w-11/12"></div>
+      <div className="h-4 bg-gray-200 rounded w-10/12"></div>
+    </div>
+    <div className="border-t border-gray-100 pt-4 mt-2">
+      <div className="flex items-center gap-3 mb-2">
+        <div className="w-10 h-10 bg-gray-200 rounded-full"></div>
+        <div>
+          <div className="h-4 bg-gray-200 rounded w-24 mb-1"></div>
+          <div className="h-3 bg-gray-200 rounded w-20"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+);
+
 // Carousel Version for smaller screens
-const CarouselTestimonials = ({ testimonials: items }) => {
+const CarouselTestimonials = ({ testimonials: items, loading }) => {
   const [currentIndex, setCurrentIndex] = useState(0);
   const [isAnimating, setIsAnimating] = useState(false);
 
   const nextSlide = () => {
-    if (isAnimating) return;
+    if (isAnimating || loading || !items.length) return;
     setIsAnimating(true);
     setCurrentIndex((prev) => (prev + 1) % items.length);
     setTimeout(() => setIsAnimating(false), 500);
   };
 
   const prevSlide = () => {
-    if (isAnimating) return;
+    if (isAnimating || loading || !items.length) return;
     setIsAnimating(true);
     setCurrentIndex((prev) => (prev - 1 + items.length) % items.length);
     setTimeout(() => setIsAnimating(false), 500);
   };
 
   useEffect(() => {
+    if (loading || !items.length) return;
     const interval = setInterval(() => {
       nextSlide();
     }, 5000);
     return () => clearInterval(interval);
-  }, [currentIndex]);
+  }, [currentIndex, loading, items.length]);
+
+  if (loading) {
+    return (
+      <div className="relative px-4">
+        <div className="grid grid-cols-1 gap-6">
+          <TestimonialCardSkeleton />
+        </div>
+      </div>
+    );
+  }
+
+  if (items.length === 0) {
+    return (
+      <div className="text-center py-12">
+        <p className="text-gray-500">No testimonials available yet.</p>
+      </div>
+    );
+  }
 
   return (
     <div className="relative px-4">
@@ -209,8 +185,22 @@ const CarouselTestimonials = ({ testimonials: items }) => {
 };
 
 const Testimonials = () => {
-  const [viewMode, setViewMode] = useState('grid'); // 'grid' or 'carousel'
+  const [testimonials, setTestimonials] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState('');
+  const [stats, setStats] = useState({
+    happyClients: '50K+',
+    averageRating: 4.9,
+    expertAstrologers: '15+',
+    yearsOfService: '25+'
+  });
+  const [viewMode, setViewMode] = useState('grid');
   const [windowWidth, setWindowWidth] = useState(typeof window !== 'undefined' ? window.innerWidth : 1024);
+
+  useEffect(() => {
+    fetchTestimonials();
+    fetchStats();
+  }, []);
 
   useEffect(() => {
     const handleResize = () => setWindowWidth(window.innerWidth);
@@ -218,9 +208,58 @@ const Testimonials = () => {
     return () => window.removeEventListener('resize', handleResize);
   }, []);
 
+  const fetchTestimonials = async () => {
+    setLoading(true);
+    setError('');
+    try {
+      const response = await api.get('/testimonials?is_approved=true&limit=6');
+      if (response.data.success) {
+        setTestimonials(response.data.testimonials);
+      } else {
+        setError('Failed to load testimonials');
+      }
+    } catch (err) {
+      console.error('Error fetching testimonials:', err);
+      setError('Unable to connect to server. Please try again later.');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const fetchStats = async () => {
+    try {
+      const response = await api.get('/testimonials/stats');
+      if (response.data.success) {
+        setStats(response.data.stats);
+      }
+    } catch (err) {
+      console.error('Error fetching stats:', err);
+      // Keep default stats
+    }
+  };
+
   // Auto-switch to carousel on mobile
   const isMobile = windowWidth < 768;
   const displayMode = isMobile ? 'carousel' : viewMode;
+
+  if (error && !loading) {
+    return (
+      <div className="bg-gradient-to-b from-gray-50 to-white py-16 px-4 sm:px-6">
+        <div className="max-w-7xl mx-auto text-center">
+          <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-red-100 mb-4">
+            <AlertCircle className="w-8 h-8 text-red-500" />
+          </div>
+          <p className="text-red-500 mb-4">{error}</p>
+          <button 
+            onClick={fetchTestimonials} 
+            className="bg-orange-500 hover:bg-orange-600 text-white font-semibold px-6 py-2 rounded-full"
+          >
+            Try Again
+          </button>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="bg-gradient-to-b from-gray-50 to-white py-16 px-4 sm:px-6">
@@ -247,7 +286,7 @@ const Testimonials = () => {
         </div>
 
         {/* View Toggle (Desktop only) */}
-        {!isMobile && (
+        {!isMobile && !loading && testimonials.length > 0 && (
           <div className="flex justify-center gap-2 mb-8">
             <button
               onClick={() => setViewMode('grid')}
@@ -273,35 +312,41 @@ const Testimonials = () => {
         )}
 
         {/* Testimonials Display */}
-        {displayMode === 'grid' ? (
+        {loading ? (
+          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {[...Array(6)].map((_, i) => (
+              <TestimonialCardSkeleton key={i} />
+            ))}
+          </div>
+        ) : displayMode === 'grid' ? (
           <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
             {testimonials.map((testimonial, index) => (
               <TestimonialCard key={testimonial.id} testimonial={testimonial} index={index} />
             ))}
           </div>
         ) : (
-          <CarouselTestimonials testimonials={testimonials} />
+          <CarouselTestimonials testimonials={testimonials} loading={loading} />
         )}
 
-        {/* Stats Summary */}
+        {/* Stats Summary - Now from Database */}
         <div className="mt-16 flex flex-wrap justify-center gap-8 md:gap-12">
           <div className="text-center">
-            <p className="text-3xl font-bold text-gray-800">50K+</p>
+            <p className="text-3xl font-bold text-gray-800">{stats.happyClients}</p>
             <p className="text-sm text-gray-500">Happy Clients</p>
           </div>
           <div className="text-center">
-            <p className="text-3xl font-bold text-gray-800">4.9</p>
+            <p className="text-3xl font-bold text-gray-800">{stats.averageRating}</p>
             <div className="flex items-center justify-center gap-1 mt-1">
               <Star className="w-4 h-4 text-orange-400 fill-orange-400" />
               <span className="text-sm text-gray-500">Average Rating</span>
             </div>
           </div>
           <div className="text-center">
-            <p className="text-3xl font-bold text-gray-800">15+</p>
+            <p className="text-3xl font-bold text-gray-800">{stats.expertAstrologers}</p>
             <p className="text-sm text-gray-500">Expert Astrologers</p>
           </div>
           <div className="text-center">
-            <p className="text-3xl font-bold text-gray-800">25+</p>
+            <p className="text-3xl font-bold text-gray-800">{stats.yearsOfService}</p>
             <p className="text-sm text-gray-500">Years of Service</p>
           </div>
         </div>

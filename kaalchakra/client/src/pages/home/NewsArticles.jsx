@@ -1,78 +1,39 @@
-import React, { useState } from 'react';
-import { Calendar, User, Clock, ChevronRight, BookOpen, TrendingUp, Sparkles, Tag } from 'lucide-react';
-
-// Sample articles data (replace with your actual import)
-const articles = [
-  {
-    id: 1,
-    title: "The Significance of Maha Shivaratri: A Night of Awakening",
-    excerpt: "Discover the spiritual importance of Maha Shivaratri and how this sacred night can transform your spiritual journey through meditation and devotion.",
-    date: "March 15, 2024",
-    readTime: "8 min read",
-    author: "Dr. Suresh Rao",
-    category: "Festivals",
-    image: "https://images.unsplash.com/photo-1519834785169-98be25ec3f84?w=800&h=400&fit=crop",
-    trending: true
-  },
-  {
-    id: 2,
-    title: "Understanding Your Birth Chart: A Beginner's Guide to Vedic Astrology",
-    excerpt: "Learn the basics of Vedic astrology and how to interpret your birth chart. A comprehensive guide to the 12 houses and 9 planets.",
-    date: "March 10, 2024",
-    readTime: "12 min read",
-    author: "Pt. Rajesh Sharma",
-    category: "Astrology",
-    image: "https://images.unsplash.com/photo-1535378917042-10a22c95931a?w=800&h=400&fit=crop",
-    trending: false
-  },
-  {
-    id: 3,
-    title: "The Healing Power of Gemstones: Vedic Remedies for Planetary Balance",
-    excerpt: "Explore how different gemstones can help balance planetary influences and bring harmony to your life. Expert insights on gemstone therapy.",
-    date: "March 5, 2024",
-    readTime: "6 min read",
-    author: "Ms. Geeta M",
-    category: "Remedies",
-    image: "https://images.unsplash.com/photo-1599643478518-a784e5dc4c8f?w=800&h=400&fit=crop",
-    trending: true
-  },
-  {
-    id: 4,
-    title: "Muhurata: The Science of Auspicious Timing for Success",
-    excerpt: "Learn how to choose the perfect timing for important life events like marriage, business launch, and travel using Vedic muhurata principles.",
-    date: "February 28, 2024",
-    readTime: "10 min read",
-    author: "Dr. Suresh Rao",
-    category: "Muhurata",
-    image: "https://images.unsplash.com/photo-1501139083538-0139583c060f?w=800&h=400&fit=crop",
-    trending: false
-  }
-];
+import React, { useState, useEffect } from 'react';
+import { Calendar, User, Clock, ChevronRight, BookOpen, TrendingUp, Sparkles, Tag, Loader2, AlertCircle } from 'lucide-react';
+import api from '../services/api.js';
 
 // Category colors mapping
 const categoryColors = {
   "Festivals": "bg-orange-100 text-orange-700",
   "Astrology": "bg-purple-100 text-purple-700",
   "Remedies": "bg-emerald-100 text-emerald-700",
-  "Muhurata": "bg-blue-100 text-blue-700"
+  "Muhurata": "bg-blue-100 text-blue-700",
+  "Spirituality": "bg-indigo-100 text-indigo-700",
+  "Career": "bg-green-100 text-green-700",
+  "Relationships": "bg-pink-100 text-pink-700",
+  "Education": "bg-yellow-100 text-yellow-700"
 };
 
 // Article Card Component
-const ArticleCard = ({ article, index }) => {
+const ArticleCard = ({ article, index, onReadMore }) => {
   const [isHovered, setIsHovered] = useState(false);
   
   return (
     <div 
-      className="group bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden hover:shadow-xl transition-all duration-500 hover:-translate-y-2"
+      className="group bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden hover:shadow-xl transition-all duration-500 hover:-translate-y-2 cursor-pointer"
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}
+      onClick={() => onReadMore(article.id)}
     >
       {/* Image Container */}
       <div className="relative h-52 overflow-hidden">
         <img 
-          src={article.image} 
+          src={article.image_url || article.image} 
           alt={article.title}
           className={`w-full h-full object-cover transition-transform duration-700 ${isHovered ? 'scale-110' : 'scale-100'}`}
+          onError={(e) => {
+            e.target.src = 'https://placehold.co/800x400/1f2a44/white?text=Astrology+Article';
+          }}
         />
         {/* Category Badge */}
         <div className="absolute top-4 left-4">
@@ -81,7 +42,7 @@ const ArticleCard = ({ article, index }) => {
           </span>
         </div>
         {/* Trending Badge */}
-        {article.trending && (
+        {article.is_trending && (
           <div className="absolute top-4 right-4">
             <span className="flex items-center gap-1 px-2 py-1 bg-red-500 text-white rounded-full text-xs font-semibold">
               <TrendingUp className="w-3 h-3" />
@@ -99,15 +60,15 @@ const ArticleCard = ({ article, index }) => {
         <div className="flex flex-wrap items-center gap-4 text-xs text-gray-500 mb-3">
           <div className="flex items-center gap-1">
             <Calendar className="w-3.5 h-3.5" />
-            <span>{article.date}</span>
+            <span>{new Date(article.published_at || article.created_at).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })}</span>
           </div>
           <div className="flex items-center gap-1">
             <Clock className="w-3.5 h-3.5" />
-            <span>{article.readTime}</span>
+            <span>{article.read_time || `${Math.ceil((article.content?.length || 1000) / 1000)} min read`}</span>
           </div>
           <div className="flex items-center gap-1">
             <User className="w-3.5 h-3.5" />
-            <span>{article.author}</span>
+            <span>{article.author_name || article.author}</span>
           </div>
         </div>
         
@@ -131,15 +92,34 @@ const ArticleCard = ({ article, index }) => {
   );
 };
 
-// Featured Article Component (for the first/largest article)
-const FeaturedArticle = ({ article }) => {
+// Loading Skeleton
+const ArticleCardSkeleton = () => (
+  <div className="group bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden animate-pulse">
+    <div className="h-52 bg-gray-200"></div>
+    <div className="p-6">
+      <div className="flex flex-wrap items-center gap-4 mb-3">
+        <div className="h-3 w-20 bg-gray-200 rounded"></div>
+        <div className="h-3 w-16 bg-gray-200 rounded"></div>
+        <div className="h-3 w-24 bg-gray-200 rounded"></div>
+      </div>
+      <div className="h-6 bg-gray-200 rounded w-3/4 mb-3"></div>
+      <div className="h-4 bg-gray-200 rounded w-full mb-2"></div>
+      <div className="h-4 bg-gray-200 rounded w-5/6 mb-4"></div>
+      <div className="h-4 bg-gray-200 rounded w-24"></div>
+    </div>
+  </div>
+);
+
+// Featured Article Component
+const FeaturedArticle = ({ article, onReadMore }) => {
   const [isHovered, setIsHovered] = useState(false);
   
   return (
     <div 
-      className="group relative bg-gradient-to-r from-orange-500 to-amber-500 rounded-2xl overflow-hidden shadow-lg hover:shadow-xl transition-all duration-500"
+      className="group relative bg-gradient-to-r from-orange-500 to-amber-500 rounded-2xl overflow-hidden shadow-lg hover:shadow-xl transition-all duration-500 cursor-pointer"
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}
+      onClick={() => onReadMore(article.id)}
     >
       <div className="absolute inset-0 bg-black/20 z-10"></div>
       <div className="relative z-20 p-8 md:p-10 text-white">
@@ -156,10 +136,10 @@ const FeaturedArticle = ({ article }) => {
           </p>
           <div className="flex items-center gap-4 text-sm text-orange-200 mb-6">
             <span className="flex items-center gap-1">
-              <Calendar className="w-4 h-4" /> {article.date}
+              <Calendar className="w-4 h-4" /> {new Date(article.published_at || article.created_at).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })}
             </span>
             <span className="flex items-center gap-1">
-              <Clock className="w-4 h-4" /> {article.readTime}
+              <Clock className="w-4 h-4" /> {article.read_time || `${Math.ceil((article.content?.length || 1000) / 1000)} min read`}
             </span>
           </div>
           <button className="inline-flex items-center gap-2 bg-white text-orange-600 font-semibold px-6 py-2.5 rounded-xl shadow-md hover:shadow-lg transition-all duration-300 hover:scale-105">
@@ -171,9 +151,12 @@ const FeaturedArticle = ({ article }) => {
       {/* Background Image with Overlay */}
       <div className="absolute inset-0 z-0">
         <img 
-          src={article.image} 
+          src={article.image_url || article.image} 
           alt={article.title}
           className={`w-full h-full object-cover transition-transform duration-700 ${isHovered ? 'scale-110' : 'scale-100'}`}
+          onError={(e) => {
+            e.target.src = 'https://placehold.co/1200x600/1f2a44/white?text=Featured+Article';
+          }}
         />
         <div className="absolute inset-0 bg-gradient-to-r from-orange-900/80 to-orange-600/60"></div>
       </div>
@@ -182,15 +165,125 @@ const FeaturedArticle = ({ article }) => {
 };
 
 const NewsArticles = () => {
+  const [articles, setArticles] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState('');
   const [activeFilter, setActiveFilter] = useState('all');
-  const categories = ['all', 'Astrology', 'Festivals', 'Remedies', 'Muhurata'];
+  const [subscribing, setSubscribing] = useState(false);
+  const [subscribeEmail, setSubscribeEmail] = useState('');
+  const [subscribeSuccess, setSubscribeSuccess] = useState(false);
   
-  const filteredArticles = activeFilter === 'all' 
-    ? articles 
-    : articles.filter(article => article.category === activeFilter);
+  const categories = ['all', 'Astrology', 'Festivals', 'Remedies', 'Muhurata', 'Spirituality', 'Career', 'Relationships'];
   
-  const featuredArticle = articles[0];
-  const regularArticles = filteredArticles.filter(article => article.id !== featuredArticle.id);
+  useEffect(() => {
+    fetchArticles();
+  }, [activeFilter]);
+  
+  const fetchArticles = async () => {
+    setLoading(true);
+    setError('');
+    try {
+      const params = activeFilter !== 'all' ? { category: activeFilter } : {};
+      const response = await api.get('/articles', { params });
+      
+      if (response.data.success) {
+        setArticles(response.data.articles);
+      } else {
+        setError('Failed to load articles');
+      }
+    } catch (err) {
+      console.error('Error fetching articles:', err);
+      setError('Unable to connect to server. Please try again later.');
+    } finally {
+      setLoading(false);
+    }
+  };
+  
+  const handleReadMore = (articleId) => {
+    window.location.href = `/blog/${articleId}`;
+  };
+  
+  const handleSubscribe = async (e) => {
+    e.preventDefault();
+    if (!subscribeEmail || !subscribeEmail.includes('@')) {
+      alert('Please enter a valid email address');
+      return;
+    }
+    
+    setSubscribing(true);
+    try {
+      const response = await api.post('/newsletter/subscribe', { email: subscribeEmail });
+      if (response.data.success) {
+        setSubscribeSuccess(true);
+        setSubscribeEmail('');
+        setTimeout(() => setSubscribeSuccess(false), 5000);
+      }
+    } catch (err) {
+      console.error('Subscription error:', err);
+      alert('Failed to subscribe. Please try again.');
+    } finally {
+      setSubscribing(false);
+    }
+  };
+  
+  const featuredArticle = articles.find(a => a.is_featured) || articles[0];
+  const regularArticles = articles.filter(a => a.id !== featuredArticle?.id);
+  
+  if (loading) {
+    return (
+      <div className="bg-gradient-to-b from-gray-50 to-white py-16 px-4 sm:px-6">
+        <div className="max-w-7xl mx-auto">
+          <div className="text-center mb-12">
+            <div className="inline-flex items-center justify-center gap-2 mb-4">
+              <div className="w-10 h-10 rounded-full bg-gray-200 animate-pulse"></div>
+            </div>
+            <div className="h-12 bg-gray-200 rounded w-64 mx-auto mb-3 animate-pulse"></div>
+            <div className="flex items-center justify-center gap-2 mb-4">
+              <div className="w-16 h-px bg-gray-200"></div>
+              <div className="w-6 h-6 bg-gray-200 rounded-full"></div>
+              <div className="w-16 h-px bg-gray-200"></div>
+            </div>
+            <div className="h-5 bg-gray-200 rounded w-96 mx-auto animate-pulse"></div>
+          </div>
+          
+          <div className="flex flex-wrap items-center justify-center gap-3 mb-10">
+            {[...Array(5)].map((_, i) => (
+              <div key={i} className="h-8 w-20 bg-gray-200 rounded-full animate-pulse"></div>
+            ))}
+          </div>
+          
+          <div className="mb-12">
+            <div className="h-[300px] bg-gray-200 rounded-2xl animate-pulse"></div>
+          </div>
+          
+          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
+            {[...Array(3)].map((_, i) => (
+              <ArticleCardSkeleton key={i} />
+            ))}
+          </div>
+        </div>
+      </div>
+    );
+  }
+  
+  if (error) {
+    return (
+      <div className="bg-gradient-to-b from-gray-50 to-white py-16 px-4 sm:px-6">
+        <div className="max-w-7xl mx-auto text-center">
+          <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-red-100 mb-4">
+            <AlertCircle className="w-8 h-8 text-red-500" />
+          </div>
+          <p className="text-red-500 mb-4">{error}</p>
+          <button 
+            onClick={fetchArticles} 
+            className="bg-orange-500 hover:bg-orange-600 text-white font-semibold px-6 py-2 rounded-xl"
+          >
+            Try Again
+          </button>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="bg-gradient-to-b from-gray-50 to-white py-16 px-4 sm:px-6">
@@ -233,42 +326,72 @@ const NewsArticles = () => {
           ))}
         </div>
 
-        {/* Featured Article (only show on 'all' filter) */}
-        {activeFilter === 'all' && (
+        {/* Featured Article (only show on 'all' filter and if there are articles) */}
+        {activeFilter === 'all' && featuredArticle && (
           <div className="mb-12">
-            <FeaturedArticle article={featuredArticle} />
+            <FeaturedArticle article={featuredArticle} onReadMore={handleReadMore} />
           </div>
         )}
 
         {/* Articles Grid */}
-        <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
-          {regularArticles.map((article, index) => (
-            <ArticleCard key={article.id} article={article} index={index} />
-          ))}
-        </div>
+        {regularArticles.length > 0 ? (
+          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
+            {regularArticles.map((article, index) => (
+              <ArticleCard 
+                key={article.id} 
+                article={article} 
+                index={index} 
+                onReadMore={handleReadMore}
+              />
+            ))}
+          </div>
+        ) : (
+          <div className="text-center py-12">
+            <p className="text-gray-500">No articles found in this category.</p>
+          </div>
+        )}
 
         {/* View All Button */}
-        <div className="text-center mt-12">
-          <button className="inline-flex items-center gap-2 bg-gradient-to-r from-orange-500 to-amber-500 text-white font-semibold px-8 py-3 rounded-xl shadow-md hover:shadow-lg transition-all duration-300 hover:scale-105">
-            <span>View All Articles</span>
-            <ChevronRight className="w-4 h-4" />
-          </button>
-        </div>
+        {activeFilter !== 'all' && articles.length > 0 && (
+          <div className="text-center mt-12">
+            <button 
+              onClick={() => setActiveFilter('all')}
+              className="inline-flex items-center gap-2 bg-gradient-to-r from-orange-500 to-amber-500 text-white font-semibold px-8 py-3 rounded-xl shadow-md hover:shadow-lg transition-all duration-300 hover:scale-105"
+            >
+              <span>View All Articles</span>
+              <ChevronRight className="w-4 h-4" />
+            </button>
+          </div>
+        )}
 
         {/* Newsletter Subscription */}
         <div className="mt-16 bg-gradient-to-r from-orange-50 to-amber-50 rounded-2xl p-8 text-center border border-orange-100">
           <h3 className="text-2xl font-bold text-gray-800 mb-2">Stay Updated with Cosmic Wisdom</h3>
           <p className="text-gray-600 mb-6">Subscribe to our newsletter for monthly astrological insights and articles</p>
-          <div className="flex flex-col sm:flex-row items-center justify-center gap-4 max-w-md mx-auto">
-            <input 
-              type="email" 
-              placeholder="Enter your email"
-              className="flex-1 px-4 py-3 rounded-xl border border-gray-200 focus:border-orange-400 focus:ring-2 focus:ring-orange-200 outline-none transition-all"
-            />
-            <button className="bg-orange-500 hover:bg-orange-600 text-white font-semibold px-6 py-3 rounded-xl transition-all duration-300 whitespace-nowrap">
-              Subscribe
-            </button>
-          </div>
+          
+          {subscribeSuccess ? (
+            <div className="bg-green-100 text-green-700 p-4 rounded-xl max-w-md mx-auto">
+              ✅ Thanks for subscribing! Check your email for confirmation.
+            </div>
+          ) : (
+            <form onSubmit={handleSubscribe} className="flex flex-col sm:flex-row items-center justify-center gap-4 max-w-md mx-auto">
+              <input 
+                type="email" 
+                value={subscribeEmail}
+                onChange={(e) => setSubscribeEmail(e.target.value)}
+                placeholder="Enter your email"
+                className="flex-1 px-4 py-3 rounded-xl border border-gray-200 focus:border-orange-400 focus:ring-2 focus:ring-orange-200 outline-none transition-all"
+                required
+              />
+              <button 
+                type="submit"
+                disabled={subscribing}
+                className="bg-orange-500 hover:bg-orange-600 text-white font-semibold px-6 py-3 rounded-xl transition-all duration-300 whitespace-nowrap disabled:opacity-50"
+              >
+                {subscribing ? <Loader2 className="w-5 h-5 animate-spin" /> : 'Subscribe'}
+              </button>
+            </form>
+          )}
         </div>
       </div>
     </div>

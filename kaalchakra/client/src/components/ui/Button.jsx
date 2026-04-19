@@ -1,43 +1,35 @@
-// client/src/components/ui/Button.jsx
+// client/src/components/ui/Button.jsx (enhanced)
 import React from 'react';
+import { SparkleButton } from './Sparkle';
 
-const Button = ({
-  children,
-  variant = 'primary',
-  size = 'md',
-  className = '',
-  disabled = false,
-  onClick,
-  type = 'button',
-  ...props
-}) => {
-  const baseClasses = 'inline-flex items-center justify-center font-medium rounded-md transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2';
+const Button = ({ children, variant = 'primary', size = 'md', className = '', onClick, disabled, ...props }) => {
+  const baseStyles = 'font-semibold rounded-xl transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-offset-2';
   
   const variants = {
-    primary: 'bg-indigo-600 text-white hover:bg-indigo-700 focus:ring-indigo-500',
-    secondary: 'bg-gray-200 text-gray-800 hover:bg-gray-300 focus:ring-gray-500',
-    outline: 'border border-gray-300 text-gray-700 hover:bg-gray-50 focus:ring-indigo-500',
-    danger: 'bg-red-600 text-white hover:bg-red-700 focus:ring-red-500',
+    primary: 'bg-gradient-to-r from-orange-500 to-amber-500 text-white hover:shadow-lg hover:scale-105 focus:ring-orange-500',
+    secondary: 'bg-gray-200 text-gray-800 hover:bg-gray-300 focus:ring-gray-400',
+    outline: 'border-2 border-orange-500 text-orange-600 hover:bg-orange-50 focus:ring-orange-500',
+    ghost: 'text-gray-600 hover:bg-gray-100 focus:ring-gray-400'
   };
   
   const sizes = {
-    sm: 'px-3 py-1.5 text-sm',
-    md: 'px-4 py-2 text-base',
-    lg: 'px-6 py-3 text-lg',
+    sm: 'px-4 py-2 text-sm',
+    md: 'px-6 py-2.5 text-base',
+    lg: 'px-8 py-3 text-lg'
   };
   
-  const classes = `${baseClasses} ${variants[variant]} ${sizes[size]} ${className} ${
-    disabled ? 'opacity-50 cursor-not-allowed' : ''
-  }`;
+  const buttonClass = `${baseStyles} ${variants[variant]} ${sizes[size]} ${disabled ? 'opacity-50 cursor-not-allowed' : ''} ${className}`;
+  
+  if (variant === 'primary') {
+    return (
+      <SparkleButton onClick={onClick} className={buttonClass} sparkleColor="#FFD700">
+        {children}
+      </SparkleButton>
+    );
+  }
   
   return (
-    <button
-      type={type}
-      className={classes}
-      disabled={disabled}
-      onClick={onClick}
-      {...props}
-    >
+    <button onClick={onClick} disabled={disabled} className={buttonClass} {...props}>
       {children}
     </button>
   );

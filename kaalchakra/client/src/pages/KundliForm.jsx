@@ -2,12 +2,11 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext.jsx';
-import { fetchAstroData, getGeoLocation } from '../services/astrology.js';
-import { Sparkles, MapPin, User, Send, ShieldCheck, Stars } from 'lucide-react';
-
+import astrologyServices from '../services/astrologyApi.js';
+import { Sparkles, MapPin, User, Send, ShieldCheck, Stars, Loader2, AlertCircle } from 'lucide-react';
 import astrologerImg from '../assets/kundliRishi.svg';
 
-// --- Razorpay Script লোড করার ফাংশন ---
+// --- Razorpay Script Load Function ---
 const loadRazorpayScript = () => {
   return new Promise((resolve) => {
     const script = document.createElement('script');
@@ -20,10 +19,10 @@ const loadRazorpayScript = () => {
 
 const KundliForm = () => {
   const navigate = useNavigate();
-  const { user } = useAuth();
+  const { user, refreshPremiumStatus } = useAuth();
 
   const [formData, setFormData] = useState({
-    name: '',
+    name: user?.name || '',
     gender: 'male',
     birthDate: { day: '', month: '', year: '' },
     birthTime: { hour: '', minute: '', ampm: 'AM' },
@@ -53,7 +52,7 @@ const KundliForm = () => {
     }
   };
 
-  // 🌍 লোকেশন অটো-সাজেশন লজিক
+  // Location auto-suggestion logic using AstrologyAPI
   useEffect(() => {
     if (formData.useCoordinates || formData.place.length < 3 || selectedExactLocation?.place_name === formData.place) {
       setSuggestions([]);
@@ -64,10 +63,12 @@ const KundliForm = () => {
     const delayDebounceFn = setTimeout(async () => {
       setIsSearchingCity(true);
       try {
-        const geoResult = await getGeoLocation(formData.place);
+        const geoResult = await astrologyServices.kundli.getGeoDetails({ place: formData.place });
         let placesList = [];
-        if (geoResult.success && geoResult.data) {
-          placesList = Array.isArray(geoResult.data.geonames) ? geoResult.data.geonames : (Array.isArray(geoResult.data) ? geoResult.data : []);
+        if (geoResult && geoResult.geonames) {
+          placesList = geoResult.geonames;
+        } else if (geoResult && Array.isArray(geoResult)) {
+          placesList = geoResult;
         }
         setSuggestions(placesList);
         setShowSuggestions(placesList.length > 0);
@@ -87,22 +88,82 @@ const KundliForm = () => {
     setShowSuggestions(false);
   };
 
+  // Calculate age from birth date
+  const calculateAge = (day, month, year) => {
+    if (!day || !month || !year) return 0;
+    const today = new Date();
+    const birthDate = new Date(year, month - 1, day);
+    let age = today.getFullYear() - birthDate.getFullYear();
+    const m = today.getMonth() - birthDate.getMonth();
+    if (m < 0 || (m === 0 && today.getDate() < birthDate.getDate())) {
+      age--;
+    }
+    return age;
+  };
+
+  // Verify payment and activate premium
+  const verifyPaymentAndActivatePremium = async (paymentResponse, userFormDetails, basicDetails, planetsData) => {
+    try {
+      const verifyResponse = await fetch('http://localhost:5000/api/payment/verify-payment', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          razorpay_order_id: paymentResponse.razorpay_order_id,
+          razorpay_payment_id: paymentResponse.razorpay_payment_id,
+          razorpay_signature: paymentResponse.razorpay_signature,
+          user_id: user?.id,
+          user_phone: user?.phone,
+          user_email: user?.email,
+          plan_type: 'premium'
+        })
+      });
+
+      const verifyData = await verifyResponse.json();
+
+      if (verifyData.success) {
+        // Refresh premium status in AuthContext
+        if (refreshPremiumStatus) {
+          await refreshPremiumStatus();
+        }
+        
+        // Update local storage with premium status
+        const updatedUser = { ...user, isPremium: true, subscription: 'premium' };
+        localStorage.setItem('user', JSON.stringify(updatedUser));
+        
+        return true;
+      }
+      return false;
+    } catch (error) {
+      console.error("Payment verification error:", error);
+      return false;
+    }
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError('');
     setLoading(true);
 
     try {
+      // Validate required fields
+      if (!formData.name) throw new Error('Please enter your name');
+      if (!formData.birthDate.day || !formData.birthDate.month || !formData.birthDate.year) {
+        throw new Error('Please enter complete birth date');
+      }
+      if (!formData.birthTime.hour || !formData.birthTime.minute) {
+        throw new Error('Please enter complete birth time');
+      }
+
       let finalLat, finalLon, finalTzone;
       if (!formData.useCoordinates) {
         let exactLoc = selectedExactLocation;
         if (!exactLoc) {
-          const geoResult = await getGeoLocation(formData.place);
-          exactLoc = (geoResult.success && geoResult.data.geonames) ? geoResult.data.geonames[0] : (geoResult.data ? geoResult.data[0] : null);
+          const geoResult = await astrologyServices.kundli.getGeoDetails({ place: formData.place });
+          exactLoc = (geoResult && geoResult.geonames) ? geoResult.geonames[0] : null;
         }
         if (!exactLoc) throw new Error('City not found. Please select from suggestions.');
-        finalLat = parseFloat(exactLoc.latitude);
-        finalLon = parseFloat(exactLoc.longitude);
+        finalLat = parseFloat(exactLoc.lat);
+        finalLon = parseFloat(exactLoc.lng);
         finalTzone = parseFloat(exactLoc.timezone || 5.5);
       } else {
         finalLat = parseFloat(formData.latitude.deg) + (parseFloat(formData.latitude.min) / 60);
@@ -114,32 +175,47 @@ const KundliForm = () => {
       if (formData.birthTime.ampm === 'PM' && hour24 !== 12) hour24 += 12;
       if (formData.birthTime.ampm === 'AM' && hour24 === 12) hour24 = 0;
 
-      // ইউজারের ফর্ম ডেটা তৈরি করা
+      const astroPayload = {
+        day: parseInt(formData.birthDate.day),
+        month: parseInt(formData.birthDate.month),
+        year: parseInt(formData.birthDate.year),
+        hour: hour24,
+        minute: parseInt(formData.birthTime.minute),
+        second: 0,
+        latitude: finalLat,
+        longitude: finalLon,
+        timezone: finalTzone,
+        ayanamsa: "lahiri"
+      };
+
+      // User form details for localStorage
       const userFormDetails = {
         name: formData.name,
         gender: formData.gender,
         dob: `${formData.birthDate.day}/${formData.birthDate.month}/${formData.birthDate.year}`,
         time: `${formData.birthTime.hour}:${formData.birthTime.minute} ${formData.birthTime.ampm}`,
-        place: formData.place
+        place: formData.place,
+        age: calculateAge(formData.birthDate.day, formData.birthDate.month, formData.birthDate.year)
       };
 
-      // ডাটা লোকাল স্টোরেজে সেভ করা (ইউজার ডিটেইলস সহ)
-      localStorage.setItem('kundliData', JSON.stringify({
-        userDetails: userFormDetails, // নতুন যোগ করা হলো
-        basic: basicDetails.data,
-        planets: planetsData.data
-      }));
+      // Fetch Astrology Data from API
+      console.log("🌟 Fetching birth details...");
+      const basicDetails = await astrologyServices.kundli.getBirthDetails(astroPayload);
+      console.log("🪐 Fetching planet positions...");
+      const planetsData = await astrologyServices.planetary.getPlanetsExtended(astroPayload);
 
-      // প্রথমে অ্যাস্ট্রোলজি ডাটা ফেচ করা
-      const basicDetails = await fetchAstroData('birth_details', astroPayload);
-      const planetsData = await fetchAstroData('planets', astroPayload);
+      console.log("🌟 API Response - Basic Details:", basicDetails);
+      console.log("🪐 API Response - Planets Data:", planetsData);
 
-      console.log("🌟 API Response - Basic Details:", basicDetails.data);
-      console.log("🪐 API Response - Planets Data:", planetsData.data);
+      if (basicDetails && planetsData) {
+        // Store data in localStorage
+        localStorage.setItem('kundliData', JSON.stringify({
+          userDetails: userFormDetails,
+          basic: basicDetails,
+          planets: planetsData
+        }));
 
-      if (basicDetails.success && planetsData.success) {
-
-        // --- পেমেন্ট লজিক শুরু ---
+        // --- Payment Logic ---
         const res = await loadRazorpayScript();
         if (!res) {
           setError('Razorpay SDK failed to load. Check your internet connection.');
@@ -147,68 +223,71 @@ const KundliForm = () => {
           return;
         }
 
-        // ব্যাকএন্ড থেকে অর্ডার ক্রিয়েট করা (আপনার সার্ভার পোর্টে)
+        // Create order from backend
         const orderResponse = await fetch('http://localhost:5000/api/payment/create-order', { method: 'POST' });
         const orderData = await orderResponse.json();
 
-        // 🟢 PAYMENT BYPASS LOGIC (অ্যাড করা হলো) 🟢
-        console.log("⚠️ Bypassing Razorpay popup for testing!");
-        setSuccess(true);
+        if (!orderData.success) {
+          throw new Error('Failed to create payment order');
+        }
 
-        // ডাটা লোকাল স্টোরেজে সেভ করা 
-        localStorage.setItem('kundliData', JSON.stringify({ basic: basicDetails.data, planets: planetsData.data }));
-        // ১.৫ সেকেন্ড পর রেজাল্ট পেজে রিডাইরেক্ট করা
-        setTimeout(() => navigate('/kundli-result/demo_123'), 1500);
-        return;
-
-        // Razorpay পপআপ অপশন
+        // Razorpay options
         const options = {
-          key: "PFCYtd7IlXxiCyrq56A05PAk",
+          key: "rzp_test_SZrJ56ltWYlhmu",
           amount: orderData.order.amount,
           currency: "INR",
-          name: "RUHU Astrology",
+          name: "Kaal Chakra",
           description: "Premium Kundli Report",
-          // image: "/images/astrologer.jpg", <-- এই লাইনটা পাল্টে নিচেরটা দিন
-          image: "https://cdn-icons-png.flaticon.com/512/3592/3592033.png", // টেস্ট করার জন্য পাবলিক আইকন
+          image: "https://cdn-icons-png.flaticon.com/512/3592/3592033.png",
           order_id: orderData.order.id,
-          handler: function (response) {
-            // পেমেন্ট সফল হলে এই অংশ রান করবে
+          handler: async function (response) {
             setSuccess(true);
-
-            // ডাটা লোকাল স্টোরেজে সেভ করা
-            localStorage.setItem('kundliData', JSON.stringify({ basic: basicDetails.data, planets: planetsData.data }));
-
+            
+            // Verify payment and activate premium
+            const isPremiumActivated = await verifyPaymentAndActivatePremium(
+              response, 
+              userFormDetails, 
+              basicDetails, 
+              planetsData
+            );
+            
+            localStorage.setItem('kundliData', JSON.stringify({
+              userDetails: userFormDetails,
+              basic: basicDetails,
+              planets: planetsData,
+              payment_id: response.razorpay_payment_id,
+              isPremium: isPremiumActivated
+            }));
+            
             console.log("Payment Successful! Payment ID:", response.razorpay_payment_id);
-
-            // ২ সেকেন্ড পর রেজাল্ট পেজে রিডাইরেক্ট করা
-            setTimeout(() => navigate('/kundli-result/demo_123'), 2000);
+            console.log("Premium Activated:", isPremiumActivated);
+            
+            setTimeout(() => navigate('/kundli-result'), 2000);
           },
           prefill: {
             name: formData.name,
-            contact: "9999999999" // এখানে ইউজারের ফোন নম্বর ডায়নামিক ভাবে দিতে পারেন
+            email: user?.email || '',
+            contact: user?.phone || "9999999999"
           },
           theme: {
-            color: "#f98a2c" // আপনার ওয়েবসাইটের থিম অরেঞ্জ কালার
+            color: "#f98a2c"
           }
         };
 
         const paymentObject = new window.Razorpay(options);
 
         paymentObject.on('payment.failed', function (response) {
-          setError("Payment Failed! " + response.error.description);
+          setError("Payment Failed! " + (response.error?.description || 'Please try again'));
           setLoading(false);
         });
 
-        // পপআপ ওপেন করা
         paymentObject.open();
-        // --- পেমেন্ট লজিক শেষ ---
-
       } else {
-        setError('Stars are misaligned. Failed to fetch cosmic data.');
-        setLoading(false);
+        throw new Error('Failed to fetch astrological data');
       }
     } catch (err) {
-      setError(err.message || 'Submission failed.');
+      console.error("Submission error:", err);
+      setError(err.message || 'Submission failed. Please try again.');
       setLoading(false);
     }
   };
@@ -333,14 +412,14 @@ const KundliForm = () => {
                     onChange={(e) => { handleChange(e, null, 'place'); setSelectedExactLocation(null); }}
                     className="w-full pl-12 pr-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-[#f98a2c]/50 outline-none font-medium transition-all text-sm"
                   />
-                  {isSearchingCity && <div className="absolute right-4 top-3.5 animate-spin text-[#f98a2c]"><Sparkles size={16} /></div>}
+                  {isSearchingCity && <div className="absolute right-4 top-3.5 animate-spin text-[#f98a2c]"><Loader2 size={16} /></div>}
 
                   {/* Suggestions Dropdown */}
                   {showSuggestions && suggestions.length > 0 && (
-                    <div className="absolute z-50 w-full bg-white border border-slate-200 rounded-xl shadow-xl mt-1 overflow-hidden max-h-48">
+                    <div className="absolute z-50 w-full bg-white border border-slate-200 rounded-xl shadow-xl mt-1 overflow-hidden max-h-48 overflow-y-auto">
                       {suggestions.map((loc, idx) => (
                         <div key={idx} onClick={() => handleSelectSuggestion(loc)} className="px-4 py-3 hover:bg-orange-50 cursor-pointer font-medium text-slate-700 text-sm border-b border-slate-50 last:border-0 transition-colors">
-                          {loc.place_name}
+                          {loc.place_name || loc.name}
                         </div>
                       ))}
                     </div>
@@ -358,15 +437,28 @@ const KundliForm = () => {
                   type="submit" disabled={loading}
                   className="py-3 px-8 bg-[#f98a2c] text-white font-bold rounded-xl shadow-lg shadow-orange-500/30 hover:bg-orange-600 active:scale-95 transition-all disabled:opacity-70 flex items-center gap-2"
                 >
+                  {loading ? <Loader2 className="animate-spin" size={18} /> : <Sparkles size={18} />}
                   {loading ? 'Processing...' : 'Pay Now'}
                 </button>
               </div>
 
-              {error && <p className="text-center text-red-500 text-sm font-bold bg-red-50 py-2 rounded-lg">{error}</p>}
-              {success && <p className="text-center text-green-600 text-sm font-bold bg-green-50 py-2 rounded-lg flex items-center justify-center gap-2">
-                <ShieldCheck size={16} /> Form processed successfully!
-              </p>}
+              {error && (
+                <div className="flex items-center gap-2 text-red-500 text-sm font-bold bg-red-50 py-2 px-3 rounded-lg">
+                  <AlertCircle size={16} />
+                  {error}
+                </div>
+              )}
+              {success && (
+                <div className="flex items-center gap-2 text-green-600 text-sm font-bold bg-green-50 py-2 px-3 rounded-lg">
+                  <ShieldCheck size={16} />
+                  Payment successful! Redirecting to your Kundli report...
+                </div>
+              )}
 
+              {/* Note about data source */}
+              <p className="text-center text-xs text-slate-400 mt-2">
+                ✨ Powered by authentic Vedic astrology calculations ✨
+              </p>
             </form>
           </div>
 

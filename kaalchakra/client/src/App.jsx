@@ -12,16 +12,17 @@ import Services from './pages/Services';
 import KundliForm from './pages/KundliForm';
 import KundliResult from './pages/KundliResult';
 import Contact from './pages/Contact';
-import Login from './pages/Login';
+// import Login from './pages/Login';
 import OTPVerify from './pages/OTPVerify';
 import Dashboard from './pages/Dashboard';
 import Matchmaking from './pages/Matchmaking';
 import NotFound from './pages/NotFound'; // Ensure this file exists
-import Register from './pages/Register';
+// import Register from './pages/Register';
 import Orders from './pages/admin/Orders';
 import ViewReport from './pages/ViewReport';
 import Horoscope from './pages/Horoscope';
 import Panchang from './pages/Panchang';
+import AuthPage from './pages/AuthPage';
 
 
 // Blog Pages (Make sure these files exist in your pages folder)
@@ -41,7 +42,7 @@ import ScrollToTop from './components/common/ScrollToTop';
 function App() {
   return (
     <Router>
-      <ScrollToTop />
+      <ScrollToTop excludePaths={excludePaths} />
       <AuthProvider>
         <div className="flex flex-col min-h-screen">
           <Navbar />
@@ -55,13 +56,16 @@ function App() {
               <Route path="/kundli-result/:id" element={<KundliResult />} />
               <Route path="/contact" element={<Contact />} />
               <Route path="/matchmaking" element={<Matchmaking />} />
-              <Route path="/register" element={<Register />} />
-              <Route path="/login" element={<Login />} />
+              {/* <Route path="/register" element={<Register />} />
+              <Route path="/login" element={<Login />} /> */}
+              <Route path="/login" element={<AuthPage />} />
+              <Route path="/register" element={<AuthPage />} />
               <Route path="/verify-otp" element={<OTPVerify />} />
               <Route path="/report/:id" element={<ViewReport />} />
               <Route path="/match-making" element={<Matchmaking />} />
               <Route path="/horoscope" element={<Horoscope />} />
               <Route path="/panchang" element={<Panchang />} />
+              <Route path="/admin/orders" element={<Orders />} />
 
               <Route path="/blog" element={<Blog />} />
               <Route path="/blog/:id" element={<BlogDetails />} />

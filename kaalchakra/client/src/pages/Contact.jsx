@@ -1,6 +1,7 @@
 // client/src/pages/Contact.jsx
-import React, { useState } from 'react';
-import { Mail, Phone, MapPin, Send, Clock, CheckCircle, AlertCircle, MessageCircle, Globe, Instagram, Facebook, Twitter } from 'lucide-react';
+import React, { useState, useEffect } from 'react';
+import { Mail, Phone, MapPin, Send, Clock, CheckCircle, AlertCircle, MessageCircle, Globe, Instagram, Facebook, Twitter, Loader2 } from 'lucide-react';
+import api from '../services/api.js';
 
 // Contact Info Card Component
 const ContactInfoCard = ({ icon: Icon, title, details, color }) => (
@@ -31,21 +32,62 @@ const SocialLink = ({ icon: Icon, href, label, color }) => (
 );
 
 const Contact = () => {
+  const [contactInfo, setContactInfo] = useState({
+    address: ["No: 58 A, East Madison Street", "Baltimore, MD, USA 4508"],
+    emails: ["contact@kaalchakra.com", "support@kaalchakra.com"],
+    phones: ["+1 (555) 123-4567", "+1 (555) 987-6543"],
+    businessHours: [
+      { day: "Monday - Friday", hours: "9:00 AM - 8:00 PM" },
+      { day: "Saturday", hours: "10:00 AM - 6:00 PM" },
+      { day: "Sunday", hours: "Closed (Emergency only)" }
+    ],
+    socialLinks: [
+      { platform: "Facebook", url: "https://facebook.com/kaalchakra", icon: Facebook, color: "bg-blue-600 text-white hover:bg-blue-700" },
+      { platform: "Instagram", url: "https://instagram.com/kaalchakra", icon: Instagram, color: "bg-pink-600 text-white hover:bg-pink-700" },
+      { platform: "Twitter", url: "https://twitter.com/kaalchakra", icon: Twitter, color: "bg-sky-500 text-white hover:bg-sky-600" }
+    ],
+    mapLocation: {
+      address: "No: 58 A, East Madison Street, Baltimore, MD",
+      lat: 39.2904,
+      lng: -76.6122,
+      googleMapsUrl: "https://maps.google.com/?q=58+East+Madison+Street+Baltimore+MD"
+    },
+    responseTime: "We typically respond within 24 hours during business days. For urgent consultations, please call us directly."
+  });
+
   const [formData, setFormData] = useState({
     name: '',
     email: '',
     phone: '',
     subject: '',
-    comment: '',
+    message: '',
   });
   const [submitting, setSubmitting] = useState(false);
   const [success, setSuccess] = useState(false);
+  const [error, setError] = useState('');
   const [errors, setErrors] = useState({});
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    fetchContactInfo();
+  }, []);
+
+  const fetchContactInfo = async () => {
+    try {
+      const response = await api.get('/contact/info');
+      if (response.data.success) {
+        setContactInfo(response.data.data);
+      }
+    } catch (err) {
+      console.error('Error fetching contact info:', err);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const handleChange = (e) => {
     const { name, value } = e.target;
     setFormData({ ...formData, [name]: value });
-    // Clear error for this field
     if (errors[name]) {
       setErrors({ ...errors, [name]: '' });
     }
@@ -58,7 +100,7 @@ const Contact = () => {
     else if (!/\S+@\S+\.\S+/.test(formData.email)) newErrors.email = 'Email is invalid';
     if (!formData.phone.trim()) newErrors.phone = 'Phone number is required';
     else if (!/^[\d\s+\-()]{10,15}$/.test(formData.phone)) newErrors.phone = 'Phone number is invalid';
-    if (!formData.comment.trim()) newErrors.comment = 'Message is required';
+    if (!formData.message.trim()) newErrors.message = 'Message is required';
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
@@ -68,14 +110,36 @@ const Contact = () => {
     if (!validateForm()) return;
     
     setSubmitting(true);
-    // Simulate API call
-    setTimeout(() => {
-      setSuccess(true);
-      setSubmitting(false);
-      setFormData({ name: '', email: '', phone: '', subject: '', comment: '' });
-      setTimeout(() => setSuccess(false), 5000);
-    }, 1500);
+    setError('');
+    
+    try {
+      const response = await api.post('/contact/message', formData);
+      
+      if (response.data.success) {
+        setSuccess(true);
+        setFormData({ name: '', email: '', phone: '', subject: '', message: '' });
+        setTimeout(() => setSuccess(false), 5000);
+      } else {
+        setError(response.data.message || 'Failed to send message');
+      }
+    } catch (err) {
+      console.error('Error sending message:', err);
+      setError(err.response?.data?.message || 'Failed to send message. Please try again.');
+    } finally {
+      setSubmitting(false); 
+    }
   };
+
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 py-12 px-4 sm:px-6 flex items-center justify-center">
+        <div className="text-center">
+          <Loader2 className="w-12 h-12 text-orange-500 animate-spin mx-auto mb-4" />
+          <p className="text-gray-500">Loading contact information...</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 py-12 px-4 sm:px-6">
@@ -129,10 +193,7 @@ const Contact = () => {
                   <Clock className="w-4 h-4" />
                   <span className="text-sm font-semibold">Response Time</span>
                 </div>
-                <p className="text-gray-600 text-sm">
-                  We typically respond within 24 hours during business days. For urgent consultations, 
-                  please call us directly.
-                </p>
+                <p className="text-gray-600 text-sm">{contactInfo.responseTime}</p>
               </div>
             </div>
 
@@ -146,19 +207,19 @@ const Contact = () => {
                 <ContactInfoCard 
                   icon={MapPin} 
                   title="Address" 
-                  details={["No: 58 A, East Madison Street", "Baltimore, MD, USA 4508"]}
+                  details={contactInfo.address}
                   color="bg-gradient-to-br from-orange-500 to-amber-500"
                 />
                 <ContactInfoCard 
                   icon={Mail} 
                   title="Email" 
-                  details={["contact@ruhuastro.com", "support@ruhuastro.com"]}
+                  details={contactInfo.emails}
                   color="bg-gradient-to-br from-blue-500 to-cyan-500"
                 />
                 <ContactInfoCard 
                   icon={Phone} 
                   title="Phone" 
-                  details={["+1 (555) 123-4567", "+1 (555) 987-6543"]}
+                  details={contactInfo.phones}
                   color="bg-gradient-to-br from-emerald-500 to-green-500"
                 />
               </div>
@@ -171,18 +232,12 @@ const Contact = () => {
                 Business Hours
               </h3>
               <div className="space-y-2">
-                <div className="flex justify-between py-2 border-b border-gray-100">
-                  <span className="text-gray-600">Monday - Friday</span>
-                  <span className="text-gray-800 font-medium">9:00 AM - 8:00 PM</span>
-                </div>
-                <div className="flex justify-between py-2 border-b border-gray-100">
-                  <span className="text-gray-600">Saturday</span>
-                  <span className="text-gray-800 font-medium">10:00 AM - 6:00 PM</span>
-                </div>
-                <div className="flex justify-between py-2">
-                  <span className="text-gray-600">Sunday</span>
-                  <span className="text-gray-800 font-medium">Closed (Emergency only)</span>
-                </div>
+                {contactInfo.businessHours.map((item, idx) => (
+                  <div key={idx} className="flex justify-between py-2 border-b border-gray-100 last:border-0">
+                    <span className="text-gray-600">{item.day}</span>
+                    <span className="text-gray-800 font-medium">{item.hours}</span>
+                  </div>
+                ))}
               </div>
             </div>
 
@@ -193,9 +248,15 @@ const Contact = () => {
                 Connect With Us
               </h3>
               <div className="flex flex-wrap gap-3">
-                <SocialLink icon={Facebook} href="#" label="Facebook" color="bg-blue-600 text-white hover:bg-blue-700" />
-                <SocialLink icon={Instagram} href="#" label="Instagram" color="bg-pink-600 text-white hover:bg-pink-700" />
-                <SocialLink icon={Twitter} href="#" label="Twitter" color="bg-sky-500 text-white hover:bg-sky-600" />
+                {contactInfo.socialLinks.map((social, idx) => (
+                  <SocialLink 
+                    key={idx}
+                    icon={social.icon} 
+                    href={social.url} 
+                    label={social.platform} 
+                    color={social.color} 
+                  />
+                ))}
               </div>
             </div>
           </div>
@@ -209,6 +270,13 @@ const Contact = () => {
                 <p className="text-gray-500 text-sm">We'll get back to you as soon as possible</p>
               </div>
               
+              {error && (
+                <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded-xl flex items-center gap-2 text-red-600 text-sm">
+                  <AlertCircle className="w-4 h-4" />
+                  {error}
+                </div>
+              )}
+
               <form onSubmit={handleSubmit} className="space-y-5">
                 {/* Name Field */}
                 <div>
@@ -284,14 +352,14 @@ const Contact = () => {
                     Message <span className="text-red-500">*</span>
                   </label>
                   <textarea
-                    name="comment"
+                    name="message"
                     rows="5"
-                    value={formData.comment}
+                    value={formData.message}
                     onChange={handleChange}
-                    className={`w-full px-4 py-3 rounded-xl border ${errors.comment ? 'border-red-400 bg-red-50' : 'border-gray-200 bg-gray-50'} focus:bg-white focus:border-orange-400 focus:ring-2 focus:ring-orange-200 transition-all outline-none resize-none`}
+                    className={`w-full px-4 py-3 rounded-xl border ${errors.message ? 'border-red-400 bg-red-50' : 'border-gray-200 bg-gray-50'} focus:bg-white focus:border-orange-400 focus:ring-2 focus:ring-orange-200 transition-all outline-none resize-none`}
                     placeholder="Tell us how we can help you..."
                   />
-                  {errors.comment && <p className="text-red-500 text-xs mt-1 flex items-center gap-1"><AlertCircle className="w-3 h-3" /> {errors.comment}</p>}
+                  {errors.message && <p className="text-red-500 text-xs mt-1 flex items-center gap-1"><AlertCircle className="w-3 h-3" /> {errors.message}</p>}
                 </div>
 
                 {/* Submit Button */}
@@ -335,23 +403,20 @@ const Contact = () => {
                 </h3>
               </div>
               <div className="relative h-64 bg-gray-200">
-                {/* Interactive Map Placeholder */}
                 <div className="absolute inset-0 bg-gradient-to-br from-gray-200 to-gray-300 flex items-center justify-center">
                   <div className="text-center">
                     <MapPin className="w-12 h-12 text-orange-500 mx-auto mb-2" />
                     <p className="text-gray-500 text-sm">Interactive Map</p>
-                    <p className="text-gray-400 text-xs mt-1">No: 58 A, East Madison Street, Baltimore, MD</p>
+                    <p className="text-gray-400 text-xs mt-1">{contactInfo.mapLocation.address}</p>
                   </div>
                 </div>
-                {/* Map attribution */}
                 <div className="absolute bottom-2 right-2 bg-white/80 text-gray-500 text-[10px] px-2 py-0.5 rounded">
                   Map data © OpenStreetMap
                 </div>
               </div>
-              {/* Quick Directions Link */}
               <div className="p-4 border-t border-gray-100">
                 <a 
-                  href="https://maps.google.com/?q=58+East+Madison+Street+Baltimore+MD" 
+                  href={contactInfo.mapLocation.googleMapsUrl} 
                   target="_blank" 
                   rel="noopener noreferrer"
                   className="text-orange-500 text-sm font-medium flex items-center justify-center gap-1 hover:gap-2 transition-all"
