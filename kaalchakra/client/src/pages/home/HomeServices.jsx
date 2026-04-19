@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { Loader2, AlertCircle } from 'lucide-react';
-import api from '../services/api.js';
+import api from '../../services/api.js';
 
 const ServiceCard = ({ icon, title, subtitle, oldPrice, newPrice, index, onOrder }) => (
   <div className="relative group cursor-pointer" onClick={() => onOrder && onOrder()}>
@@ -247,11 +247,11 @@ const HomeServices = () => {
 
         {/* Kundali Banner - From Database */}
         <div className="mb-20">
-          <div className="bg-gradient-to-r from-[#f3e0c7] to-[#f7931e] rounded-2xl shadow-xl overflow-hidden transition-transform hover:scale-[1.01] duration-300">
+          <div className="bg-gradient-to-r from-[#f3e0c7] to-[#f7931e] rounded-2xl shadow-xl overflow-hidden transition-transform hover:scale-[1.01] duration-300 text-orange-500">
             <div className="flex flex-col md:flex-row items-center justify-between p-6 md:p-8 gap-6">
               <div className="flex-shrink-0">
                 <div className="w-16 h-16 md:w-20 md:h-20 bg-white/20 rounded-2xl flex items-center justify-center backdrop-blur-sm">
-                  <svg className="w-10 h-10 md:w-12 md:h-12 text-white" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                  <svg className="w-10 h-10 md:w-12 md:h-12 text-orange-500" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
                     <path d="M4 4H20C21.1 4 22 4.9 22 6V18C22 19.1 21.1 20 20 20H4C2.9 20 2 19.1 2 18V6C2 4.9 2.9 4 4 4Z" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
                     <path d="M8 7H16" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
                     <path d="M8 11H14" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
@@ -268,12 +268,12 @@ const HomeServices = () => {
               </div>
               <Link to={kundaliBanner.link} className="flex-shrink-0">
                 <div className="w-12 h-12 bg-white/20 rounded-full flex items-center justify-center backdrop-blur-sm hover:bg-white/30 transition-all cursor-pointer">
-                  <svg className="w-6 h-6 text-white" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                  <svg className="w-6 h-6 text-orange-500" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
                     <path d="M5 12H19" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
                     <path d="M12 5L19 12L12 19" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
                   </svg>
                 </div>
-                <p className="text-white font-bold text-xl md:text-2xl text-center mt-2">₹{kundaliBanner.price}</p>
+                <p className="text-orange-500 font-bold text-xl md:text-2xl text-center mt-2">₹{kundaliBanner.price}</p>
               </Link>
             </div>
           </div>

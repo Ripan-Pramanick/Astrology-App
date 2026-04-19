@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Calendar, User, Clock, ChevronRight, BookOpen, TrendingUp, Sparkles, Tag, Loader2, AlertCircle } from 'lucide-react';
-import api from '../services/api.js';
+import api from '../../services/api.js';
 
 // Category colors mapping
 const categoryColors = {

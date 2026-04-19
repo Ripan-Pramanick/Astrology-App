@@ -2,10 +2,8 @@
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { Calendar, Clock, Eye, Bookmark, Share2, TrendingUp, User } from 'lucide-react';
-import Button from '../ui/Button';
 import api from '../../services/api';
 import { useAuth } from '../../context/AuthContext';
-import Spinner from '../components/ui/Spinner';
 
 const BlogCard = ({ article, onBookmarkChange }) => {
   const { user } = useAuth();
@@ -27,20 +25,17 @@ const BlogCard = ({ article, onBookmarkChange }) => {
   const [isBookmarked, setIsBookmarked] = useState(article.isBookmarked || false);
   const [showTooltip, setShowTooltip] = useState(false);
 
-  // Format date nicely
   const formattedDate = date ? new Date(date).toLocaleDateString('en-US', {
     year: 'numeric',
     month: 'short',
     day: 'numeric'
   }) : 'Recent';
 
-  // Handle bookmark toggle
   const handleBookmark = async (e) => {
     e.preventDefault();
     e.stopPropagation();
     
     if (!user) {
-      // Show login prompt
       alert('Please login to save bookmarks');
       return;
     }
@@ -57,11 +52,9 @@ const BlogCard = ({ article, onBookmarkChange }) => {
         setIsBookmarked(true);
       }
       
-      // Show feedback
       setShowTooltip(true);
       setTimeout(() => setShowTooltip(false), 2000);
       
-      // Notify parent component if needed
       if (onBookmarkChange) {
         onBookmarkChange(id, !isBookmarked);
       }
@@ -74,7 +67,6 @@ const BlogCard = ({ article, onBookmarkChange }) => {
     }
   };
 
-  // Handle share
   const handleShare = async (e) => {
     e.preventDefault();
     e.stopPropagation();
@@ -94,7 +86,6 @@ const BlogCard = ({ article, onBookmarkChange }) => {
         }
       }
     } else {
-      // Fallback - copy to clipboard
       try {
         await navigator.clipboard.writeText(url);
         alert('Link copied to clipboard!');
@@ -106,8 +97,6 @@ const BlogCard = ({ article, onBookmarkChange }) => {
 
   return (
     <article className="group bg-white rounded-xl shadow-md overflow-hidden hover:shadow-xl transition-all duration-300 hover:-translate-y-1 relative">
-      
-      {/* Image Section */}
       {image && (
         <Link to={`/blog/${slug || id}`} className="block">
           <div className="h-48 overflow-hidden relative">
@@ -121,14 +110,12 @@ const BlogCard = ({ article, onBookmarkChange }) => {
               }}
             />
             
-            {/* Category Badge */}
             {category && (
               <span className="absolute top-3 left-3 bg-orange-500 text-white text-xs font-semibold px-2.5 py-1 rounded-full shadow-md">
                 {category}
               </span>
             )}
             
-            {/* Premium Badge */}
             {isPremium && (
               <span className="absolute top-3 right-3 bg-gradient-to-r from-yellow-500 to-amber-500 text-white text-xs font-semibold px-2.5 py-1 rounded-full flex items-center gap-1 shadow-md">
                 <TrendingUp size={12} /> Premium
@@ -138,10 +125,7 @@ const BlogCard = ({ article, onBookmarkChange }) => {
         </Link>
       )}
       
-      {/* Content Section */}
       <div className="p-5">
-        
-        {/* Meta Info Row */}
         <div className="flex items-center justify-between text-xs text-gray-500 mb-3">
           <div className="flex items-center gap-3">
             <div className="flex items-center gap-1">
@@ -158,7 +142,6 @@ const BlogCard = ({ article, onBookmarkChange }) => {
             </div>
           </div>
           
-          {/* Author */}
           {author && (
             <div className="flex items-center gap-1 text-gray-400">
               <User size={10} />
@@ -167,32 +150,24 @@ const BlogCard = ({ article, onBookmarkChange }) => {
           )}
         </div>
         
-        {/* Title */}
         <Link to={`/blog/${slug || id}`}>
           <h3 className="text-xl font-bold text-gray-900 mb-2 line-clamp-2 hover:text-orange-500 transition-colors">
             {title}
           </h3>
         </Link>
         
-        {/* Excerpt */}
         <p className="text-gray-600 text-sm mb-4 line-clamp-3">
           {excerpt}
         </p>
         
-        {/* Action Buttons */}
         <div className="flex justify-between items-center">
           <Link to={`/blog/${slug || id}`}>
-            <Button 
-              variant="outline" 
-              size="sm"
-              className="group-hover:bg-orange-500 group-hover:text-white group-hover:border-orange-500 transition-all duration-300"
-            >
+            <button className="px-4 py-2 text-sm font-semibold text-orange-600 border border-orange-300 rounded-lg hover:bg-orange-50 transition-all duration-300">
               Read More →
-            </Button>
+            </button>
           </Link>
           
           <div className="flex items-center gap-1">
-            {/* Bookmark Button */}
             <div className="relative">
               <button
                 onClick={handleBookmark}
@@ -207,7 +182,6 @@ const BlogCard = ({ article, onBookmarkChange }) => {
                 <Bookmark size={18} fill={isBookmarked ? 'currentColor' : 'none'} />
               </button>
               
-              {/* Tooltip */}
               {showTooltip && (
                 <div className="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 px-2 py-1 bg-gray-800 text-white text-xs rounded whitespace-nowrap">
                   {isBookmarked ? 'Saved to bookmarks!' : 'Bookmark removed'}
@@ -215,7 +189,6 @@ const BlogCard = ({ article, onBookmarkChange }) => {
               )}
             </div>
             
-            {/* Share Button */}
             <button
               onClick={handleShare}
               className="p-2 rounded-full text-gray-400 hover:text-orange-500 hover:bg-orange-50 transition-all duration-200"
@@ -231,7 +204,7 @@ const BlogCard = ({ article, onBookmarkChange }) => {
 };
 
 // Loading Skeleton Component
-export const BlogCardSkeleton = () => (
+const BlogCardSkeleton = () => (
   <article className="bg-white rounded-xl shadow-md overflow-hidden animate-pulse">
     <div className="h-48 bg-gray-200"></div>
     <div className="p-5">
@@ -256,8 +229,16 @@ export const BlogCardSkeleton = () => (
 );
 
 // Grid View for multiple cards
-export const BlogGrid = ({ articles, loading, onBookmarkChange }) => {
- if (loading) return <Spinner />;
+const BlogGrid = ({ articles, loading, onBookmarkChange }) => {
+  if (loading) {
+    return (
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        {[...Array(6)].map((_, i) => (
+          <BlogCardSkeleton key={i} />
+        ))}
+      </div>
+    );
+  }
   
   if (!articles || articles.length === 0) {
     return (
@@ -280,4 +261,5 @@ export const BlogGrid = ({ articles, loading, onBookmarkChange }) => {
   );
 };
 
+export { BlogCard, BlogGrid, BlogCardSkeleton };
 export default BlogCard;

@@ -4,96 +4,73 @@ import { supabase } from '../utils/supabase.js';
 
 const router = express.Router();
 
-// GET all articles with filtering
+// GET articles
 router.get('/', async (req, res) => {
-  try {
-    const { category, limit = 9, featured } = req.query;
-    
-    let query = supabase
-      .from('articles')
-      .select('*')
-      .eq('is_published', true)
-      .order('is_featured', { ascending: false })
-      .order('published_at', { ascending: false });
-    
-    if (category && category !== 'all') {
-      query = query.eq('category', category);
+    try {
+        const { category, limit = 9 } = req.query;
+        
+        let query = supabase
+            .from('articles')
+            .select('*')
+            .eq('is_published', true)
+            .order('created_at', { ascending: false });
+        
+        if (category && category !== 'all') {
+            query = query.eq('category', category);
+        }
+        
+        const { data: articles, error } = await query.limit(parseInt(limit));
+        
+        if (error) throw error;
+        
+        res.json({ success: true, articles });
+    } catch (error) {
+        res.status(500).json({ success: false, message: error.message });
     }
-    
-    if (featured === 'true') {
-      query = query.eq('is_featured', true);
-    }
-    
-    const { data: articles, error } = await query.limit(parseInt(limit));
-    
-    if (error) throw error;
-    
-    res.json({ success: true, articles });
-  } catch (error) {
-    console.error('Error fetching articles:', error);
-    res.status(500).json({ success: false, message: error.message });
-  }
 });
 
-// GET single article by ID or slug
+// GET single article
 router.get('/:id', async (req, res) => {
-  try {
-    const { id } = req.params;
-    
-    // Check if id is numeric or slug
-    const isNumeric = /^\d+$/.test(id);
-    
-    let query = supabase
-      .from('articles')
-      .select('*')
-      .eq('is_published', true);
-    
-    if (isNumeric) {
-      query = query.eq('id', parseInt(id));
-    } else {
-      query = query.eq('slug', id);
+    try {
+        const { id } = req.params;
+        
+        const { data: article, error } = await supabase
+            .from('articles')
+            .select('*')
+            .eq('id', parseInt(id))
+            .single();
+        
+        if (error) throw error;
+        
+        res.json({ success: true, article });
+    } catch (error) {
+        res.status(500).json({ success: false, message: error.message });
     }
-    
-    const { data: article, error } = await query.single();
-    
-    if (error) throw error;
-    
-    // Increment view count
-    await supabase
-      .from('articles')
-      .update({ views: (article.views || 0) + 1 })
-      .eq('id', article.id);
-    
-    res.json({ success: true, article });
-  } catch (error) {
-    res.status(500).json({ success: false, message: error.message });
-  }
 });
 
 // Newsletter subscription
 router.post('/newsletter/subscribe', async (req, res) => {
-  try {
-    const { email } = req.body;
-    
-    if (!email || !email.includes('@')) {
-      return res.status(400).json({ success: false, message: 'Valid email required' });
+    try {
+        const { email } = req.body;
+        
+        if (!email || !email.includes('@')) {
+            return res.status(400).json({ success: false, message: 'Valid email required' });
+        }
+        
+        const { error } = await supabase
+            .from('newsletter_subscribers')
+            .insert([{ email, subscribed_at: new Date().toISOString() }]);
+        
+        if (error && error.code === '23505') {
+            return res.json({ success: true, message: 'Already subscribed' });
+        }
+        
+        if (error) throw error;
+        
+        res.json({ success: true, message: 'Subscribed successfully' });
+    } catch (error) {
+        res.status(500).json({ success: false, message: error.message });
     }
-    
-    const { data, error } = await supabase
-      .from('newsletter_subscribers')
-      .insert([{ email, subscribed_at: new Date().toISOString() }])
-      .select();
-    
-    if (error && error.code === '23505') {
-      return res.json({ success: true, message: 'Already subscribed' });
-    }
-    
-    if (error) throw error;
-    
-    res.json({ success: true, message: 'Subscribed successfully' });
-  } catch (error) {
-    res.status(500).json({ success: false, message: error.message });
-  }
 });
 
 export default router;

@@ -12,20 +12,16 @@ import Services from './pages/Services';
 import KundliForm from './pages/KundliForm';
 import KundliResult from './pages/KundliResult';
 import Contact from './pages/Contact';
-// import Login from './pages/Login';
-import OTPVerify from './pages/OTPVerify';
+// import OTPVerify from './pages/OTPVerify';
 import Dashboard from './pages/Dashboard';
 import Matchmaking from './pages/Matchmaking';
-import NotFound from './pages/NotFound'; // Ensure this file exists
-// import Register from './pages/Register';
-import Orders from './pages/admin/Orders';
+import NotFound from './pages/NotFound';
 import ViewReport from './pages/ViewReport';
 import Horoscope from './pages/Horoscope';
 import Panchang from './pages/Panchang';
 import AuthPage from './pages/AuthPage';
 
-
-// Blog Pages (Make sure these files exist in your pages folder)
+// Blog Pages
 import Blog from './pages/Blog';
 import BlogDetails from './pages/BlogDetails';
 
@@ -39,15 +35,19 @@ import Navbar from './components/common/Navbar';
 import Footer from './components/common/Footer';
 import ScrollToTop from './components/common/ScrollToTop';
 
+// Define exclude paths (pages where you don't want auto-scroll)
+const excludePaths = ['/kundli-result', '/kundli'];
+
 function App() {
   return (
-    <Router>
-      <ScrollToTop excludePaths={excludePaths} />
+   <Router future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
       <AuthProvider>
+        <ScrollToTop excludePaths={excludePaths} />
         <div className="flex flex-col min-h-screen">
           <Navbar />
-          <main className="flex-grow">
+          <main className="grow">
             <Routes>
+              {/* Public Routes */}
               <Route path="/" element={<Home />} />
               <Route path="/about" element={<About />} />
               <Route path="/services" element={<Services />} />
@@ -56,32 +56,28 @@ function App() {
               <Route path="/kundli-result/:id" element={<KundliResult />} />
               <Route path="/contact" element={<Contact />} />
               <Route path="/matchmaking" element={<Matchmaking />} />
-              {/* <Route path="/register" element={<Register />} />
-              <Route path="/login" element={<Login />} /> */}
               <Route path="/login" element={<AuthPage />} />
               <Route path="/register" element={<AuthPage />} />
-              <Route path="/verify-otp" element={<OTPVerify />} />
+              {/* <Route path="/verify-otp" element={<OTPVerify />} /> */}
               <Route path="/report/:id" element={<ViewReport />} />
-              <Route path="/match-making" element={<Matchmaking />} />
               <Route path="/horoscope" element={<Horoscope />} />
               <Route path="/panchang" element={<Panchang />} />
-              <Route path="/admin/orders" element={<Orders />} />
-
               <Route path="/blog" element={<Blog />} />
               <Route path="/blog/:id" element={<BlogDetails />} />
 
-              {/* Protected routes */}
+              {/* Protected Routes (require authentication) */}
               <Route element={<ProtectedRoute />}>
                 <Route path="/dashboard" element={<Dashboard />} />
               </Route>
 
-              {/* Admin routes */}
+              {/* Admin Routes (require admin role) */}
               <Route element={<AdminRoute />}>
                 <Route path="/admin" element={<AdminDashboard />} />
                 <Route path="/admin/users" element={<AdminUsers />} />
-                <Route path="/admin/orders" element={<AdminOrders />} /> {/* 👈 নতুন রুট */}
+                <Route path="/admin/orders" element={<AdminOrders />} />
               </Route>
 
+              {/* 404 Not Found */}
               <Route path="*" element={<NotFound />} />
             </Routes>
           </main>

@@ -5,6 +5,7 @@ import {
   Activity, Shield, RefreshCw, ChevronDown, ChevronUp,
   Star, Zap
 } from 'lucide-react';
+// client/src/components/kundli/PredictionSection.jsx
 import { SparkleButton, SparkleText, BackgroundSparkles } from '../ui/Sparkle';
 import api from '../../services/api';
 

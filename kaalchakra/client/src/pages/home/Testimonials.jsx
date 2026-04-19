@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Star, Quote, ChevronLeft, ChevronRight, Sparkles, User, MapPin, Loader2, AlertCircle } from 'lucide-react';
-import api from '../services/api.js';
+import api from '../../services/api.js';
 
 // Star Rating Component
 const StarRating = ({ rating }) => {

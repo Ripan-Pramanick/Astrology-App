@@ -1,36 +1,32 @@
 // client/src/services/api.js
 import axios from 'axios';
 
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000/api';
+// Use relative path with proxy
+const API_URL = '/api';
 
 const api = axios.create({
-  baseURL: API_BASE_URL,
+  baseURL: API_URL,
   headers: {
     'Content-Type': 'application/json',
   },
+  timeout: 30000,
 });
 
-// Request interceptor to add auth token
-api.interceptors.request.use(
-  (config) => {
-    const token = localStorage.getItem('authToken');
-    if (token) {
-      config.headers.Authorization = `Bearer ${token}`;
-    }
-    return config;
-  },
-  (error) => Promise.reject(error)
-);
+// Add this to see what URL is being called
+api.interceptors.request.use((config) => {
+  console.log('API Request:', config.method.toUpperCase(), config.url);
+  return config;
+});
 
-// Response interceptor to handle errors globally
 api.interceptors.response.use(
-  (response) => response,
+  (response) => {
+    console.log('API Response:', response.status, response.config.url);
+    return response;
+  },
   (error) => {
-    if (error.response?.status === 401) {
-      // Unauthorized: clear token and redirect to login
-      localStorage.removeItem('authToken');
-      localStorage.removeItem('user');
-      window.location.href = '/login';
+    console.error('API Error:', error.message);
+    if (error.code === 'ERR_NETWORK') {
+      console.error('Cannot connect to server. Make sure backend is running on port 5000');
     }
     return Promise.reject(error);
   }

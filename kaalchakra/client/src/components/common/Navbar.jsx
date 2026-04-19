@@ -1,7 +1,29 @@
+// client/src/components/common/Navbar.jsx
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import { Menu, X, User, LogOut, ChevronDown, ShieldCheck } from 'lucide-react';
+
+// Gradient Text Component (defined inline to avoid import issues)
+const GradientText = ({ children, className = '' }) => {
+  return (
+    <span 
+      className={className}
+      style={{
+        background: 'linear-gradient(135deg, #b8860b, #d4af37)',
+        WebkitBackgroundClip: 'text',
+        backgroundClip: 'text',
+        color: 'transparent',
+        fontFamily: "'Cormorant Garamond', serif",
+        fontSize: 'clamp(1.25rem, 2vw, 1.5rem)',
+        fontWeight: 'bold',
+        letterSpacing: '0.1em'
+      }}
+    >
+      {children}
+    </span>
+  );
+};
 
 const Navbar = () => {
   const { user, logout } = useAuth();
@@ -21,7 +43,7 @@ const Navbar = () => {
 
   return (
     <>
-      {/* লোগোর কাস্টম অ্যানিমেশনের জন্য স্টাইল */}
+      {/* Custom Animations */}
       <style>{`
         @keyframes spin-slow {
           0% { transform: rotate(0deg); }
@@ -51,7 +73,7 @@ const Navbar = () => {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between h-16">
 
-            {/* 🌌 Kaal Chakra Logo & Brand Name */}
+            {/* Logo & Brand Name */}
             <div className="flex items-center">
               <Link to="/" className="flex items-center gap-3 group hover:opacity-90 transition">
 
@@ -112,11 +134,9 @@ const Navbar = () => {
                   </svg>
                 </div>
 
-                {/* Brand Text + Tagline */}
+                {/* Brand Text */}
                 <div className="flex flex-col">
-                  <span className="text-xl md:text-2xl font-bold tracking-wider bg-gradient-to-r from-[#b8860b] to-[#d4af37] bg-clip-text text-transparent" style={{ fontFamily: "'Cormorant Garamond', serif" }}>
-                    Kaal Chakra
-                  </span>
+                  <GradientText>Kaal Chakra</GradientText>
                   <span className="text-[9px] md:text-[10px] tracking-[0.2em] text-[#d4af37]/80 font-bold -mt-0.5 hidden sm:flex">
                     TIME KNOWS YOUR DESTINY
                   </span>
@@ -125,12 +145,12 @@ const Navbar = () => {
               </Link>
             </div>
 
-            {/* 💻 Desktop Menu */}
+            {/* Desktop Menu */}
             <div className="hidden md:flex items-center space-x-6 lg:space-x-8">
               <Link to="/" className="text-slate-700 hover:text-[#d4af37] font-bold transition">Home</Link>
               <Link to="/about" className="text-slate-700 hover:text-[#d4af37] font-bold transition">About</Link>
 
-              {/* 🚀 Services Dropdown */}
+              {/* Services Dropdown */}
               <div className="relative group">
                 <button className="flex items-center gap-1 text-slate-700 hover:text-[#d4af37] font-bold transition py-5">
                   Services <ChevronDown size={16} className="group-hover:rotate-180 transition-transform duration-200" />
@@ -138,13 +158,11 @@ const Navbar = () => {
                 <div className="absolute left-0 top-full w-48 bg-white border border-[#cf9f4a]/20 rounded-xl shadow-lg opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-300 transform origin-top-left -translate-y-2 group-hover:translate-y-0">
                   <div className="py-2">
                     <Link to="/horoscope" className="block px-4 py-2.5 text-sm text-slate-700 hover:bg-amber-50 hover:text-[#b8860b] font-semibold transition">Daily Horoscope</Link>
-                    <Link to="/match-making" className="block px-4 py-2.5 text-sm text-slate-700 hover:bg-amber-50 hover:text-[#b8860b] font-semibold transition">Match Making</Link>
+                    <Link to="/matchmaking" className="block px-4 py-2.5 text-sm text-slate-700 hover:bg-amber-50 hover:text-[#b8860b] font-semibold transition">Match Making</Link>
                     <Link to="/panchang" className="block px-4 py-2.5 text-sm text-slate-700 hover:bg-amber-50 hover:text-[#b8860b] font-semibold transition">Today's Panchang</Link>
 
-                    {/* Divider */}
                     <div className="mx-3 my-1 border-t border-[#cf9f4a]/20"></div>
 
-                    {/* View All Services Link */}
                     <Link to="/services" className="flex items-center justify-between px-4 py-2.5 text-sm text-[#b8860b] hover:bg-amber-50 font-bold transition">
                       <span>View All Services</span>
                       <span className="text-lg leading-none">&rarr;</span>
@@ -156,7 +174,7 @@ const Navbar = () => {
               <Link to="/kundli" className="text-slate-700 hover:text-[#d4af37] font-bold transition">Kundli</Link>
               <Link to="/contact" className="text-slate-700 hover:text-[#d4af37] font-bold transition">Contact</Link>
 
-              {/* 💻 Desktop Auth Logic */}
+              {/* Desktop Auth Logic */}
               {user ? (
                 <div className="flex items-center gap-4 pl-4 border-l border-[#cf9f4a]/30">
                   <Link
@@ -186,7 +204,7 @@ const Navbar = () => {
               )}
             </div>
 
-            {/* 📱 Mobile Menu Button */}
+            {/* Mobile Menu Button */}
             <div className="md:hidden flex items-center">
               <button onClick={() => setIsOpen(!isOpen)} className="text-slate-600 hover:text-[#d4af37] transition">
                 {isOpen ? <X size={28} /> : <Menu size={28} />}
@@ -195,7 +213,7 @@ const Navbar = () => {
           </div>
         </div>
 
-        {/* 📱 Mobile Dropdown Menu */}
+        {/* Mobile Dropdown Menu */}
         {isOpen && (
           <div className="md:hidden bg-white/95 backdrop-blur-md border-t border-[#cf9f4a]/20 animate-in slide-in-from-top duration-300">
             <div className="px-2 pt-2 pb-3 space-y-1 sm:px-3">
@@ -209,8 +227,9 @@ const Navbar = () => {
                 {isServicesOpen && (
                   <div className="pl-6 pr-3 py-2 space-y-2 bg-amber-50/50 border-l-2 border-[#cf9f4a]/30 mx-3 mt-1 rounded-r-xl">
                     <Link to="/horoscope" className="block text-sm text-slate-600 font-bold hover:text-[#d4af37]" onClick={() => setIsOpen(false)}>Daily Horoscope</Link>
-                    <Link to="/compatibility" className="block text-sm text-slate-600 font-bold hover:text-[#d4af37]" onClick={() => setIsOpen(false)}>Match Making</Link>
+                    <Link to="/matchmaking" className="block text-sm text-slate-600 font-bold hover:text-[#d4af37]" onClick={() => setIsOpen(false)}>Match Making</Link>
                     <Link to="/panchang" className="block text-sm text-slate-600 font-bold hover:text-[#d4af37]" onClick={() => setIsOpen(false)}>Today's Panchang</Link>
+                    <Link to="/services" className="block text-sm text-[#b8860b] font-bold hover:text-[#d4af37]" onClick={() => setIsOpen(false)}>All Services →</Link>
                   </div>
                 )}
               </div>
@@ -218,7 +237,7 @@ const Navbar = () => {
               <Link to="/kundli" className="block px-3 py-2 text-slate-700 font-bold hover:text-[#d4af37]" onClick={() => setIsOpen(false)}>Kundli</Link>
               <Link to="/contact" className="block px-3 py-2 text-slate-700 font-bold hover:text-[#d4af37]" onClick={() => setIsOpen(false)}>Contact</Link>
 
-              {/* 📱 Mobile Auth Logic */}
+              {/* Mobile Auth Logic */}
               <div className="mt-4 pt-4 border-t border-[#cf9f4a]/20">
                 {user ? (
                   <div className="space-y-2 px-3">
@@ -240,7 +259,8 @@ const Navbar = () => {
                 ) : (
                   <div className="grid grid-cols-2 gap-4 px-3 py-2">
                     <Link to="/login" className="text-center py-2 border border-[#cf9f4a] text-[#b8860b] hover:bg-amber-50 rounded-lg font-bold transition" onClick={() => setIsOpen(false)}>Login</Link>
-                    <Link to="/register" className="text-center py-2 bg-gradient-to-r from-[#d4af37] to-[#e4b363] text-white rounded-lg font-bold shadow-md transition" onClick={() => setIsOpen(false)}>Sign Up</Link>
+                    <Link to="/register" className="text-center py-2 bg-gradient-to-r from-[#d4af37] to-[#e4b363] text-white rounded-lg font-bold shadow-md transition" onClick={() => setIsOpen(false)}>
+                    <GradientText>Sign Up</GradientText></Link>
                   </div>
                 )}
               </div>

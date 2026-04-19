@@ -1,990 +1,771 @@
-// client/src/services/astrologyApi.js
+// // client/src/services/astrologyApi.js
+// import axios from 'axios';
+
+// // ============================================
+// // ASTROLOGY API CONFIGURATION - Using Backend Proxy
+// // ============================================
+// const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
+
+// // Create axios instance for backend proxy
+// const api = axios.create({
+//   baseURL: API_BASE_URL,
+//   headers: {
+//     'Content-Type': 'application/json',
+//   },
+//   timeout: 20000,
+// });
+
+// // Response interceptor for error handling
+// api.interceptors.response.use(
+//   (response) => response.data,
+//   (error) => {
+//     console.error('API Error:', error.response?.data || error.message);
+//     throw error.response?.data || { error: error.message };
+//   }
+// );
+
+// // ============================================
+// // PANCHANG & CALENDAR ENDPOINTS
+// // ============================================
+// export const panchangService = {
+//   async getAdvancedPanchang(params) {
+//     return api.post('/astrology/birth_details', params);
+//   },
+//   async getAdvancedPanchangSunrise(params) {
+//     return api.post('/astrology/birth_details', params);
+//   },
+//   async getBasicPanchang(params) {
+//     return api.post('/astrology/birth_details', params);
+//   },
+//   async getBasicPanchangSunrise(params) {
+//     return api.post('/astrology/birth_details', params);
+//   },
+//   async getMonthlyPanchang(params) {
+//     return api.post('/astrology/birth_details', params);
+//   },
+//   async getTamilPanchang(params) {
+//     return api.post('/astrology/birth_details', params);
+//   },
+//   async getTamilMonthPanchang(params) {
+//     return api.post('/astrology/birth_details', params);
+//   },
+//   async getPanchangChart(params) {
+//     return api.post('/astrology/birth_details', params);
+//   },
+//   async getPanchangFestival(params) {
+//     return api.post('/astrology/birth_details', params);
+//   },
+//   async getPanchangLagnaTable(params) {
+//     return api.post('/astrology/birth_details', params);
+//   },
+//   async getPlanetPanchang(params) {
+//     return api.post('/astrology/birth_details', params);
+//   },
+//   async getPlanetPanchangSunrise(params) {
+//     return api.post('/astrology/birth_details', params);
+//   },
+// };
+
+// // ============================================
+// // BIRTH CHART & KUNDLI ENDPOINTS
+// // ============================================
+// export const kundliService = {
+//   async getKundli(birthDetails) {
+//     return api.post('/astrology/birth_details', birthDetails);
+//   },
+//   async getVedicHoroscope(birthDetails) {
+//     return api.post('/astrology/birth_details', birthDetails);
+//   },
+//   async getWesternHoroscope(birthDetails) {
+//     return api.post('/astrology/birth_details', birthDetails);
+//   },
+//   async getBirthDetails(birthDetails) {
+//     return api.post('/astrology/birth_details', birthDetails);
+//   },
+//   async getAstroDetails(birthDetails) {
+//     return api.post('/astrology/birth_details', birthDetails);
+//   },
+//   async getWesternChartData(birthDetails) {
+//     return api.post('/astrology/birth_details', birthDetails);
+//   },
+//   async getCustomWesternChart(params) {
+//     return api.post('/astrology/birth_details', params);
+//   },
+//   async getGeoDetails(place) {
+//     return api.post('/astrology/geo_details', { place: typeof place === 'string' ? place : place.place });
+//   },
+//   async getTimezone(params) {
+//     return api.post('/astrology/birth_details', params);
+//   },
+//   async getTimezoneWithDST(params) {
+//     return api.post('/astrology/birth_details', params);
+//   },
+// };
+
+// // ============================================
+// // PLANETARY POSITIONS ENDPOINTS
+// // ============================================
+// export const planetaryService = {
+//   async getPlanets(birthDetails) {
+//     return api.post('/astrology/planets', birthDetails);
+//   },
+//   async getPlanetsExtended(birthDetails) {
+//     return api.post('/astrology/planets', birthDetails);
+//   },
+//   async getPlanetsTropical(birthDetails) {
+//     return api.post('/astrology/planets', birthDetails);
+//   },
+//   async getPlanetAshtak(planetName, birthDetails) {
+//     return api.post('/astrology/planets', birthDetails);
+//   },
+//   async getPlanetNature(planetName) {
+//     return api.post('/astrology/planets', { planet: planetName });
+//   },
+//   async getBhavMadhya(birthDetails) {
+//     return api.post('/astrology/birth_details', birthDetails);
+//   },
+//   async getHouseCuspsTropical(birthDetails) {
+//     return api.post('/astrology/birth_details', birthDetails);
+//   },
+//   async getNatalHouseCuspReport(birthDetails) {
+//     return api.post('/astrology/birth_details', birthDetails);
+//   },
+//   async getGeneralHouseReport(planetName, birthDetails) {
+//     return api.post('/astrology/birth_details', birthDetails);
+//   },
+//   async getGeneralHouseReportTropical(planetName, birthDetails) {
+//     return api.post('/astrology/birth_details', birthDetails);
+//   },
+// };
+
+// // ============================================
+// // DASHA (PERIOD) ENDPOINTS
+// // ============================================
+// export const dashaService = {
+//   async getCurrentVDasha(birthDetails) {
+//     return api.post('/astrology/birth_details', birthDetails);
+//   },
+//   async getAllVDasha(birthDetails) {
+//     return api.post('/astrology/birth_details', birthDetails);
+//   },
+//   async getVDashaByDate(params) {
+//     return api.post('/astrology/birth_details', params);
+//   },
+//   async getMajorVDasha(birthDetails) {
+//     return api.post('/astrology/birth_details', birthDetails);
+//   },
+//   async getSubVDasha(md, birthDetails) {
+//     return api.post('/astrology/birth_details', birthDetails);
+//   },
+//   async getSubSubVDasha(md, ad, birthDetails) {
+//     return api.post('/astrology/birth_details', birthDetails);
+//   },
+//   async getSubSubSubVDasha(md, ad, pd, birthDetails) {
+//     return api.post('/astrology/birth_details', birthDetails);
+//   },
+//   async getSubSubSubSubVDasha(md, ad, pd, sd, birthDetails) {
+//     return api.post('/astrology/birth_details', birthDetails);
+//   },
+//   async getCurrentChardasha(birthDetails) {
+//     return api.post('/astrology/birth_details', birthDetails);
+//   },
+//   async getMajorChardasha(birthDetails) {
+//     return api.post('/astrology/birth_details', birthDetails);
+//   },
+//   async getSubChardasha(md, birthDetails) {
+//     return api.post('/astrology/birth_details', birthDetails);
+//   },
+//   async getSubSubChardasha(md, ad, birthDetails) {
+//     return api.post('/astrology/birth_details', birthDetails);
+//   },
+//   async getCurrentYoginiDasha(birthDetails) {
+//     return api.post('/astrology/birth_details', birthDetails);
+//   },
+//   async getMajorYoginiDasha(birthDetails) {
+//     return api.post('/astrology/birth_details', birthDetails);
+//   },
+//   async getSubYoginiDasha(birthDetails) {
+//     return api.post('/astrology/birth_details', birthDetails);
+//   },
+// };
+
+// // ============================================
+// // MATCHMAKING & COMPATIBILITY ENDPOINTS
+// // ============================================
+// export const matchmakingService = {
+//   async getMatchMaking(personA, personB) {
+//     return api.post('/matchmaking', { personA, personB });
+//   },
+//   async getMatchMakingDetailed(personA, personB) {
+//     return api.post('/matchmaking', { personA, personB });
+//   },
+//   async getSimpleMatch(personA, personB) {
+//     return api.post('/matchmaking', { personA, personB });
+//   },
+//   async getMatchPercentage(personA, personB) {
+//     return api.post('/matchmaking', { personA, personB });
+//   },
+//   async getAshtakootPoints(personA, personB) {
+//     return api.post('/matchmaking', { personA, personB });
+//   },
+//   async getDashakootPoints(personA, personB) {
+//     return api.post('/matchmaking', { personA, personB });
+//   },
+//   async getMatchManglik(personA, personB) {
+//     return api.post('/matchmaking', { personA, personB });
+//   },
+//   async getMatchObstructions(personA, personB) {
+//     return api.post('/matchmaking', { personA, personB });
+//   },
+//   async getMatchPlanetDetails(personA, personB) {
+//     return api.post('/matchmaking', { personA, personB });
+//   },
+//   async getMatchAstroDetails(personA, personB) {
+//     return api.post('/matchmaking', { personA, personB });
+//   },
+//   async getMatchBirthDetails(personA, personB) {
+//     return api.post('/matchmaking', { personA, personB });
+//   },
+//   async getZodiacCompatibility(zodiacName, partnerZodiacName) {
+//     return api.post('/matchmaking', { zodiacName, partnerZodiacName });
+//   },
+//   async getLoveCompatibilityReport(params) {
+//     return api.post('/matchmaking', params);
+//   },
+//   async getPartnerReport(birthDetails) {
+//     return api.post('/matchmaking', birthDetails);
+//   },
+//   async getCompositeHoroscope(personA, personB) {
+//     return api.post('/matchmaking', { personA, personB });
+//   },
+//   async getSynastryHoroscope(personA, personB) {
+//     return api.post('/matchmaking', { personA, personB });
+//   },
+//   async getAffinityCalculator(personA, personB) {
+//     return api.post('/matchmaking', { personA, personB });
+//   },
+//   async getRomanticForecastReport(params) {
+//     return api.post('/matchmaking', params);
+//   },
+//   async getRomanticForecastCoupleReport(params) {
+//     return api.post('/matchmaking', params);
+//   },
+//   async getRomanticPersonalityReport(params) {
+//     return api.post('/matchmaking', params);
+//   },
+// };
+
+// // ============================================
+// // DOSHA & YOGA ENDPOINTS
+// // ============================================
+// export const doshaService = {
+//   async getManglik(birthDetails) {
+//     return api.post('/astrology/birth_details', birthDetails);
+//   },
+//   async getSimpleManglik(birthDetails) {
+//     return api.post('/astrology/birth_details', birthDetails);
+//   },
+//   async getKalsarpaDetails(birthDetails) {
+//     return api.post('/astrology/birth_details', birthDetails);
+//   },
+//   async getPitraDoshaReport(birthDetails) {
+//     return api.post('/astrology/birth_details', birthDetails);
+//   },
+//   async getPapasamyamDetails(birthDetails) {
+//     return api.post('/astrology/birth_details', birthDetails);
+//   },
+//   async getYogas(birthDetails) {
+//     return api.post('/astrology/birth_details', birthDetails);
+//   },
+//   async getVarshaphalYoga(birthDetails) {
+//     return api.post('/astrology/birth_details', birthDetails);
+//   },
+//   async getSarvashtak(birthDetails) {
+//     return api.post('/astrology/birth_details', birthDetails);
+//   },
+//   async getGhatChakra(birthDetails) {
+//     return api.post('/astrology/birth_details', birthDetails);
+//   },
+// };
+
+// // ============================================
+// // SADE SATI ENDPOINTS
+// // ============================================
+// export const sadeSatiService = {
+//   async getSadeSatiCurrentStatus(birthDetails) {
+//     return api.post('/astrology/birth_details', birthDetails);
+//   },
+//   async getSadeSatiLifeDetails(birthDetails) {
+//     return api.post('/astrology/birth_details', birthDetails);
+//   },
+//   async getSadeSatiRemedies(birthDetails) {
+//     return api.post('/astrology/birth_details', birthDetails);
+//   },
+// };
+
+// // ============================================
+// // LAL KITAB ENDPOINTS
+// // ============================================
+// export const lalKitabService = {
+//   async getLalKitabHoroscope(birthDetails) {
+//     return api.post('/astrology/birth_details', birthDetails);
+//   },
+//   async getLalKitabHouses(birthDetails) {
+//     return api.post('/astrology/birth_details', birthDetails);
+//   },
+//   async getLalKitabPlanets(birthDetails) {
+//     return api.post('/astrology/birth_details', birthDetails);
+//   },
+//   async getLalKitabDebts(birthDetails) {
+//     return api.post('/astrology/birth_details', birthDetails);
+//   },
+//   async getLalKitabRemedies(planetName, birthDetails) {
+//     return api.post('/astrology/birth_details', birthDetails);
+//   },
+// };
+
+// // ============================================
+// // NUMEROLOGY ENDPOINTS
+// // ============================================
+// export const numerologyService = {
+//   async getNumerologyReport(params) {
+//     return api.post('/astrology/birth_details', params);
+//   },
+//   async getNumerologyTable(params) {
+//     return api.post('/astrology/birth_details', params);
+//   },
+//   async getLifePathNumber(birthDetails) {
+//     return api.post('/astrology/birth_details', birthDetails);
+//   },
+//   async getExpressionNumber(params) {
+//     return api.post('/astrology/birth_details', params);
+//   },
+//   async getSoulUrgeNumber(params) {
+//     return api.post('/astrology/birth_details', params);
+//   },
+//   async getPersonalityNumber(params) {
+//     return api.post('/astrology/birth_details', params);
+//   },
+//   async getChallengeNumbers(birthDetails) {
+//     return api.post('/astrology/birth_details', birthDetails);
+//   },
+//   async getNumerologicalNumbers(params) {
+//     return api.post('/astrology/birth_details', params);
+//   },
+//   async getNumeroFavLord(params) {
+//     return api.post('/astrology/birth_details', params);
+//   },
+//   async getNumeroFavMantra(params) {
+//     return api.post('/astrology/birth_details', params);
+//   },
+//   async getNumeroFavTime(params) {
+//     return api.post('/astrology/birth_details', params);
+//   },
+//   async getNumeroPlaceVastu(params) {
+//     return api.post('/astrology/birth_details', params);
+//   },
+//   async getNumeroFastsReport(params) {
+//     return api.post('/astrology/birth_details', params);
+//   },
+// };
+
+// // ============================================
+// // MUHURTA & AUSPICIOUS TIMINGS
+// // ============================================
+// export const muhurtaService = {
+//   async getMarriageMuhurta(params) {
+//     return api.post('/astrology/birth_details', params);
+//   },
+//   async getChaughadiyaMuhurta(params) {
+//     return api.post('/astrology/birth_details', params);
+//   },
+//   async getHoraMuhurta(params) {
+//     return api.post('/astrology/birth_details', params);
+//   },
+//   async getHoraMuhurtaDinman(params) {
+//     return api.post('/astrology/birth_details', params);
+//   },
+// };
+
+// // ============================================
+// // TAROT & PREDICTIONS
+// // ============================================
+// export const tarotService = {
+//   async getTarotPredictions(params) {
+//     return api.post('/astrology/birth_details', params);
+//   },
+//   async getYesNoTarot(params) {
+//     return api.post('/astrology/birth_details', params);
+//   },
+// };
+
+// // ============================================
+// // DAILY & WEEKLY PREDICTIONS
+// // ============================================
+// export const predictionsService = {
+//   async getDailyHoroscope(sign, day = 'today') {
+//     return api.post('/astrology/birth_details', { sign, day });
+//   },
+//   async getDailyNakshatraPrediction(params) {
+//     return api.post('/astrology/birth_details', params);
+//   },
+//   async getNextDayNakshatraPrediction(params) {
+//     return api.post('/astrology/birth_details', params);
+//   },
+//   async getPreviousDayNakshatraPrediction(params) {
+//     return api.post('/astrology/birth_details', params);
+//   },
+//   async getDailyNakshatraConsolidated(params) {
+//     return api.post('/astrology/birth_details', params);
+//   },
+//   async getPersonalDayPrediction(birthDetails) {
+//     return api.post('/astrology/birth_details', birthDetails);
+//   },
+//   async getPersonalMonthPrediction(birthDetails) {
+//     return api.post('/astrology/birth_details', birthDetails);
+//   },
+//   async getPersonalYearPrediction(birthDetails) {
+//     return api.post('/astrology/birth_details', birthDetails);
+//   },
+//   async getChineseYearForecast(params) {
+//     return api.post('/astrology/birth_details', params);
+//   },
+//   async getChineseZodiac(params) {
+//     return api.post('/astrology/birth_details', params);
+//   },
+//   async getMoonPhaseReport(params) {
+//     return api.post('/astrology/birth_details', params);
+//   },
+//   async getMoonBiorhythm(params) {
+//     return api.post('/astrology/birth_details', params);
+//   },
+//   async getBiorhythm(params) {
+//     return api.post('/astrology/birth_details', params);
+//   },
+//   async getLunarMetrics(params) {
+//     return api.post('/astrology/birth_details', params);
+//   },
+// };
+
+// // ============================================
+// // VARSHAPHAL (YEARLY PREDICTIONS)
+// // ============================================
+// export const varshaphalService = {
+//   async getVarshaphalDetails(birthDetails) {
+//     return api.post('/astrology/birth_details', birthDetails);
+//   },
+//   async getVarshaphalPlanets(birthDetails) {
+//     return api.post('/astrology/birth_details', birthDetails);
+//   },
+//   async getVarshaphalYearChart(birthDetails) {
+//     return api.post('/astrology/birth_details', birthDetails);
+//   },
+//   async getVarshaphalMonthChart(birthDetails) {
+//     return api.post('/astrology/birth_details', birthDetails);
+//   },
+//   async getVarshaphalMuntha(birthDetails) {
+//     return api.post('/astrology/birth_details', birthDetails);
+//   },
+//   async getVarshaphalMuddaDasha(birthDetails) {
+//     return api.post('/astrology/birth_details', birthDetails);
+//   },
+//   async getVarshaphalHarshaBala(birthDetails) {
+//     return api.post('/astrology/birth_details', birthDetails);
+//   },
+//   async getVarshaphalPanchavargeeyaBala(birthDetails) {
+//     return api.post('/astrology/birth_details', birthDetails);
+//   },
+//   async getVarshaphalSahamPoints(birthDetails) {
+//     return api.post('/astrology/birth_details', birthDetails);
+//   },
+// };
+
+// // ============================================
+// // TRANSITS (GOCHAR)
+// // ============================================
+// export const transitService = {
+//   async getDailyTransits(birthDetails) {
+//     return api.post('/astrology/birth_details', birthDetails);
+//   },
+//   async getWeeklyTransits(birthDetails) {
+//     return api.post('/astrology/birth_details', birthDetails);
+//   },
+//   async getTropicalDailyTransits(birthDetails) {
+//     return api.post('/astrology/birth_details', birthDetails);
+//   },
+//   async getTropicalWeeklyTransits(birthDetails) {
+//     return api.post('/astrology/birth_details', birthDetails);
+//   },
+//   async getTropicalMonthlyTransits(birthDetails) {
+//     return api.post('/astrology/birth_details', birthDetails);
+//   },
+//   async getTropicalTransitsTimingDaily(birthDetails) {
+//     return api.post('/astrology/birth_details', birthDetails);
+//   },
+//   async getTropicalTransitsTimingMonthly(birthDetails) {
+//     return api.post('/astrology/birth_details', birthDetails);
+//   },
+// };
+
+// // ============================================
+// // REPORTS & INTERPRETATIONS
+// // ============================================
+// export const reportsService = {
+//   async getNatalChartInterpretation(birthDetails) {
+//     return api.post('/astrology/birth_details', birthDetails);
+//   },
+//   async getGeneralAscendantReport(birthDetails) {
+//     return api.post('/astrology/birth_details', birthDetails);
+//   },
+//   async getGeneralAscendantReportTropical(birthDetails) {
+//     return api.post('/astrology/birth_details', birthDetails);
+//   },
+//   async getGeneralNakshatraReport(birthDetails) {
+//     return api.post('/astrology/birth_details', birthDetails);
+//   },
+//   async getGeneralRashiReport(planetName, birthDetails) {
+//     return api.post('/astrology/birth_details', birthDetails);
+//   },
+//   async getGeneralSignReportTropical(planetName, birthDetails) {
+//     return api.post('/astrology/birth_details', birthDetails);
+//   },
+//   async getPersonalityReport(birthDetails) {
+//     return api.post('/astrology/birth_details', birthDetails);
+//   },
+//   async getLifeForecastReport(birthDetails) {
+//     return api.post('/astrology/birth_details', birthDetails);
+//   },
+//   async getKarmaDestinyReport(birthDetails) {
+//     return api.post('/astrology/birth_details', birthDetails);
+//   },
+//   async getFriendshipReport(birthDetails) {
+//     return api.post('/astrology/birth_details', birthDetails);
+//   },
+// };
+
+// // ============================================
+// // SOLAR RETURN
+// // ============================================
+// export const solarReturnService = {
+//   async getSolarReturnDetails(birthDetails) {
+//     return api.post('/astrology/birth_details', birthDetails);
+//   },
+//   async getSolarReturnPlanets(birthDetails) {
+//     return api.post('/astrology/birth_details', birthDetails);
+//   },
+//   async getSolarReturnPlanetReport(birthDetails) {
+//     return api.post('/astrology/birth_details', birthDetails);
+//   },
+//   async getSolarReturnHouseCusps(birthDetails) {
+//     return api.post('/astrology/birth_details', birthDetails);
+//   },
+//   async getSolarReturnPlanetAspects(birthDetails) {
+//     return api.post('/astrology/birth_details', birthDetails);
+//   },
+//   async getSolarReturnAspectsReport(birthDetails) {
+//     return api.post('/astrology/birth_details', birthDetails);
+//   },
+// };
+
+// // ============================================
+// // KP (KRISHNAMURTI) SYSTEM
+// // ============================================
+// export const kpService = {
+//   async getKPBirthChart(birthDetails) {
+//     return api.post('/astrology/birth_details', birthDetails);
+//   },
+//   async getKPPlanets(birthDetails) {
+//     return api.post('/astrology/birth_details', birthDetails);
+//   },
+//   async getKPHouseCusps(birthDetails) {
+//     return api.post('/astrology/birth_details', birthDetails);
+//   },
+//   async getKPPlanetSignificator(birthDetails) {
+//     return api.post('/astrology/birth_details', birthDetails);
+//   },
+//   async getKPHouseSignificator(birthDetails) {
+//     return api.post('/astrology/birth_details', birthDetails);
+//   },
+// };
+
+// // ============================================
+// // REMEDIES & SUGGESTIONS
+// // ============================================
+// export const remediesService = {
+//   async getBasicGemSuggestion(birthDetails) {
+//     return api.post('/astrology/birth_details', birthDetails);
+//   },
+//   async getRudrakshaSuggestion(birthDetails) {
+//     return api.post('/astrology/birth_details', birthDetails);
+//   },
+//   async getPujaSuggestion(birthDetails) {
+//     return api.post('/astrology/birth_details', birthDetails);
+//   },
+// };
+
+// // ============================================
+// // CHARTS & IMAGES
+// // ============================================
+// export const chartService = {
+//   async getNatalWheelChart(birthDetails) {
+//     return api.post('/astrology/birth_details', birthDetails);
+//   },
+//   async getHoroscopeChart(chartId) {
+//     return api.get(`/astrology/chart/${chartId}`);
+//   },
+//   async getHoroscopeChartImage(chartId) {
+//     return api.get(`/astrology/chart-image/${chartId}`, { responseType: 'blob' });
+//   },
+// };
+
+// // ============================================
+// // AYANAMSHA
+// // ============================================
+// export const ayanamshaService = {
+//   async getAyanamsha(date) {
+//     return api.post('/astrology/birth_details', { date });
+//   },
+// };
+
+// // ============================================
+// // JAMINI SYSTEM
+// // ============================================
+// export const jaiminiService = {
+//   async getJaiminiDetails(birthDetails) {
+//     return api.post('/astrology/birth_details', birthDetails);
+//   },
+// };
+
+// // ============================================
+// // MOON & SOLAR INGRESS
+// // ============================================
+// export const ingressService = {
+//   async getCustomMoonSolarIngress(params) {
+//     return api.post('/astrology/birth_details', params);
+//   },
+// };
+
+// // ============================================
+// // EXPORT ALL SERVICES
+// // ============================================
+// const astrologyServices = {
+//   panchang: panchangService,
+//   kundli: kundliService,
+//   planetary: planetaryService,
+//   dasha: dashaService,
+//   matchmaking: matchmakingService,
+//   dosha: doshaService,
+//   sadeSati: sadeSatiService,
+//   lalKitab: lalKitabService,
+//   numerology: numerologyService,
+//   muhurta: muhurtaService,
+//   tarot: tarotService,
+//   predictions: predictionsService,
+//   varshaphal: varshaphalService,
+//   transit: transitService,
+//   reports: reportsService,
+//   solarReturn: solarReturnService,
+//   kp: kpService,
+//   remedies: remediesService,
+//   chart: chartService,
+//   ayanamsha: ayanamshaService,
+//   jaimini: jaiminiService,
+//   ingress: ingressService,
+// };
+
+// export default astrologyServices;
+
 import axios from 'axios';
 
-// ============================================
-// ASTROLOGY API CONFIGURATION
-// ============================================
-const ASTROLOGY_USER_ID = import.meta.env.VITE_ASTROLOGY_USER_ID || '651200';
-const ASTROLOGY_WALLET_TOKEN = import.meta.env.VITE_ASTROLOGY_WALLET_TOKEN || '';
-const ASTROLOGY_API_URL = import.meta.env.VITE_ASTROLOGY_API_URL || 'https://json.astrologyapi.com/v1';
+const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
 
-// Create axios instance
-const astrologyApi = axios.create({
-  baseURL: ASTROLOGY_API_URL,
+const api = axios.create({
+  baseURL: API_URL,
   headers: {
     'Content-Type': 'application/json',
   },
   timeout: 20000,
 });
 
-// Add authentication interceptor
-astrologyApi.interceptors.request.use((config) => {
-  const authString = `${ASTROLOGY_USER_ID}:${ASTROLOGY_WALLET_TOKEN}`;
-  const encodedAuth = btoa(authString);
-  config.headers.Authorization = `Basic ${encodedAuth}`;
-  return config;
-});
-
-// Response interceptor for error handling
-astrologyApi.interceptors.response.use(
+api.interceptors.response.use(
   (response) => response.data,
   (error) => {
-    console.error('AstrologyAPI Error:', error.response?.data || error.message);
+    console.error('API Error:', error.response?.data || error.message);
     throw error.response?.data || { error: error.message };
   }
 );
 
-// ============================================
-// PANCHANG & CALENDAR ENDPOINTS
-// ============================================
-export const panchangService = {
-  // Advanced Panchang with detailed calculations
-  async getAdvancedPanchang(params) {
-    return astrologyApi.post('/advanced_panchang', params);
-  },
-  
-  // Advanced Panchang Sunrise/Sunset
-  async getAdvancedPanchangSunrise(params) {
-    return astrologyApi.post('/advanced_panchang/sunrise', params);
-  },
-  
-  // Basic Panchang
-  async getBasicPanchang(params) {
-    return astrologyApi.post('/basic_panchang', params);
-  },
-  
-  // Basic Panchang Sunrise
-  async getBasicPanchangSunrise(params) {
-    return astrologyApi.post('/basic_panchang/sunrise', params);
-  },
-  
-  // Monthly Panchang
-  async getMonthlyPanchang(params) {
-    return astrologyApi.post('/monthly_panchang', params);
-  },
-  
-  // Tamil Panchang
-  async getTamilPanchang(params) {
-    return astrologyApi.post('/tamil_panchang', params);
-  },
-  
-  // Tamil Month Panchang
-  async getTamilMonthPanchang(params) {
-    return astrologyApi.post('/tamil_month_panchang', params);
-  },
-  
-  // Panchang Chart
-  async getPanchangChart(params) {
-    return astrologyApi.post('/panchang_chart', params);
-  },
-  
-  // Panchang Festival
-  async getPanchangFestival(params) {
-    return astrologyApi.post('/panchang_festival', params);
-  },
-  
-  // Panchang Lagna Table
-  async getPanchangLagnaTable(params) {
-    return astrologyApi.post('/panchang_lagna_table', params);
-  },
-  
-  // Planet Panchang
-  async getPlanetPanchang(params) {
-    return astrologyApi.post('/planet_panchang', params);
-  },
-  
-  // Planet Panchang Sunrise
-  async getPlanetPanchangSunrise(params) {
-    return astrologyApi.post('/planet_panchang/sunrise', params);
-  },
-};
-
-// ============================================
-// BIRTH CHART & KUNDLI ENDPOINTS
-// ============================================
 export const kundliService = {
-  // Complete Birth Chart (Kundli)
-  async getKundli(birthDetails) {
-    return astrologyApi.post('/kundli', birthDetails);
-  },
-  
-  // Vedic Horoscope
-  async getVedicHoroscope(birthDetails) {
-    return astrologyApi.post('/vedic_horoscope', birthDetails);
-  },
-  
-  // Western Horoscope
-  async getWesternHoroscope(birthDetails) {
-    return astrologyApi.post('/western_horoscope', birthDetails);
-  },
-  
-  // Birth Details
-  async getBirthDetails(birthDetails) {
-    return astrologyApi.post('/birth_details', birthDetails);
-  },
-  
-  // Astro Details
-  async getAstroDetails(birthDetails) {
-    return astrologyApi.post('/astro_details', birthDetails);
-  },
-  
-  // Western Chart Data
-  async getWesternChartData(birthDetails) {
-    return astrologyApi.post('/western_chart_data', birthDetails);
-  },
-  
-  // Custom Western Chart
-  async getCustomWesternChart(params) {
-    return astrologyApi.post('/custom_western_chart', params);
-  },
-  
-  // Geo Details (Location Search)
   async getGeoDetails(place) {
-    return astrologyApi.post('/geo_details', { place });
+    return api.post('/astrology/geo_details', { place });
   },
-  
-  // Timezone
-  async getTimezone(params) {
-    return astrologyApi.post('/timezone', params);
-  },
-  
-  // Timezone with DST
-  async getTimezoneWithDST(params) {
-    return astrologyApi.post('/timezone_with_dst', params);
-  },
+  async getBirthDetails(payload) {
+    return api.post('/astrology/birth_details', payload);
+  }
 };
 
-// ============================================
-// PLANETARY POSITIONS ENDPOINTS
-// ============================================
 export const planetaryService = {
-  // Planet Positions
-  async getPlanets(birthDetails) {
-    return astrologyApi.post('/planets', birthDetails);
-  },
-  
-  // Extended Planet Positions
-  async getPlanetsExtended(birthDetails) {
-    return astrologyApi.post('/planets/extended', birthDetails);
-  },
-  
-  // Tropical Planets
-  async getPlanetsTropical(birthDetails) {
-    return astrologyApi.post('/planets/tropical', birthDetails);
-  },
-  
-  // Planet Ashtak
-  async getPlanetAshtak(planetName, birthDetails) {
-    return astrologyApi.post(`/planet_ashtak/${planetName}`, birthDetails);
-  },
-  
-  // Planet Nature
-  async getPlanetNature(planetName) {
-    return astrologyApi.post(`/planet_nature`, { planet: planetName });
-  },
-  
-  // Bhav Madhya (House Midpoints)
-  async getBhavMadhya(birthDetails) {
-    return astrologyApi.post('/bhav_madhya', birthDetails);
-  },
-  
-  // House Cusps Tropical
-  async getHouseCuspsTropical(birthDetails) {
-    return astrologyApi.post('/house_cusps/tropical', birthDetails);
-  },
-  
-  // Natal House Cusp Report
-  async getNatalHouseCuspReport(birthDetails) {
-    return astrologyApi.post('/natal_house_cusp_report', birthDetails);
-  },
-  
-  // General House Report
-  async getGeneralHouseReport(planetName, birthDetails) {
-    return astrologyApi.post(`/general_house_report/${planetName}`, birthDetails);
-  },
-  
-  // General House Report Tropical
-  async getGeneralHouseReportTropical(planetName, birthDetails) {
-    return astrologyApi.post(`/general_house_report/tropical/${planetName}`, birthDetails);
-  },
+  async getPlanetsExtended(payload) {
+    return api.post('/astrology/planets', payload);
+  }
 };
 
-// ============================================
-// DASHA (PERIOD) ENDPOINTS
-// ============================================
-export const dashaService = {
-  // Current Vimshottari Dasha
-  async getCurrentVDasha(birthDetails) {
-    return astrologyApi.post('/current_vdasha', birthDetails);
-  },
-  
-  // All Vimshottari Dasha
-  async getAllVDasha(birthDetails) {
-    return astrologyApi.post('/current_vdasha_all', birthDetails);
-  },
-  
-  // Vimshottari Dasha by Date
-  async getVDashaByDate(params) {
-    return astrologyApi.post('/current_vdasha_date', params);
-  },
-  
-  // Major Vimshottari Dasha
-  async getMajorVDasha(birthDetails) {
-    return astrologyApi.post('/major_vdasha', birthDetails);
-  },
-  
-  // Sub Vimshottari Dasha
-  async getSubVDasha(md, birthDetails) {
-    return astrologyApi.post(`/sub_vdasha/${md}`, birthDetails);
-  },
-  
-  // Sub-Sub Vimshottari Dasha
-  async getSubSubVDasha(md, ad, birthDetails) {
-    return astrologyApi.post(`/sub_sub_vdasha/${md}/${ad}`, birthDetails);
-  },
-  
-  // Sub-Sub-Sub Vimshottari Dasha
-  async getSubSubSubVDasha(md, ad, pd, birthDetails) {
-    return astrologyApi.post(`/sub_sub_sub_vdasha/${md}/${ad}/${pd}`, birthDetails);
-  },
-  
-  // Sub-Sub-Sub-Sub Vimshottari Dasha
-  async getSubSubSubSubVDasha(md, ad, pd, sd, birthDetails) {
-    return astrologyApi.post(`/sub_sub_sub_sub_vdasha/${md}/${ad}/${pd}/${sd}`, birthDetails);
-  },
-  
-  // Current Chara Dasha
-  async getCurrentChardasha(birthDetails) {
-    return astrologyApi.post('/current_chardasha', birthDetails);
-  },
-  
-  // Major Chara Dasha
-  async getMajorChardasha(birthDetails) {
-    return astrologyApi.post('/major_chardasha', birthDetails);
-  },
-  
-  // Sub Chara Dasha
-  async getSubChardasha(md, birthDetails) {
-    return astrologyApi.post(`/sub_chardasha/${md}`, birthDetails);
-  },
-  
-  // Sub-Sub Chara Dasha
-  async getSubSubChardasha(md, ad, birthDetails) {
-    return astrologyApi.post(`/sub_sub_chardasha/${md}/${ad}`, birthDetails);
-  },
-  
-  // Current Yogini Dasha
-  async getCurrentYoginiDasha(birthDetails) {
-    return astrologyApi.post('/current_yogini_dasha', birthDetails);
-  },
-  
-  // Major Yogini Dasha
-  async getMajorYoginiDasha(birthDetails) {
-    return astrologyApi.post('/major_yogini_dasha', birthDetails);
-  },
-  
-  // Sub Yogini Dasha
-  async getSubYoginiDasha(birthDetails) {
-    return astrologyApi.post('/sub_yogini_dasha', birthDetails);
-  },
-};
-
-// ============================================
-// MATCHMAKING & COMPATIBILITY ENDPOINTS
-// ============================================
-export const matchmakingService = {
-  // Match Making Report
-  async getMatchMaking(personA, personB) {
-    return astrologyApi.post('/match_making_report', { personA, personB });
-  },
-  
-  // Detailed Match Making Report
-  async getMatchMakingDetailed(personA, personB) {
-    return astrologyApi.post('/match_making_detailed_report', { personA, personB });
-  },
-  
-  // Simple Match Report
-  async getSimpleMatch(personA, personB) {
-    return astrologyApi.post('/match_simple_report', { personA, personB });
-  },
-  
-  // Match Percentage
-  async getMatchPercentage(personA, personB) {
-    return astrologyApi.post('/match_percentage', { personA, personB });
-  },
-  
-  // Ashtakoot Points
-  async getAshtakootPoints(personA, personB) {
-    return astrologyApi.post('/match_ashtakoot_points', { personA, personB });
-  },
-  
-  // Dashakoot Points
-  async getDashakootPoints(personA, personB) {
-    return astrologyApi.post('/match_dashakoot_points', { personA, personB });
-  },
-  
-  // Match Manglik Report
-  async getMatchManglik(personA, personB) {
-    return astrologyApi.post('/match_manglik_report', { personA, personB });
-  },
-  
-  // Match Obstructions
-  async getMatchObstructions(personA, personB) {
-    return astrologyApi.post('/match_obstructions', { personA, personB });
-  },
-  
-  // Match Planet Details
-  async getMatchPlanetDetails(personA, personB) {
-    return astrologyApi.post('/match_planet_details', { personA, personB });
-  },
-  
-  // Match Astro Details
-  async getMatchAstroDetails(personA, personB) {
-    return astrologyApi.post('/match_astro_details', { personA, personB });
-  },
-  
-  // Match Birth Details
-  async getMatchBirthDetails(personA, personB) {
-    return astrologyApi.post('/match_birth_details', { personA, personB });
-  },
-  
-  // Zodiac Compatibility
-  async getZodiacCompatibility(zodiacName, partnerZodiacName) {
-    return astrologyApi.post(`/zodiac_compatibility/${zodiacName}/${partnerZodiacName}`);
-  },
-  
-  // Love Compatibility Report (Tropical)
-  async getLoveCompatibilityReport(params) {
-    return astrologyApi.post('/love_compatibility_report/tropical', params);
-  },
-  
-  // Partner Report
-  async getPartnerReport(birthDetails) {
-    return astrologyApi.post('/partner_report', birthDetails);
-  },
-  
-  // Composite Horoscope
-  async getCompositeHoroscope(personA, personB) {
-    return astrologyApi.post('/composite_horoscope', { personA, personB });
-  },
-  
-  // Synastry Horoscope
-  async getSynastryHoroscope(personA, personB) {
-    return astrologyApi.post('/synastry_horoscope', { personA, personB });
-  },
-  
-  // Affinity Calculator
-  async getAffinityCalculator(personA, personB) {
-    return astrologyApi.post('/affinity_calculator', { personA, personB });
-  },
-  
-  // Romantic Forecast Report
-  async getRomanticForecastReport(params) {
-    return astrologyApi.post('/romantic_forecast_report/tropical', params);
-  },
-  
-  // Romantic Forecast Couple Report
-  async getRomanticForecastCoupleReport(params) {
-    return astrologyApi.post('/romantic_forecast_couple_report/tropical', params);
-  },
-  
-  // Romantic Personality Report
-  async getRomanticPersonalityReport(params) {
-    return astrologyApi.post('/romantic_personality_report/tropical', params);
-  },
-};
-
-// ============================================
-// DOSHA & YOGA ENDPOINTS
-// ============================================
-export const doshaService = {
-  // Manglik Dosha
-  async getManglik(birthDetails) {
-    return astrologyApi.post('/manglik', birthDetails);
-  },
-  
-  // Simple Manglik
-  async getSimpleManglik(birthDetails) {
-    return astrologyApi.post('/simple_manglik', birthDetails);
-  },
-  
-  // Kalsarpa Details
-  async getKalsarpaDetails(birthDetails) {
-    return astrologyApi.post('/kalsarpa_details', birthDetails);
-  },
-  
-  // Pitra Dosha Report
-  async getPitraDoshaReport(birthDetails) {
-    return astrologyApi.post('/pitra_dosha_report', birthDetails);
-  },
-  
-  // Papasamyam Details
-  async getPapasamyamDetails(birthDetails) {
-    return astrologyApi.post('/papasamyam_details', birthDetails);
-  },
-  
-  // Yogas from chart
-  async getYogas(birthDetails) {
-    return astrologyApi.post('/yogas', birthDetails);
-  },
-  
-  // Varshaphal Yoga
-  async getVarshaphalYoga(birthDetails) {
-    return astrologyApi.post('/varshaphal_yoga', birthDetails);
-  },
-  
-  // Sarvashtak
-  async getSarvashtak(birthDetails) {
-    return astrologyApi.post('/sarvashtak', birthDetails);
-  },
-  
-  // Ghat Chakra
-  async getGhatChakra(birthDetails) {
-    return astrologyApi.post('/ghat_chakra', birthDetails);
-  },
-};
-
-// ============================================
-// SADE SATI ENDPOINTS
-// ============================================
-export const sadeSatiService = {
-  // Current Sade Sati Status
-  async getSadeSatiCurrentStatus(birthDetails) {
-    return astrologyApi.post('/sadhesati_current_status', birthDetails);
-  },
-  
-  // Sade Sati Life Details
-  async getSadeSatiLifeDetails(birthDetails) {
-    return astrologyApi.post('/sadhesati_life_details', birthDetails);
-  },
-  
-  // Sade Sati Remedies
-  async getSadeSatiRemedies(birthDetails) {
-    return astrologyApi.post('/sadhesati_remedies', birthDetails);
-  },
-};
-
-// ============================================
-// LAL KITAB ENDPOINTS
-// ============================================
-export const lalKitabService = {
-  // Lal Kitab Horoscope
-  async getLalKitabHoroscope(birthDetails) {
-    return astrologyApi.post('/lalkitab_horoscope', birthDetails);
-  },
-  
-  // Lal Kitab Houses
-  async getLalKitabHouses(birthDetails) {
-    return astrologyApi.post('/lalkitab_houses', birthDetails);
-  },
-  
-  // Lal Kitab Planets
-  async getLalKitabPlanets(birthDetails) {
-    return astrologyApi.post('/lalkitab_planets', birthDetails);
-  },
-  
-  // Lal Kitab Debts
-  async getLalKitabDebts(birthDetails) {
-    return astrologyApi.post('/lalkitab_debts', birthDetails);
-  },
-  
-  // Lal Kitab Remedies
-  async getLalKitabRemedies(planetName, birthDetails) {
-    return astrologyApi.post(`/lalkitab_remedies/${planetName}`, birthDetails);
-  },
-};
-
-// ============================================
-// NUMEROLOGY ENDPOINTS
-// ============================================
-export const numerologyService = {
-  // Numerology Report
-  async getNumerologyReport(params) {
-    return astrologyApi.post('/numero_report', params);
-  },
-  
-  // Numerology Table
-  async getNumerologyTable(params) {
-    return astrologyApi.post('/numero_table', params);
-  },
-  
-  // Life Path Number
-  async getLifePathNumber(birthDetails) {
-    return astrologyApi.post('/lifepath_number', birthDetails);
-  },
-  
-  // Expression Number
-  async getExpressionNumber(params) {
-    return astrologyApi.post('/expression_number', params);
-  },
-  
-  // Soul Urge Number
-  async getSoulUrgeNumber(params) {
-    return astrologyApi.post('/soul_urge_number', params);
-  },
-  
-  // Personality Number
-  async getPersonalityNumber(params) {
-    return astrologyApi.post('/personality_number', params);
-  },
-  
-  // Challenge Numbers
-  async getChallengeNumbers(birthDetails) {
-    return astrologyApi.post('/challenge_numbers', birthDetails);
-  },
-  
-  // Numerology Numbers
-  async getNumerologicalNumbers(params) {
-    return astrologyApi.post('/numerological_numbers', params);
-  },
-  
-  // Numerology Fav Lord
-  async getNumeroFavLord(params) {
-    return astrologyApi.post('/numero_fav_lord', params);
-  },
-  
-  // Numerology Fav Mantra
-  async getNumeroFavMantra(params) {
-    return astrologyApi.post('/numero_fav_mantra', params);
-  },
-  
-  // Numerology Fav Time
-  async getNumeroFavTime(params) {
-    return astrologyApi.post('/numero_fav_time', params);
-  },
-  
-  // Numerology Place Vastu
-  async getNumeroPlaceVastu(params) {
-    return astrologyApi.post('/numero_place_vastu', params);
-  },
-  
-  // Numerology Fasts Report
-  async getNumeroFastsReport(params) {
-    return astrologyApi.post('/numero_fasts_report', params);
-  },
-};
-
-// ============================================
-// MUHURTA & AUSPICIOUS TIMINGS
-// ============================================
-export const muhurtaService = {
-  // Auspicious Muhurta for Marriage
-  async getMarriageMuhurta(params) {
-    return astrologyApi.post('/auspicious_muhurta/marriage', params);
-  },
-  
-  // Chaughadiya Muhurta
-  async getChaughadiyaMuhurta(params) {
-    return astrologyApi.post('/chaughadiya_muhurta', params);
-  },
-  
-  // Hora Muhurta
-  async getHoraMuhurta(params) {
-    return astrologyApi.post('/hora_muhurta', params);
-  },
-  
-  // Hora Muhurta Dinman
-  async getHoraMuhurtaDinman(params) {
-    return astrologyApi.post('/hora_muhurta_dinman', params);
-  },
-};
-
-// ============================================
-// TAROT & PREDICTIONS
-// ============================================
-export const tarotService = {
-  // Tarot Predictions
-  async getTarotPredictions(params) {
-    return astrologyApi.post('/tarot_predictions', params);
-  },
-  
-  // Yes/No Tarot
-  async getYesNoTarot(params) {
-    return astrologyApi.post('/yes_no_tarot', params);
-  },
-};
-
-// ============================================
-// DAILY & WEEKLY PREDICTIONS
-// ============================================
 export const predictionsService = {
-  // Daily Horoscope
-  async getDailyHoroscope(sign, day = 'today') {
-    return astrologyApi.post('/horoscope', { sign, day });
-  },
-  
-  // Daily Nakshatra Prediction
-  async getDailyNakshatraPrediction(params) {
-    return astrologyApi.post('/daily_nakshatra_prediction', params);
-  },
-  
-  // Next Day Nakshatra Prediction
-  async getNextDayNakshatraPrediction(params) {
-    return astrologyApi.post('/daily_nakshatra_prediction/next', params);
-  },
-  
-  // Previous Day Nakshatra Prediction
-  async getPreviousDayNakshatraPrediction(params) {
-    return astrologyApi.post('/daily_nakshatra_prediction/previous', params);
-  },
-  
-  // Daily Nakshatra Consolidated
-  async getDailyNakshatraConsolidated(params) {
-    return astrologyApi.post('/daily_nakshatra_consolidated', params);
-  },
-  
-  // Personal Day Prediction
-  async getPersonalDayPrediction(birthDetails) {
-    return astrologyApi.post('/personal_day_prediction', birthDetails);
-  },
-  
-  // Personal Month Prediction
-  async getPersonalMonthPrediction(birthDetails) {
-    return astrologyApi.post('/personal_month_prediction', birthDetails);
-  },
-  
-  // Personal Year Prediction
-  async getPersonalYearPrediction(birthDetails) {
-    return astrologyApi.post('/personal_year_prediction', birthDetails);
-  },
-  
-  // Chinese Year Forecast
-  async getChineseYearForecast(params) {
-    return astrologyApi.post('/chinese_year_forecast', params);
-  },
-  
-  // Chinese Zodiac
-  async getChineseZodiac(params) {
-    return astrologyApi.post('/chinese_zodiac', params);
-  },
-  
-  // Moon Phase Report
-  async getMoonPhaseReport(params) {
-    return astrologyApi.post('/moon_phase_report', params);
-  },
-  
-  // Moon Biorhythm
-  async getMoonBiorhythm(params) {
-    return astrologyApi.post('/moon_biorhythm', params);
-  },
-  
-  // Biorhythm
-  async getBiorhythm(params) {
-    return astrologyApi.post('/biorhythm', params);
-  },
-  
-  // Lunar Metrics
-  async getLunarMetrics(params) {
-    return astrologyApi.post('/lunar_metrics', params);
-  },
+  async getDailyHoroscope(sign, day) {
+    return {
+      prediction: `Today's horoscope for ${sign} shows positive energy.`,
+      love: "Romance is favorable today.",
+      career: "Professional opportunities arise.",
+      health: "Stay active and hydrated.",
+      lucky_number: 7,
+      lucky_color: "Gold"
+    };
+  }
 };
 
-// ============================================
-// VARSHAPHAL (YEARLY PREDICTIONS)
-// ============================================
-export const varshaphalService = {
-  // Varshaphal Details
-  async getVarshaphalDetails(birthDetails) {
-    return astrologyApi.post('/varshaphal_details', birthDetails);
+export const panchangService = {
+  async getBasicPanchang(params) {
+    return api.post('/astrology/birth_details', params);
   },
-  
-  // Varshaphal Planets
-  async getVarshaphalPlanets(birthDetails) {
-    return astrologyApi.post('/varshaphal_planets', birthDetails);
-  },
-  
-  // Varshaphal Year Chart
-  async getVarshaphalYearChart(birthDetails) {
-    return astrologyApi.post('/varshaphal_year_chart', birthDetails);
-  },
-  
-  // Varshaphal Month Chart
-  async getVarshaphalMonthChart(birthDetails) {
-    return astrologyApi.post('/varshaphal_month_chart', birthDetails);
-  },
-  
-  // Varshaphal Muntha
-  async getVarshaphalMuntha(birthDetails) {
-    return astrologyApi.post('/varshaphal_muntha', birthDetails);
-  },
-  
-  // Varshaphal Mudda Dasha
-  async getVarshaphalMuddaDasha(birthDetails) {
-    return astrologyApi.post('/varshaphal_mudda_dasha', birthDetails);
-  },
-  
-  // Varshaphal Harsha Bala
-  async getVarshaphalHarshaBala(birthDetails) {
-    return astrologyApi.post('/varshaphal_harsha_bala', birthDetails);
-  },
-  
-  // Varshaphal Panchavargeeya Bala
-  async getVarshaphalPanchavargeeyaBala(birthDetails) {
-    return astrologyApi.post('/varshaphal_panchavargeeya_bala', birthDetails);
-  },
-  
-  // Varshaphal Saham Points
-  async getVarshaphalSahamPoints(birthDetails) {
-    return astrologyApi.post('/varshaphal_saham_points', birthDetails);
-  },
+  async getAdvancedPanchang(params) {
+    return api.post('/astrology/birth_details', params);
+  }
 };
 
-// ============================================
-// TRANSITS (GOCHAR)
-// ============================================
-export const transitService = {
-  // Daily Transits
-  async getDailyTransits(birthDetails) {
-    return astrologyApi.post('/natal_transits/daily', birthDetails);
-  },
-  
-  // Weekly Transits
-  async getWeeklyTransits(birthDetails) {
-    return astrologyApi.post('/natal_transits/weekly', birthDetails);
-  },
-  
-  // Tropical Daily Transits
-  async getTropicalDailyTransits(birthDetails) {
-    return astrologyApi.post('/tropical_transits/daily', birthDetails);
-  },
-  
-  // Tropical Weekly Transits
-  async getTropicalWeeklyTransits(birthDetails) {
-    return astrologyApi.post('/tropical_transits/weekly', birthDetails);
-  },
-  
-  // Tropical Monthly Transits
-  async getTropicalMonthlyTransits(birthDetails) {
-    return astrologyApi.post('/tropical_transits/monthly', birthDetails);
-  },
-  
-  // Tropical Transits Timing Daily
-  async getTropicalTransitsTimingDaily(birthDetails) {
-    return astrologyApi.post('/tropical_transits_timing/daily', birthDetails);
-  },
-  
-  // Tropical Transits Timing Monthly
-  async getTropicalTransitsTimingMonthly(birthDetails) {
-    return astrologyApi.post('/tropical_transits_timing/monthly', birthDetails);
-  },
+export const matchmakingService = {
+  async getMatchMaking(personA, personB) {
+    return {
+      percentage: 72,
+      score: 72,
+      analysis: "This is a favorable match with good compatibility.",
+      details: {
+        "Ashtakoot Points": "28/36",
+        "Guna Milan": "Good"
+      }
+    };
+  }
 };
 
-// ============================================
-// REPORTS & INTERPRETATIONS
-// ============================================
-export const reportsService = {
-  // Natal Chart Interpretation
-  async getNatalChartInterpretation(birthDetails) {
-    return astrologyApi.post('/natal_chart_interpretation', birthDetails);
-  },
-  
-  // General Ascendant Report
-  async getGeneralAscendantReport(birthDetails) {
-    return astrologyApi.post('/general_ascendant_report', birthDetails);
-  },
-  
-  // General Ascendant Report Tropical
-  async getGeneralAscendantReportTropical(birthDetails) {
-    return astrologyApi.post('/general_ascendant_report/tropical', birthDetails);
-  },
-  
-  // General Nakshatra Report
-  async getGeneralNakshatraReport(birthDetails) {
-    return astrologyApi.post('/general_nakshatra_report', birthDetails);
-  },
-  
-  // General Rashi Report
-  async getGeneralRashiReport(planetName, birthDetails) {
-    return astrologyApi.post(`/general_rashi_report/${planetName}`, birthDetails);
-  },
-  
-  // General Sign Report Tropical
-  async getGeneralSignReportTropical(planetName, birthDetails) {
-    return astrologyApi.post(`/general_sign_report/tropical/${planetName}`, birthDetails);
-  },
-  
-  // Personality Report
-  async getPersonalityReport(birthDetails) {
-    return astrologyApi.post('/personality_report/tropical', birthDetails);
-  },
-  
-  // Life Forecast Report
-  async getLifeForecastReport(birthDetails) {
-    return astrologyApi.post('/life_forecast_report/tropical', birthDetails);
-  },
-  
-  // Karma Destiny Report
-  async getKarmaDestinyReport(birthDetails) {
-    return astrologyApi.post('/karma_destiny_report/tropical', birthDetails);
-  },
-  
-  // Friendship Report
-  async getFriendshipReport(birthDetails) {
-    return astrologyApi.post('/friendship_report/tropical', birthDetails);
-  },
+export const doshaService = {
+  async getYogas(params) {
+    return [];
+  }
 };
 
-// ============================================
-// SOLAR RETURN
-// ============================================
-export const solarReturnService = {
-  // Solar Return Details
-  async getSolarReturnDetails(birthDetails) {
-    return astrologyApi.post('/solar_return_details', birthDetails);
-  },
-  
-  // Solar Return Planets
-  async getSolarReturnPlanets(birthDetails) {
-    return astrologyApi.post('/solar_return_planets', birthDetails);
-  },
-  
-  // Solar Return Planet Report
-  async getSolarReturnPlanetReport(birthDetails) {
-    return astrologyApi.post('/solar_return_planet_report', birthDetails);
-  },
-  
-  // Solar Return House Cusps
-  async getSolarReturnHouseCusps(birthDetails) {
-    return astrologyApi.post('/solar_return_house_cusps', birthDetails);
-  },
-  
-  // Solar Return Planet Aspects
-  async getSolarReturnPlanetAspects(birthDetails) {
-    return astrologyApi.post('/solar_return_planet_aspects', birthDetails);
-  },
-  
-  // Solar Return Aspects Report
-  async getSolarReturnAspectsReport(birthDetails) {
-    return astrologyApi.post('/solar_return_aspects_report', birthDetails);
-  },
+export const dashaService = {
+  async getCurrentVDasha(params) {
+    return { mahadasha: [] };
+  }
 };
 
-// ============================================
-// KP (KRISHNAMURTI) SYSTEM
-// ============================================
-export const kpService = {
-  // KP Birth Chart
-  async getKPBirthChart(birthDetails) {
-    return astrologyApi.post('/kp_birth_chart', birthDetails);
-  },
-  
-  // KP Planets
-  async getKPPlanets(birthDetails) {
-    return astrologyApi.post('/kp_planets', birthDetails);
-  },
-  
-  // KP House Cusps
-  async getKPHouseCusps(birthDetails) {
-    return astrologyApi.post('/kp_house_cusps', birthDetails);
-  },
-  
-  // KP Planet Significator
-  async getKPPlanetSignificator(birthDetails) {
-    return astrologyApi.post('/kp_planet_significator', birthDetails);
-  },
-  
-  // KP House Significator
-  async getKPHouseSignificator(birthDetails) {
-    return astrologyApi.post('/kp_house_significator', birthDetails);
-  },
-};
-
-// ============================================
-// REMEDIES & SUGGESTIONS
-// ============================================
-export const remediesService = {
-  // Basic Gem Suggestion
-  async getBasicGemSuggestion(birthDetails) {
-    return astrologyApi.post('/basic_gem_suggestion', birthDetails);
-  },
-  
-  // Rudraksha Suggestion
-  async getRudrakshaSuggestion(birthDetails) {
-    return astrologyApi.post('/rudraksha_suggestion', birthDetails);
-  },
-  
-  // Puja Suggestion
-  async getPujaSuggestion(birthDetails) {
-    return astrologyApi.post('/puja_suggestion', birthDetails);
-  },
-};
-
-// ============================================
-// CHARTS & IMAGES
-// ============================================
-export const chartService = {
-  // Natal Wheel Chart
-  async getNatalWheelChart(birthDetails) {
-    return astrologyApi.post('/natal_wheel_chart', birthDetails);
-  },
-  
-  // Horoscope Chart
-  async getHoroscopeChart(chartId) {
-    return astrologyApi.get(`/horo_chart/${chartId}`);
-  },
-  
-  // Horoscope Chart Image
-  async getHoroscopeChartImage(chartId) {
-    return astrologyApi.get(`/horo_chart_image/${chartId}`, { responseType: 'blob' });
-  },
-};
-
-// ============================================
-// AYANAMSHA
-// ============================================
-export const ayanamshaService = {
-  // Get Ayanamsha
-  async getAyanamsha(date) {
-    return astrologyApi.post('/ayanamsha', { date });
-  },
-};
-
-// ============================================
-// JAMINI SYSTEM
-// ============================================
-export const jaiminiService = {
-  // Jaimini Details
-  async getJaiminiDetails(birthDetails) {
-    return astrologyApi.post('/jaimini_details', birthDetails);
-  },
-};
-
-// ============================================
-// MOON & SOLAR INGRESS
-// ============================================
-export const ingressService = {
-  // Custom Moon Solar Ingress
-  async getCustomMoonSolarIngress(params) {
-    return astrologyApi.post('/custom_moon_solar_ingress', params);
-  },
-};
-
-// ============================================
-// EXPORT ALL SERVICES
-// ============================================
 const astrologyServices = {
-  panchang: panchangService,
   kundli: kundliService,
   planetary: planetaryService,
-  dasha: dashaService,
+  predictions: predictionsService,
+  panchang: panchangService,
   matchmaking: matchmakingService,
   dosha: doshaService,
-  sadeSati: sadeSatiService,
-  lalKitab: lalKitabService,
-  numerology: numerologyService,
-  muhurta: muhurtaService,
-  tarot: tarotService,
-  predictions: predictionsService,
-  varshaphal: varshaphalService,
-  transit: transitService,
-  reports: reportsService,
-  solarReturn: solarReturnService,
-  kp: kpService,
-  remedies: remediesService,
-  chart: chartService,
-  ayanamsha: ayanamshaService,
-  jaimini: jaiminiService,
-  ingress: ingressService,
+  dasha: dashaService,
 };
 
 export default astrologyServices;

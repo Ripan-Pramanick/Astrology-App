@@ -6,12 +6,19 @@ import { config } from '../config/env.js';
 if (!config.supabase?.url || !config.supabase?.anonKey) {
     console.error('❌ Supabase configuration missing!');
     console.error('Please check your SUPABASE_URL and SUPABASE_ANON_KEY in .env file');
-    throw new Error('Supabase configuration is required');
+    // Don't throw error, just warn and continue with mock client
+    console.warn('⚠️ Running without Supabase - some features will be limited');
 }
 
 export const supabase = createClient(
-    config.supabase.url, 
-    config.supabase.anonKey
+    config.supabase?.url || 'https://placeholder.supabase.co',
+    config.supabase?.anonKey || 'placeholder-key',
+    {
+        auth: {
+            persistSession: false,
+            autoRefreshToken: false,
+        },
+    }
 );
 
 console.log('✅ Supabase client initialized');

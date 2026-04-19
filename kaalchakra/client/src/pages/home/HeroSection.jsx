@@ -1,10 +1,12 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { ArrowRight, Sparkles, Star, Compass, Loader2 } from 'lucide-react';
-import api from '../services/api.js';
+import api from '../../services/api.js';
 
 // Note: Replace this with your actual Ganesha SVG import
 import ganesha from '../../assets/ganesa.svg';
+
+
 
 const HeroSection = () => {
   const [heroData, setHeroData] = useState(null);
@@ -143,7 +145,7 @@ const HeroSection = () => {
         <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
           <Link
             to={heroData?.buttonLink || "/services"}
-            className="group inline-flex items-center gap-2 bg-gradient-to-r from-orange-500 to-amber-500 hover:from-orange-600 hover:to-amber-600 text-white font-semibold px-8 py-3.5 rounded-xl shadow-md hover:shadow-lg transition-all duration-300 hover:scale-105"
+            className="group inline-flex items-center gap-2 bg-gradient-to-r from-orange-500 to-amber-500 hover:from-orange-600 hover:to-amber-600 text-orange-500 font-semibold px-8 py-3.5 rounded-xl shadow-md hover:shadow-lg transition-all duration-300 hover:scale-105"
           >
             <span>{heroData?.buttonText || "Explore Services"}</span>
             <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
@@ -182,7 +184,7 @@ const HeroSection = () => {
       </div>
 
       {/* Custom Animation Styles */}
-      <style jsx>{`
+      <style>{`
         @keyframes float-slow {
           0%, 100% { transform: translateY(0px) rotate(0deg); }
           50% { transform: translateY(-20px) rotate(10deg); }

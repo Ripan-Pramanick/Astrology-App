@@ -1,7 +1,6 @@
 // client/src/firebase.js
 import { initializeApp } from "firebase/app";
-import { getAuth } from "firebase/auth"; // 👈 Auth এর জন্য এটা লাগবে
-import { getAnalytics } from "firebase/analytics";
+import { getAuth, signInWithEmailAndPassword, createUserWithEmailAndPassword, updateProfile, sendPasswordResetEmail } from "firebase/auth";
 
 const firebaseConfig = {
   apiKey: "AIzaSyBuadfMrvSyqYjMeUisKnW8IQ1ON-VNtjI",
@@ -13,11 +12,15 @@ const firebaseConfig = {
   measurementId: "G-S0484WRW77"
 };
 
-// Initialize Firebase
 const app = initializeApp(firebaseConfig);
+const auth = getAuth(app);
 
-// Initialize Services
-export const auth = getAuth(app); // 👈 এটাকে এক্সপোর্ট করছি যাতে Login পেজে ব্যবহার করা যায়
-export const analytics = typeof window !== "undefined" ? getAnalytics(app) : null;
+export { 
+  auth,
+  signInWithEmailAndPassword, 
+  createUserWithEmailAndPassword, 
+  updateProfile,
+  sendPasswordResetEmail 
+};
 
 export default app;

@@ -29,13 +29,13 @@ import articleRoutes from './routes/articles.js';
 import testimonialRoutes from './routes/testimonials.js';
 import aboutRoutes from './routes/about.js';
 import contactRoutes from './routes/contact.js';
+import panchangRoutes from './routes/panchang.js'; // ADD THIS - was missing
 
 // ============================================
-// FIREBASE ADMIN INITIALIZATION (FIXED)
+// FIREBASE ADMIN INITIALIZATION
 // ============================================
 if (!admin.apps.length) {
     try {
-        // Handle private key properly - replace escaped newlines
         let privateKey = firebaseConfig.firebase?.privateKey;
         
         if (!privateKey) {
@@ -43,12 +43,10 @@ if (!admin.apps.length) {
             throw new Error('Firebase private key is missing');
         }
         
-        // If the key contains literal '\n' strings, replace them with actual newlines
         if (privateKey && privateKey.includes('\\n')) {
             privateKey = privateKey.replace(/\\n/g, '\n');
         }
         
-        // Validate private key format
         if (!privateKey.includes('-----BEGIN PRIVATE KEY-----')) {
             console.error('❌ Invalid private key format - missing BEGIN marker');
             throw new Error('Private key format is invalid');
@@ -164,13 +162,29 @@ app.post('/api/astrology/planets', async (req, res) => {
 // ============================================
 // 2. AI INTERPRETATION API (Gemini-pro)
 // ============================================
-const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
+let genAI;
+try {
+    if (process.env.GEMINI_API_KEY) {
+        genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
+        console.log('✅ Gemini AI initialized');
+    } else {
+        console.warn('⚠️ Gemini API key missing');
+    }
+} catch (error) {
+    console.warn('⚠️ Failed to initialize Gemini AI:', error.message);
+}
 
 app.post('/api/ai/interpret', async (req, res) => {
     try {
         const { planets, basic } = req.body;
+        
+        if (!genAI) {
+            const fallbackText = "Due to cosmic alignment issues, a general reading is generated: Focus on your strengths, career growth is likely in the coming months, and maintain mental peace through meditation.";
+            return res.json({ success: true, interpretation: fallbackText });
+        }
+        
         const model = genAI.getGenerativeModel({ model: "gemini-pro" });
-        const prompt = `You are an expert Vedic Astrologer. Analyze Lagna: ${basic?.ascendant}, Moon Sign: ${basic?.sign}, Nakshatra: ${basic?.Naksahtra}. Positions: ${JSON.stringify(planets)}. Give a professional reading in 4 short paragraphs.`;
+        const prompt = `You are an expert Vedic Astrologer. Analyze Lagna: ${basic?.ascendant || 'Unknown'}, Moon Sign: ${basic?.sign || 'Unknown'}, Nakshatra: ${basic?.Naksahtra || 'Unknown'}. Positions: ${JSON.stringify(planets)}. Give a professional reading in 4 short paragraphs.`;
 
         const result = await model.generateContent(prompt);
         const text = result.response.text();
@@ -242,6 +256,47 @@ app.post('/api/payment/create-order', async (req, res) => {
     }
 });
 
+// Payment verification endpoint
+app.post('/api/payment/verify-payment', async (req, res) => {
+    try {
+        const { razorpay_order_id, razorpay_payment_id, razorpay_signature, user_id, user_phone, user_email, plan_type } = req.body;
+        
+        // Verify signature
+        const crypto = await import('crypto');
+        const sign = razorpay_order_id + "|" + razorpay_payment_id;
+        const expectedSignature = crypto.createHmac("sha256", process.env.RAZORPAY_KEY_SECRET)
+            .update(sign.toString())
+            .digest("hex");
+
+        if (razorpay_signature !== expectedSignature) {
+            return res.status(400).json({ success: false, message: "Invalid payment signature" });
+        }
+
+        // Update user premium status
+        const expiryDate = new Date();
+        expiryDate.setFullYear(expiryDate.getFullYear() + 1);
+
+        const { data: updatedUser, error: updateError } = await supabase
+            .from('users')
+            .update({
+                subscription: 'premium',
+                is_premium: true,
+                premium_expiry: expiryDate.toISOString(),
+                premium_activated_at: new Date().toISOString()
+            })
+            .eq('phone', user_phone)
+            .select()
+            .single();
+
+        if (updateError) throw updateError;
+
+        res.json({ success: true, message: "Premium activated successfully!", user: updatedUser });
+    } catch (error) {
+        console.error("Payment verification error:", error);
+        res.status(500).json({ success: false, message: error.message });
+    }
+});
+
 // ============================================
 // 5. TEST ENDPOINTS (For debugging)
 // ============================================
@@ -253,20 +308,9 @@ app.get('/health', (req, res) => res.json({ status: 'ok', timestamp: new Date().
 app.get('/api/test-firebase', async (req, res) => {
     try {
         if (!admin.apps.length) {
-            return res.json({ 
-                success: false, 
-                message: 'Firebase not initialized',
-                apps: 0
-            });
+            return res.json({ success: false, message: 'Firebase not initialized', apps: 0 });
         }
-        
-        const auth = admin.auth();
-        res.json({ 
-            success: true, 
-            message: 'Firebase is working!',
-            apps: admin.apps.length,
-            projectId: admin.apps[0]?.options?.projectId
-        });
+        res.json({ success: true, message: 'Firebase is working!', apps: admin.apps.length });
     } catch (error) {
         res.json({ success: false, message: error.message });
     }
@@ -275,15 +319,9 @@ app.get('/api/test-firebase', async (req, res) => {
 // Test Supabase connection
 app.get('/api/test-supabase', async (req, res) => {
     try {
-        const { data, error } = await supabase.from('users').select('count', { count: 'exact', head: true });
-        
+        const { error } = await supabase.from('users').select('count', { count: 'exact', head: true });
         if (error) throw error;
-        
-        res.json({ 
-            success: true, 
-            message: 'Supabase is working!',
-            usersCount: data
-        });
+        res.json({ success: true, message: 'Supabase is working!' });
     } catch (error) {
         res.json({ success: false, message: error.message });
     }
@@ -293,7 +331,7 @@ app.get('/api/test-supabase', async (req, res) => {
 app.get('/api/test-all', async (req, res) => {
     const results = {
         server: { status: 'ok', timestamp: new Date().toISOString() },
-        firebase: { status: 'checking' },
+        firebase: { status: admin.apps.length ? 'ok' : 'not_initialized' },
         supabase: { status: 'checking' },
         env: {
             node_env: process.env.NODE_ENV,
@@ -305,27 +343,40 @@ app.get('/api/test-all', async (req, res) => {
         }
     };
     
-    // Check Firebase
-    try {
-        if (admin.apps.length) {
-            results.firebase = { status: 'ok', apps: admin.apps.length };
-        } else {
-            results.firebase = { status: 'not_initialized' };
-        }
-    } catch (error) {
-        results.firebase = { status: 'error', message: error.message };
-    }
-    
-    // Check Supabase
     try {
         const { error } = await supabase.from('users').select('count', { count: 'exact', head: true });
-        if (error) throw error;
-        results.supabase = { status: 'ok' };
+        results.supabase = error ? { status: 'error', message: error.message } : { status: 'ok' };
     } catch (error) {
         results.supabase = { status: 'error', message: error.message };
     }
     
     res.json(results);
+});
+
+// Quick AI Insight endpoint
+app.post('/api/ai/quick-insight', async (req, res) => {
+    try {
+        const { zodiac, userId } = req.body;
+        
+        const insights = {
+            'Aries': "Mars energizes your career sector. Leadership opportunities arise this week.",
+            'Taurus': "Venus brings harmony to relationships. Financial decisions yield long-term benefits.",
+            'Gemini': "Mercury enhances communication. Perfect time for networking.",
+            'Cancer': "Moon in your sign heightens intuition. Trust your gut feelings.",
+            'Leo': "Sun illuminates your creative sector. Your leadership will be recognized.",
+            'Virgo': "Mercury retrograde ends next week, boosting communication.",
+            'Libra': "Venus brings balance to work and home life.",
+            'Scorpio': "Pluto transforms your career path. Embrace changes.",
+            'Sagittarius': "Jupiter expands your horizons. Travel opportunities are favored.",
+            'Capricorn': "Saturn rewards your hard work. Recognition is on the horizon.",
+            'Aquarius': "Uranus brings unexpected opportunities. Stay flexible.",
+            'Pisces': "Neptune enhances creativity. Artistic pursuits are highly favored."
+        };
+        
+        res.json({ success: true, insight: insights[zodiac] || "Embrace spiritual practices this week." });
+    } catch (error) {
+        res.status(500).json({ success: false, message: error.message });
+    }
 });
 
 // ============================================
@@ -343,7 +394,7 @@ app.use('/api/articles', articleRoutes);
 app.use('/api/testimonials', testimonialRoutes);
 app.use('/api/about', aboutRoutes);
 app.use('/api/contact', contactRoutes);
-
+app.use('/api/panchang', panchangRoutes); // ADDED - was missing
 
 // 404 handler
 app.use((req, res) => res.status(404).json({ message: 'Route not found' }));
@@ -364,32 +415,60 @@ app.listen(PORT, () => {
     console.log(`💾 Supabase: ${process.env.SUPABASE_URL ? '✅ Configured' : '❌ Not configured'}`);
 });
 
+// Allow all origins for development (simplest solution)
+app.use(cors({
+  origin: '*', // Allow all origins
+  credentials: true,
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS', 'PATCH'],
+  allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With', 'Accept']
+}));
 
-// Add this to your server/index.js or routes/ai.js
-app.post('/api/ai/quick-insight', async (req, res) => {
-    try {
-        const { zodiac, userId } = req.body;
-        
-        const insights = {
-            'Aries': "Mars energizes your career sector. Leadership opportunities arise this week. Take initiative on pending projects.",
-            'Taurus': "Venus brings harmony to relationships. Financial decisions made now will yield long-term benefits.",
-            'Gemini': "Mercury enhances communication. Perfect time for networking and new collaborations.",
-            'Cancer': "Moon in your sign heightens intuition. Trust your gut feelings about important decisions.",
-            'Leo': "Sun illuminates your creative sector. Your natural leadership will be recognized by superiors.",
-            'Virgo': "Mercury retrograde ends next week, boosting communication. Jupiter signals travel and higher learning.",
-            'Libra': "Venus brings balance to work and home life. A partnership opportunity may arise.",
-            'Scorpio': "Pluto transforms your career path. Embrace changes coming your way this month.",
-            'Sagittarius': "Jupiter expands your horizons. Travel or educational opportunities are favored.",
-            'Capricorn': "Saturn rewards your hard work. Recognition and advancement are on the horizon.",
-            'Aquarius': "Uranus brings unexpected opportunities. Stay flexible and open to new ideas.",
-            'Pisces': "Neptune enhances creativity. Artistic and spiritual pursuits are highly favored."
-        };
-        
-        res.json({ 
-            success: true, 
-            insight: insights[zodiac] || "Mercury retrograde ends next week, boosting communication. Jupiter in the 9th house signals travel and higher learning. Embrace spiritual practices."
-        });
-    } catch (error) {
-        res.status(500).json({ success: false, message: error.message });
-    }
+// If the above doesn't work, try this:
+app.use((req, res, next) => {
+  res.header('Access-Control-Allow-Origin', '*');
+  res.header('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
+  res.header('Access-Control-Allow-Headers', 'Content-Type, Authorization');
+  if (req.method === 'OPTIONS') {
+    return res.sendStatus(200);
+  }
+  next();
 });
+
+// Allow multiple origins
+const allowedOrigins = [
+  'http://localhost:5173',
+  'http://localhost:5174',
+  'http://localhost:5175',
+  'http://127.0.0.1:5173',
+  'http://127.0.0.1:5174',
+  'http://localhost:3000'
+];
+
+// CORS configuration - Place this BEFORE your routes
+app.use(cors({
+  origin: function(origin, callback) {
+    // Allow requests with no origin (like mobile apps or curl)
+    if (!origin) return callback(null, true);
+    if (allowedOrigins.indexOf(origin) === -1) {
+      console.log('Blocked origin:', origin);
+      // For development, allow any origin
+      return callback(null, true);
+    }
+    return callback(null, true);
+  },
+  credentials: true,
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS', 'PATCH'],
+  allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With', 'Accept'],
+  exposedHeaders: ['Content-Length', 'X-Kuma-Revision'],
+  maxAge: 86400, // 24 hours
+}));
+
+// Or for development, use this simpler version:
+app.use(cors({
+  origin: true, // This allows any origin in development
+  credentials: true,
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization']
+}));
+
+export default app;
