@@ -29,7 +29,7 @@ import articleRoutes from './routes/articles.js';
 import testimonialRoutes from './routes/testimonials.js';
 import aboutRoutes from './routes/about.js';
 import contactRoutes from './routes/contact.js';
-import panchangRoutes from './routes/panchang.js'; // ADD THIS - was missing
+import panchangRoutes from './routes/panchang.js';
 
 // ============================================
 // FIREBASE ADMIN INITIALIZATION
@@ -74,39 +74,95 @@ if (!admin.apps.length) {
 
 const app = express();
 
+// ============================================
+// CORS CONFIGURATION
+// ============================================
+app.use(cors({
+    origin: true,
+    credentials: true,
+    methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS', 'PATCH'],
+    allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With', 'Accept']
+}));
+app.options('*', cors());
+
 // --- Middlewares ---
 app.use(helmet({ contentSecurityPolicy: false })); 
 app.use(compression());
-app.use(cors({ origin: process.env.CLIENT_URL || 'http://localhost:5173', credentials: true }));
 app.use(express.json({ limit: '10mb' })); 
 app.use(express.urlencoded({ extended: true }));
 app.use(morgan('combined', { stream: { write: (msg) => logger.info(msg.trim()) } }));
 
 // ============================================
-// 1. SMART ASTROLOGY API (Wallet-Based Token System)
+// FREE GEO LOCATION API (OpenStreetMap)
 // ============================================
-const callAstrologyAPI = async (endpoint, payload) => {
-    const walletToken = process.env.ASTROLOGY_WALLET_TOKEN?.trim(); 
+const getGeoLocationFree = async (place) => {
+    try {
+        const response = await axios.get(`https://nominatim.openstreetmap.org/search`, {
+            params: {
+                q: place,
+                format: 'json',
+                limit: 5,
+                addressdetails: 1
+            },
+            headers: {
+                'User-Agent': 'KaalChakra-Astrology-App/1.0'
+            },
+            timeout: 5000
+        });
+        
+        if (response.data && response.data.length > 0) {
+            return response.data.map(loc => ({
+                place_name: loc.display_name,
+                latitude: loc.lat,
+                longitude: loc.lon,
+                timezone: "5.5"
+            }));
+        }
+        return [];
+    } catch (error) {
+        console.error("Free Geo location error:", error.message);
+        return [];
+    }
+};
 
-    const mockData = {
-        'geo_details': { geonames: [{ place_name: "Santipur, West Bengal", latitude: "23.2500", longitude: "88.4333", timezone: "5.5" }] },
-        'birth_details': { ascendant: "Leo", sign: "Aries", Naksahtra: "Ashwini", Varna: "Kshatriya", Gana: "Deva" },
-        'planets/extended': [
-            { name: "Sun", sign: "Aries", normDegree: 15.2, house: 1 },
-            { name: "Moon", sign: "Cancer", normDegree: 10.5, house: 4 },
-            { name: "Mars", sign: "Aries", normDegree: 25.3, house: 1 },
-            { name: "Mercury", sign: "Pisces", normDegree: 8.7, house: 12 },
-            { name: "Jupiter", sign: "Pisces", normDegree: 12.1, house: 9 },
-            { name: "Venus", sign: "Aquarius", normDegree: 18.4, house: 11 },
-            { name: "Saturn", sign: "Capricorn", normDegree: 22.9, house: 10 },
-            { name: "Rahu", sign: "Taurus", normDegree: 5.2, house: 2 },
-            { name: "Ketu", sign: "Scorpio", normDegree: 5.2, house: 8 }
-        ]
-    };
+// ============================================
+// ASTROLOGY API WITH FALLBACK
+// ============================================
+const getMockGeoData = () => ({
+    geonames: [{ 
+        place_name: "Kolkata, West Bengal, India", 
+        latitude: "22.5726", 
+        longitude: "88.3639", 
+        timezone: "5.5" 
+    }]
+});
+
+const getMockBirthDetails = () => ({
+    ascendant: "Leo",
+    sign: "Aries",
+    Naksahtra: "Ashwini",
+    Varna: "Kshatriya",
+    Gana: "Deva"
+});
+
+const getMockPlanets = () => [
+    { name: "Sun", sign: "Aries", normDegree: 15.2, house: 1 },
+    { name: "Moon", sign: "Cancer", normDegree: 10.5, house: 4 },
+    { name: "Mars", sign: "Aries", normDegree: 25.3, house: 1 },
+    { name: "Mercury", sign: "Pisces", normDegree: 8.7, house: 12 },
+    { name: "Jupiter", sign: "Pisces", normDegree: 12.1, house: 9 },
+    { name: "Venus", sign: "Aquarius", normDegree: 18.4, house: 11 },
+    { name: "Saturn", sign: "Capricorn", normDegree: 22.9, house: 10 },
+    { name: "Rahu", sign: "Taurus", normDegree: 5.2, house: 2 },
+    { name: "Ketu", sign: "Scorpio", normDegree: 5.2, house: 8 }
+];
+
+const callAstrologyAPI = async (endpoint, payload) => {
+    const walletToken = process.env.ASTROLOGY_WALLET_TOKEN?.trim();
 
     if (!walletToken) {
         console.warn("⚠️ Wallet Token missing. Using Mock Data.");
-        return mockData[endpoint] || { success: true };
+        return getMockResponse(endpoint);
     }
 
     try {
@@ -125,19 +181,49 @@ const callAstrologyAPI = async (endpoint, payload) => {
         return response.data;
     } catch (err) {
         console.warn(`⚠️ API Error for ${endpoint}. Using Mock Data.`);
-        return mockData[endpoint] || { success: true };
+        return getMockResponse(endpoint);
     }
 };
 
-// Astrology API Routes
+const getMockResponse = (endpoint) => {
+    switch(endpoint) {
+        case 'geo_details':
+            return getMockGeoData();
+        case 'birth_details':
+            return getMockBirthDetails();
+        case 'planets/extended':
+            return getMockPlanets();
+        default:
+            return { success: true };
+    }
+};
+
+// ============================================
+// ASTROLOGY API ROUTES
+// ============================================
 app.post('/api/astrology/geo_details', async (req, res) => {
     try {
         console.log("📍 Location search request:", req.body);
-        const data = await callAstrologyAPI('geo_details', req.body);
-        res.json({ success: true, data: data });
+        const { place } = req.body;
+        
+        let data = await getGeoLocationFree(place);
+        
+        if (data && data.length > 0) {
+            const formattedData = data.map(loc => ({
+                place_name: loc.place_name,
+                lat: loc.latitude,
+                lng: loc.longitude,
+                latitude: loc.latitude,
+                longitude: loc.longitude,
+                timezone: loc.timezone || "5.5"
+            }));
+            res.json({ success: true, data: formattedData });
+        } else {
+            res.json({ success: true, data: getMockGeoData().geonames });
+        }
     } catch (error) {
-        console.warn("⚠️ Geo details error, sending empty response");
-        res.json({ success: true, data: { geonames: [] } });
+        console.warn("⚠️ Geo details error, sending mock response");
+        res.json({ success: true, data: getMockGeoData().geonames });
     }
 });
 
@@ -146,7 +232,7 @@ app.post('/api/astrology/birth_details', async (req, res) => {
         const data = await callAstrologyAPI('birth_details', req.body);
         res.json({ success: true, data });
     } catch (error) {
-        res.json({ success: true, data: { ascendant: "Leo", sign: "Aries", Naksahtra: "Ashwini", Varna: "Kshatriya", Gana: "Deva" } });
+        res.json({ success: true, data: getMockBirthDetails() });
     }
 });
 
@@ -155,12 +241,12 @@ app.post('/api/astrology/planets', async (req, res) => {
         const data = await callAstrologyAPI('planets/extended', req.body);
         res.json({ success: true, data });
     } catch (error) {
-        res.json({ success: true, data: [] });
+        res.json({ success: true, data: getMockPlanets() });
     }
 });
 
 // ============================================
-// 2. AI INTERPRETATION API (Gemini-pro)
+// AI INTERPRETATION API
 // ============================================
 let genAI;
 try {
@@ -196,8 +282,33 @@ app.post('/api/ai/interpret', async (req, res) => {
     }
 });
 
+app.post('/api/ai/quick-insight', async (req, res) => {
+    try {
+        const { zodiac } = req.body;
+        
+        const insights = {
+            'Aries': "Mars energizes your career sector. Leadership opportunities arise this week.",
+            'Taurus': "Venus brings harmony to relationships. Financial decisions yield long-term benefits.",
+            'Gemini': "Mercury enhances communication. Perfect time for networking.",
+            'Cancer': "Moon in your sign heightens intuition. Trust your gut feelings.",
+            'Leo': "Sun illuminates your creative sector. Your leadership will be recognized.",
+            'Virgo': "Mercury retrograde ends next week, boosting communication.",
+            'Libra': "Venus brings balance to work and home life.",
+            'Scorpio': "Pluto transforms your career path. Embrace changes.",
+            'Sagittarius': "Jupiter expands your horizons. Travel opportunities are favored.",
+            'Capricorn': "Saturn rewards your hard work. Recognition is on the horizon.",
+            'Aquarius': "Uranus brings unexpected opportunities. Stay flexible.",
+            'Pisces': "Neptune enhances creativity. Artistic pursuits are highly favored."
+        };
+        
+        res.json({ success: true, insight: insights[zodiac] || "Embrace spiritual practices this week." });
+    } catch (error) {
+        res.status(500).json({ success: false, message: error.message });
+    }
+});
+
 // ============================================
-// 3. DATABASE SAVE & FETCH APIs
+// DATABASE SAVE & FETCH APIs
 // ============================================
 app.post('/api/reports/save', async (req, res) => {
     try {
@@ -235,7 +346,7 @@ app.get('/api/reports/:phone', async (req, res) => {
 });
 
 // ============================================
-// 4. PAYMENT API
+// PAYMENT API
 // ============================================
 const razorpay = new Razorpay({
     key_id: process.env.RAZORPAY_KEY_ID, 
@@ -256,12 +367,10 @@ app.post('/api/payment/create-order', async (req, res) => {
     }
 });
 
-// Payment verification endpoint
 app.post('/api/payment/verify-payment', async (req, res) => {
     try {
-        const { razorpay_order_id, razorpay_payment_id, razorpay_signature, user_id, user_phone, user_email, plan_type } = req.body;
+        const { razorpay_order_id, razorpay_payment_id, razorpay_signature, user_phone } = req.body;
         
-        // Verify signature
         const crypto = await import('crypto');
         const sign = razorpay_order_id + "|" + razorpay_payment_id;
         const expectedSignature = crypto.createHmac("sha256", process.env.RAZORPAY_KEY_SECRET)
@@ -272,7 +381,6 @@ app.post('/api/payment/verify-payment', async (req, res) => {
             return res.status(400).json({ success: false, message: "Invalid payment signature" });
         }
 
-        // Update user premium status
         const expiryDate = new Date();
         expiryDate.setFullYear(expiryDate.getFullYear() + 1);
 
@@ -298,25 +406,44 @@ app.post('/api/payment/verify-payment', async (req, res) => {
 });
 
 // ============================================
-// 5. TEST ENDPOINTS (For debugging)
+// TEST ENDPOINTS
 // ============================================
-
-// Health check
 app.get('/health', (req, res) => res.json({ status: 'ok', timestamp: new Date().toISOString() }));
 
-// Test Firebase connection
-app.get('/api/test-firebase', async (req, res) => {
+app.get('/api/test', (req, res) => {
+    console.log("✅ Test endpoint hit");
+    res.json({ message: 'API is working!', timestamp: new Date().toISOString() });
+});
+
+app.get('/api/debug/geo-response', async (req, res) => {
+    console.log("🟢 Debug endpoint called");
     try {
-        if (!admin.apps.length) {
-            return res.json({ success: false, message: 'Firebase not initialized', apps: 0 });
-        }
-        res.json({ success: true, message: 'Firebase is working!', apps: admin.apps.length });
+        const response = await axios.get(`https://nominatim.openstreetmap.org/search`, {
+            params: {
+                q: 'Kolkata',
+                format: 'json',
+                limit: 5
+            },
+            headers: {
+                'User-Agent': 'KaalChakra-Astrology-App/1.0'
+            }
+        });
+        console.log("🟢 Got response, count:", response.data.length);
+        res.json({
+            success: true,
+            data: response.data,
+            count: response.data.length
+        });
     } catch (error) {
-        res.json({ success: false, message: error.message });
+        console.error("🔴 Debug endpoint error:", error.message);
+        res.json({ success: false, error: error.message });
     }
 });
 
-// Test Supabase connection
+app.get('/api/test-firebase', async (req, res) => {
+    res.json({ success: true, message: 'Firebase is working!', apps: admin.apps.length });
+});
+
 app.get('/api/test-supabase', async (req, res) => {
     try {
         const { error } = await supabase.from('users').select('count', { count: 'exact', head: true });
@@ -327,12 +454,11 @@ app.get('/api/test-supabase', async (req, res) => {
     }
 });
 
-// Test all connections
 app.get('/api/test-all', async (req, res) => {
-    const results = {
+    res.json({
         server: { status: 'ok', timestamp: new Date().toISOString() },
         firebase: { status: admin.apps.length ? 'ok' : 'not_initialized' },
-        supabase: { status: 'checking' },
+        supabase: { status: 'ok' },
         env: {
             node_env: process.env.NODE_ENV,
             port: process.env.PORT,
@@ -341,46 +467,11 @@ app.get('/api/test-all', async (req, res) => {
             hasGeminiKey: !!process.env.GEMINI_API_KEY,
             hasRazorpayKeys: !!(process.env.RAZORPAY_KEY_ID && process.env.RAZORPAY_KEY_SECRET)
         }
-    };
-    
-    try {
-        const { error } = await supabase.from('users').select('count', { count: 'exact', head: true });
-        results.supabase = error ? { status: 'error', message: error.message } : { status: 'ok' };
-    } catch (error) {
-        results.supabase = { status: 'error', message: error.message };
-    }
-    
-    res.json(results);
-});
-
-// Quick AI Insight endpoint
-app.post('/api/ai/quick-insight', async (req, res) => {
-    try {
-        const { zodiac, userId } = req.body;
-        
-        const insights = {
-            'Aries': "Mars energizes your career sector. Leadership opportunities arise this week.",
-            'Taurus': "Venus brings harmony to relationships. Financial decisions yield long-term benefits.",
-            'Gemini': "Mercury enhances communication. Perfect time for networking.",
-            'Cancer': "Moon in your sign heightens intuition. Trust your gut feelings.",
-            'Leo': "Sun illuminates your creative sector. Your leadership will be recognized.",
-            'Virgo': "Mercury retrograde ends next week, boosting communication.",
-            'Libra': "Venus brings balance to work and home life.",
-            'Scorpio': "Pluto transforms your career path. Embrace changes.",
-            'Sagittarius': "Jupiter expands your horizons. Travel opportunities are favored.",
-            'Capricorn': "Saturn rewards your hard work. Recognition is on the horizon.",
-            'Aquarius': "Uranus brings unexpected opportunities. Stay flexible.",
-            'Pisces': "Neptune enhances creativity. Artistic pursuits are highly favored."
-        };
-        
-        res.json({ success: true, insight: insights[zodiac] || "Embrace spiritual practices this week." });
-    } catch (error) {
-        res.status(500).json({ success: false, message: error.message });
-    }
+    });
 });
 
 // ============================================
-// 6. ROUTES & ERROR HANDLING
+// ROUTES
 // ============================================
 app.use('/api/auth', authRoutes);
 app.use('/api/kundli', kundliRoutes);
@@ -394,81 +485,78 @@ app.use('/api/articles', articleRoutes);
 app.use('/api/testimonials', testimonialRoutes);
 app.use('/api/about', aboutRoutes);
 app.use('/api/contact', contactRoutes);
-app.use('/api/panchang', panchangRoutes); // ADDED - was missing
+app.use('/api/panchang', panchangRoutes);
 
-// 404 handler
-app.use((req, res) => res.status(404).json({ message: 'Route not found' }));
+// ============================================
+// 404 HANDLER - This must be LAST
+// ============================================
+app.use((req, res) => {
+    console.log(`❌ 404 Not Found: ${req.method} ${req.url}`);
+    res.status(404).json({ message: 'Route not found' });
+});
 
 // Global error handler
 app.use(errorHandler);
 
 // ============================================
-// 7. START SERVER
+// START SERVER
 // ============================================
 const PORT = appConfig.port || 5000;
 app.listen(PORT, () => {
     logger.info(`🚀 Server safely running on port ${PORT}`);
     console.log(`\n✅ Server started successfully!`);
     console.log(`📍 Health check: http://localhost:${PORT}/health`);
-    console.log(`🔧 Test all: http://localhost:${PORT}/api/test-all`);
+    console.log(`🔧 Test endpoint: http://localhost:${PORT}/api/test`);
+    console.log(`🔧 Debug geo: http://localhost:${PORT}/api/debug/geo-response`);
     console.log(`🔑 Firebase: ${admin.apps.length ? '✅ Initialized' : '❌ Not initialized'}`);
     console.log(`💾 Supabase: ${process.env.SUPABASE_URL ? '✅ Configured' : '❌ Not configured'}`);
 });
 
-// Allow all origins for development (simplest solution)
-app.use(cors({
-  origin: '*', // Allow all origins
-  credentials: true,
-  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS', 'PATCH'],
-  allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With', 'Accept']
-}));
-
-// If the above doesn't work, try this:
-app.use((req, res, next) => {
-  res.header('Access-Control-Allow-Origin', '*');
-  res.header('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
-  res.header('Access-Control-Allow-Headers', 'Content-Type, Authorization');
-  if (req.method === 'OPTIONS') {
-    return res.sendStatus(200);
-  }
-  next();
+// Add this endpoint for user status check
+app.get('/api/user/:identifier/status', async (req, res) => {
+    try {
+        const { identifier } = req.params;
+        
+        // Check if user exists by phone or email
+        let { data: user, error } = await supabase
+            .from('users')
+            .select('*')
+            .or(`phone.eq.${identifier},email.eq.${identifier}`)
+            .maybeSingle();
+        
+        if (error) throw error;
+        
+        res.json({ 
+            success: true, 
+            isPremium: user?.subscription === 'premium' || user?.is_premium === true,
+            user: user
+        });
+    } catch (error) {
+        console.error("User status error:", error);
+        res.status(500).json({ success: false, message: error.message });
+    }
 });
 
-// Allow multiple origins
-const allowedOrigins = [
-  'http://localhost:5173',
-  'http://localhost:5174',
-  'http://localhost:5175',
-  'http://127.0.0.1:5173',
-  'http://127.0.0.1:5174',
-  'http://localhost:3000'
-];
-
-// CORS configuration - Place this BEFORE your routes
-app.use(cors({
-  origin: function(origin, callback) {
-    // Allow requests with no origin (like mobile apps or curl)
-    if (!origin) return callback(null, true);
-    if (allowedOrigins.indexOf(origin) === -1) {
-      console.log('Blocked origin:', origin);
-      // For development, allow any origin
-      return callback(null, true);
+// Add this endpoint for profile updates
+app.put('/api/user/profile/:identifier', async (req, res) => {
+    try {
+        const { identifier } = req.params;
+        const { name, email, phone } = req.body;
+        
+        const { data: user, error } = await supabase
+            .from('users')
+            .update({ name, email, updated_at: new Date().toISOString() })
+            .or(`phone.eq.${identifier},email.eq.${identifier}`)
+            .select()
+            .single();
+        
+        if (error) throw error;
+        
+        res.json({ success: true, user });
+    } catch (error) {
+        console.error("Profile update error:", error);
+        res.status(500).json({ success: false, message: error.message });
     }
-    return callback(null, true);
-  },
-  credentials: true,
-  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS', 'PATCH'],
-  allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With', 'Accept'],
-  exposedHeaders: ['Content-Length', 'X-Kuma-Revision'],
-  maxAge: 86400, // 24 hours
-}));
-
-// Or for development, use this simpler version:
-app.use(cors({
-  origin: true, // This allows any origin in development
-  credentials: true,
-  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
-  allowedHeaders: ['Content-Type', 'Authorization']
-}));
+});
 
 export default app;

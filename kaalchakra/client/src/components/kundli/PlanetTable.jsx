@@ -1,5 +1,5 @@
 // client/src/components/kundli/PlanetTable.jsx
-import React from 'react';
+import React, { useState } from 'react';
 
 const PlanetTable = ({ planets }) => {
   const [sortBy, setSortBy] = useState('house');
@@ -55,6 +55,16 @@ const PlanetTable = ({ planets }) => {
       'Ketu': '#1f2a44'
     };
     return colors[planetName] || '#6B7280';
+  };
+
+  // Zodiac symbols
+  const getZodiacSymbol = (sign) => {
+    const symbols = {
+      'Aries': '♈', 'Taurus': '♉', 'Gemini': '♊', 'Cancer': '♋',
+      'Leo': '♌', 'Virgo': '♍', 'Libra': '♎', 'Scorpio': '♏',
+      'Sagittarius': '♐', 'Capricorn': '♑', 'Aquarius': '♒', 'Pisces': '♓'
+    };
+    return symbols[sign] || '';
   };
 
   return (
@@ -141,16 +151,6 @@ const PlanetTable = ({ planets }) => {
       </div>
     </div>
   );
-};
-
-// Helper function for zodiac symbols
-const getZodiacSymbol = (sign) => {
-  const symbols = {
-    'Aries': '♈', 'Taurus': '♉', 'Gemini': '♊', 'Cancer': '♋',
-    'Leo': '♌', 'Virgo': '♍', 'Libra': '♎', 'Scorpio': '♏',
-    'Sagittarius': '♐', 'Capricorn': '♑', 'Aquarius': '♒', 'Pisces': '♓'
-  };
-  return symbols[sign] || '';
 };
 
 export default PlanetTable;
