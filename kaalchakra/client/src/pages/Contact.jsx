@@ -11,9 +11,13 @@ const ContactInfoCard = ({ icon: Icon, title, details, color }) => (
     </div>
     <div>
       <h4 className="font-semibold text-gray-800 mb-1">{title}</h4>
-      {details.map((detail, idx) => (
-        <p key={idx} className="text-gray-600 text-sm">{detail}</p>
-      ))}
+      {details && details.map ? (
+        details.map((detail, idx) => (
+          <p key={idx} className="text-gray-600 text-sm">{detail}</p>
+        ))
+      ) : (
+        <p className="text-gray-600 text-sm">{details}</p>
+      )}
     </div>
   </div>
 );
@@ -32,7 +36,8 @@ const SocialLink = ({ icon: Icon, href, label, color }) => (
 );
 
 const Contact = () => {
-  const [contactInfo, setContactInfo] = useState({
+  // Default contact info (fallback)
+  const defaultContactInfo = {
     address: ["No: 58 A, East Madison Street", "Baltimore, MD, USA 4508"],
     emails: ["contact@kaalchakra.com", "support@kaalchakra.com"],
     phones: ["+1 (555) 123-4567", "+1 (555) 987-6543"],
@@ -53,8 +58,9 @@ const Contact = () => {
       googleMapsUrl: "https://maps.google.com/?q=58+East+Madison+Street+Baltimore+MD"
     },
     responseTime: "We typically respond within 24 hours during business days. For urgent consultations, please call us directly."
-  });
+  };
 
+  const [contactInfo, setContactInfo] = useState(defaultContactInfo);
   const [formData, setFormData] = useState({
     name: '',
     email: '',
@@ -75,11 +81,25 @@ const Contact = () => {
   const fetchContactInfo = async () => {
     try {
       const response = await api.get('/contact/info');
-      if (response.data.success) {
-        setContactInfo(response.data.data);
+      console.log('API Response:', response.data);
+      
+      if (response.data && response.data.success && response.data.data) {
+        // Merge API data with defaults (safely)
+        const apiData = response.data.data;
+        
+        setContactInfo({
+          address: apiData.address || defaultContactInfo.address,
+          emails: apiData.emails || defaultContactInfo.emails,
+          phones: apiData.phones || defaultContactInfo.phones,
+          businessHours: apiData.businessHours || defaultContactInfo.businessHours,
+          socialLinks: Array.isArray(apiData.socialLinks) ? apiData.socialLinks : defaultContactInfo.socialLinks,
+          mapLocation: apiData.mapLocation || defaultContactInfo.mapLocation,
+          responseTime: apiData.responseTime || defaultContactInfo.responseTime
+        });
       }
     } catch (err) {
       console.error('Error fetching contact info:', err);
+      // Keep default contact info
     } finally {
       setLoading(false);
     }
@@ -232,7 +252,7 @@ const Contact = () => {
                 Business Hours
               </h3>
               <div className="space-y-2">
-                {contactInfo.businessHours.map((item, idx) => (
+                {contactInfo.businessHours && contactInfo.businessHours.map((item, idx) => (
                   <div key={idx} className="flex justify-between py-2 border-b border-gray-100 last:border-0">
                     <span className="text-gray-600">{item.day}</span>
                     <span className="text-gray-800 font-medium">{item.hours}</span>
@@ -241,22 +261,26 @@ const Contact = () => {
               </div>
             </div>
 
-            {/* Social Links */}
+            {/* Social Links with SAFE map */}
             <div className="bg-white rounded-2xl shadow-md border border-gray-100 p-6">
               <h3 className="text-lg font-bold text-gray-800 mb-4 flex items-center gap-2">
                 <Globe className="w-5 h-5 text-orange-500" />
                 Connect With Us
               </h3>
               <div className="flex flex-wrap gap-3">
-                {contactInfo.socialLinks.map((social, idx) => (
-                  <SocialLink 
-                    key={idx}
-                    icon={social.icon} 
-                    href={social.url} 
-                    label={social.platform} 
-                    color={social.color} 
-                  />
-                ))}
+                {contactInfo.socialLinks && contactInfo.socialLinks.length > 0 ? (
+                  contactInfo.socialLinks.map((social, idx) => (
+                    <SocialLink 
+                      key={idx}
+                      icon={social.icon} 
+                      href={social.url} 
+                      label={social.platform} 
+                      color={social.color} 
+                    />
+                  ))
+                ) : (
+                  <p className="text-gray-500 text-sm">No social links available</p>
+                )}
               </div>
             </div>
           </div>
@@ -407,7 +431,7 @@ const Contact = () => {
                   <div className="text-center">
                     <MapPin className="w-12 h-12 text-orange-500 mx-auto mb-2" />
                     <p className="text-gray-500 text-sm">Interactive Map</p>
-                    <p className="text-gray-400 text-xs mt-1">{contactInfo.mapLocation.address}</p>
+                    <p className="text-gray-400 text-xs mt-1">{contactInfo.mapLocation?.address || 'Address not available'}</p>
                   </div>
                 </div>
                 <div className="absolute bottom-2 right-2 bg-white/80 text-gray-500 text-[10px] px-2 py-0.5 rounded">
@@ -416,7 +440,7 @@ const Contact = () => {
               </div>
               <div className="p-4 border-t border-gray-100">
                 <a 
-                  href={contactInfo.mapLocation.googleMapsUrl} 
+                  href={contactInfo.mapLocation?.googleMapsUrl || '#'} 
                   target="_blank" 
                   rel="noopener noreferrer"
                   className="text-orange-500 text-sm font-medium flex items-center justify-center gap-1 hover:gap-2 transition-all"

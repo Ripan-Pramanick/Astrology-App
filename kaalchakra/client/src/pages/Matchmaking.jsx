@@ -1,7 +1,8 @@
 // client/src/pages/Matchmaking.jsx
 import React, { useState, useEffect } from 'react';
-import { Heart, Sparkles, MapPin, Calendar, Clock, User, Loader2, AlertCircle, CheckCircle, XCircle, TrendingUp } from 'lucide-react';
+import { Heart, Sparkles, MapPin, Calendar, Clock, User, Loader2, AlertCircle, CheckCircle, XCircle, TrendingUp, Shield, Moon, Sun, Eye, Star, Saturn } from 'lucide-react';
 import astrologyServices from '../services/astrologyApi.js';
+import { supabase } from '../lib/supabase.js';
 
 const Matchmaking = () => {
   const [personA, setPersonA] = useState({
@@ -33,6 +34,38 @@ const Matchmaking = () => {
   const [showSuggestionsB, setShowSuggestionsB] = useState(false);
   const [isSearchingA, setIsSearchingA] = useState(false);
   const [isSearchingB, setIsSearchingB] = useState(false);
+  
+  // Darakaraka states
+  const [darakarakaA, setDarakarakaA] = useState(null);
+  const [darakarakaB, setDarakarakaB] = useState(null);
+  const [darakarakaMatch, setDarakarakaMatch] = useState(null);
+  const [showDarakarakaInfo, setShowDarakarakaInfo] = useState(false);
+
+  // Additional states for Lagna and Sade Sati
+  const [lagnaDataA, setLagnaDataA] = useState(null);
+  const [lagnaDataB, setLagnaDataB] = useState(null);
+  const [sadeSatiA, setSadeSatiA] = useState(null);
+  const [sadeSatiB, setSadeSatiB] = useState(null);
+  const [currentSaturn, setCurrentSaturn] = useState(null);
+
+  // Fetch current Saturn position
+  useEffect(() => {
+    const fetchCurrentSaturn = async () => {
+      try {
+        const { data, error } = await supabase
+          .from('current_sade_sati')
+          .select('*')
+          .single();
+        
+        if (data && !error) {
+          setCurrentSaturn(data);
+        }
+      } catch (err) {
+        console.error('Error fetching Saturn position:', err);
+      }
+    };
+    fetchCurrentSaturn();
+  }, []);
 
   // Location search for Person A
   useEffect(() => {
@@ -89,6 +122,165 @@ const Matchmaking = () => {
 
     return () => clearTimeout(delayDebounce);
   }, [personB.place]);
+
+  // Fetch Lagna data from Supabase
+  const fetchLagnaData = async (lagnaName) => {
+    if (!lagnaName) return null;
+
+    try {
+      const { data, error } = await supabase
+        .from('lagna_characteristics')
+        .select('*')
+        .eq('lagna_name', lagnaName)
+        .single();
+
+      if (data && !error) {
+        return data;
+      }
+      return null;
+    } catch (err) {
+      console.error('Error fetching lagna data:', err);
+      return null;
+    }
+  };
+
+  // Fetch Sade Sati data for a moon sign
+  const fetchSadeSatiForSign = async (moonSign) => {
+    if (!moonSign || !currentSaturn) return null;
+
+    try {
+      const isAffected = currentSaturn.affected_signs?.includes(moonSign);
+      
+      let phase = null;
+      if (currentSaturn.first_phase_signs?.includes(moonSign)) phase = 'First Phase';
+      else if (currentSaturn.second_phase_signs?.includes(moonSign)) phase = 'Second Phase';
+      else if (currentSaturn.third_phase_signs?.includes(moonSign)) phase = 'Third Phase';
+
+      const { data: sadeSatiDetails, error } = await supabase
+        .from('sade_sati')
+        .select('*')
+        .eq('moon_sign', moonSign)
+        .eq('phase', phase)
+        .single();
+
+      if (sadeSatiDetails && !error) {
+        return {
+          isActive: isAffected,
+          phase: phase,
+          data: sadeSatiDetails
+        };
+      }
+      return { isActive: isAffected, phase: phase, data: null };
+    } catch (err) {
+      console.error('Error fetching Sade Sati:', err);
+      return null;
+    }
+  };
+
+  // Calculate Darakaraka from birth data
+  const calculateDarakarakaFromBirthData = async (personData, personLabel) => {
+    try {
+      let hour24 = parseInt(personData.birthTime.hour);
+      if (personData.birthTime.ampm === 'PM' && hour24 !== 12) hour24 += 12;
+      if (personData.birthTime.ampm === 'AM' && hour24 === 12) hour24 = 0;
+
+      const payload = {
+        day: parseInt(personData.birthDate.day),
+        month: parseInt(personData.birthDate.month),
+        year: parseInt(personData.birthDate.year),
+        hour: hour24,
+        minute: parseInt(personData.birthTime.minute),
+        second: 0,
+        latitude: parseFloat(personData.latitude),
+        longitude: parseFloat(personData.longitude),
+        timezone: personData.timezone,
+        ayanamsa: "lahiri"
+      };
+
+      const planetsData = await astrologyServices.planetary.getPlanetsExtended(payload);
+      
+      if (planetsData) {
+        const planets = ['sun', 'moon', 'mars', 'mercury', 'jupiter', 'venus', 'saturn', 'rahu', 'ketu'];
+        const planetNames = ['Sun', 'Moon', 'Mars', 'Mercury', 'Jupiter', 'Venus', 'Saturn', 'Rahu', 'Ketu'];
+        
+        let lowestDegree = 360;
+        let lowestPlanet = null;
+        
+        planets.forEach((planet, index) => {
+          const data = planetsData[planet];
+          if (data && data.longitude !== undefined) {
+            const degree = data.longitude;
+            if (degree < lowestDegree) {
+              lowestDegree = degree;
+              lowestPlanet = planetNames[index];
+            }
+          }
+        });
+        
+        if (lowestPlanet) {
+          const { data: darakData, error: darakError } = await supabase
+            .from('darakaraka_planets')
+            .select('*')
+            .eq('planet', lowestPlanet)
+            .single();
+          
+          if (darakData && !darakError) {
+            return { planet: lowestPlanet, details: darakData };
+          }
+          return { planet: lowestPlanet, details: null };
+        }
+      }
+      return null;
+    } catch (err) {
+      console.error(`Error calculating Darakaraka for ${personLabel}:`, err);
+      return null;
+    }
+  };
+
+  // Fetch Darakaraka compatibility between two planets
+  const fetchDarakarakaCompatibility = async (planetA, planetB) => {
+    if (!planetA || !planetB) return null;
+    
+    try {
+      const { data, error } = await supabase
+        .from('darakaraka_compatibility')
+        .select('*')
+        .or(`planet1.eq.${planetA},planet2.eq.${planetA}`)
+        .single();
+      
+      if (data && !error) {
+        return data;
+      }
+      
+      return getDefaultDarakarakaCompatibility(planetA, planetB);
+    } catch (err) {
+      console.error('Error fetching Darakaraka compatibility:', err);
+      return getDefaultDarakarakaCompatibility(planetA, planetB);
+    }
+  };
+
+  // Default Darakaraka compatibility based on planets
+  const getDefaultDarakarakaCompatibility = (planetA, planetB) => {
+    const compatibilityMap = {
+      'Sun': { 'Moon': 'Good - Sun leadership complements Moon emotions', 'Venus': 'Very Good - Royal and romantic combination', 'Mars': 'Excellent - Passionate power couple' },
+      'Moon': { 'Sun': 'Good - Emotional understanding with ego', 'Venus': 'Excellent - Romantic and caring', 'Mars': 'Average - Emotions vs action' },
+      'Venus': { 'Sun': 'Very Good - Love meets leadership', 'Moon': 'Excellent - Emotional romance', 'Jupiter': 'Great - Love with wisdom' },
+      'Mars': { 'Sun': 'Excellent - Dynamic energy', 'Moon': 'Average - Action vs feelings', 'Venus': 'Good - Passionate love' },
+      'Jupiter': { 'Venus': 'Great - Wisdom with love', 'Sun': 'Very Good - Knowledge with authority', 'Moon': 'Good - Guidance with emotions' }
+    };
+    
+    const match = compatibilityMap[planetA]?.[planetB] || compatibilityMap[planetB]?.[planetA] || 'Moderate - Needs understanding';
+    
+    let score = 70;
+    if (match.includes('Excellent')) score = 90;
+    else if (match.includes('Very Good')) score = 85;
+    else if (match.includes('Great')) score = 80;
+    else if (match.includes('Good')) score = 75;
+    else if (match.includes('Average')) score = 60;
+    else score = 55;
+    
+    return { compatibility: match, score, planet1: planetA, planet2: planetB };
+  };
 
   const handleSelectLocation = (person, loc) => {
     if (person === 'A') {
@@ -166,6 +358,13 @@ const Matchmaking = () => {
     setError('');
     setLoading(true);
     setResult(null);
+    setDarakarakaA(null);
+    setDarakarakaB(null);
+    setDarakarakaMatch(null);
+    setLagnaDataA(null);
+    setLagnaDataB(null);
+    setSadeSatiA(null);
+    setSadeSatiB(null);
 
     if (!validateForm(personA, 'Person A') || !validateForm(personB, 'Person B')) {
       setLoading(false);
@@ -173,7 +372,6 @@ const Matchmaking = () => {
     }
 
     try {
-      // Prepare birth details for API
       const preparePayload = (person) => {
         let hour24 = parseInt(person.birthTime.hour);
         if (person.birthTime.ampm === 'PM' && hour24 !== 12) hour24 += 12;
@@ -198,13 +396,52 @@ const Matchmaking = () => {
 
       console.log("Fetching matchmaking data...");
 
-      // Get match making report from API
+      // Get birth details to find ascendant and moon sign
+      const birthDetailsA = await astrologyServices.kundli.getBirthDetails(payloadA);
+      const birthDetailsB = await astrologyServices.kundli.getBirthDetails(payloadB);
+
+      const ascendantA = birthDetailsA?.ascendant;
+      const ascendantB = birthDetailsB?.ascendant;
+      const moonSignA = birthDetailsA?.moon_sign || birthDetailsA?.sign;
+      const moonSignB = birthDetailsB?.moon_sign || birthDetailsB?.sign;
+
+      // Fetch Lagna data
+      if (ascendantA) {
+        const lagnaData = await fetchLagnaData(ascendantA);
+        setLagnaDataA(lagnaData);
+      }
+      if (ascendantB) {
+        const lagnaData = await fetchLagnaData(ascendantB);
+        setLagnaDataB(lagnaData);
+      }
+
+      // Fetch Sade Sati data
+      if (moonSignA && currentSaturn) {
+        const sadeSati = await fetchSadeSatiForSign(moonSignA);
+        setSadeSatiA(sadeSati);
+      }
+      if (moonSignB && currentSaturn) {
+        const sadeSati = await fetchSadeSatiForSign(moonSignB);
+        setSadeSatiB(sadeSati);
+      }
+
+      // Calculate Darakaraka
+      const darakA = await calculateDarakarakaFromBirthData(personA, 'Person A');
+      const darakB = await calculateDarakarakaFromBirthData(personB, 'Person B');
+      
+      if (darakA) setDarakarakaA(darakA);
+      if (darakB) setDarakarakaB(darakB);
+      
+      if (darakA?.planet && darakB?.planet) {
+        const compatibility = await fetchDarakarakaCompatibility(darakA.planet, darakB.planet);
+        setDarakarakaMatch(compatibility);
+      }
+
       const matchResult = await astrologyServices.matchmaking.getMatchMaking(payloadA, payloadB);
       
       console.log("Match Result:", matchResult);
 
       if (matchResult) {
-        // Parse the result
         const score = matchResult.percentage || matchResult.score || matchResult.total_points || 0;
         const analysis = matchResult.analysis || matchResult.report || generateAnalysis(score);
         const details = matchResult.details || matchResult.ashtakoot_points || {};
@@ -215,7 +452,18 @@ const Matchmaking = () => {
           details: details,
           gunaMilan: matchResult.ashtakoot_points || details,
           recommendation: getRecommendation(score),
-          compatible: score >= 60
+          compatible: score >= 60,
+          darakarakaA: darakA,
+          darakarakaB: darakB,
+          darakarakaMatch: compatibility,
+          lagnaDataA: lagnaDataA,
+          lagnaDataB: lagnaDataB,
+          sadeSatiA: sadeSatiA,
+          sadeSatiB: sadeSatiB,
+          ascendantA: ascendantA,
+          ascendantB: ascendantB,
+          moonSignA: moonSignA,
+          moonSignB: moonSignB
         });
       } else {
         throw new Error('No match data received');
@@ -225,20 +473,23 @@ const Matchmaking = () => {
       console.error("Matchmaking error:", err);
       setError(err.message || 'Failed to get matchmaking result. Please try again.');
       
-      // Fallback result for demo
       setResult({
         score: 72,
-        analysis: "Based on the astrological calculations, this is a favorable match. The planetary positions indicate good compatibility in emotional understanding and life goals. Some minor adjustments in communication style may be beneficial.",
+        analysis: "Based on the astrological calculations, this is a favorable match.",
         details: {
           "Ashtakoot Points": "28/36",
           "Guna Milan": "Good",
-          "Manglik Status": "Both Non-Manglik",
-          "Nadi Compatibility": "Excellent",
-          "Bhakut Dosha": "No Dosha",
-          "Graha Maitri": "Very Good"
+          "Manglik Status": "Both Non-Manglik"
         },
-        recommendation: "This match shows promising compatibility. The couple shares similar values and life goals. With mutual understanding, this relationship has strong potential for long-term harmony.",
-        compatible: true
+        recommendation: "This match shows promising compatibility.",
+        compatible: true,
+        darakarakaA: darakarakaA,
+        darakarakaB: darakarakaB,
+        darakarakaMatch: darakarakaMatch,
+        lagnaDataA: lagnaDataA,
+        lagnaDataB: lagnaDataB,
+        sadeSatiA: sadeSatiA,
+        sadeSatiB: sadeSatiB
       });
     } finally {
       setLoading(false);
@@ -247,26 +498,21 @@ const Matchmaking = () => {
 
   const generateAnalysis = (score) => {
     if (score >= 80) {
-      return "Excellent compatibility! The planetary positions indicate a highly harmonious relationship. Both individuals share similar values and life goals. This match has strong potential for a successful long-term relationship.";
+      return "Excellent compatibility! The planetary positions indicate a highly harmonious relationship.";
     } else if (score >= 60) {
-      return "Good compatibility. The astrological calculations show favorable alignment in most areas. Some minor differences may require understanding and compromise, but overall this is a promising match.";
+      return "Good compatibility. The astrological calculations show favorable alignment in most areas.";
     } else if (score >= 40) {
-      return "Average compatibility. While there are some positive aspects, certain planetary positions suggest challenges that need careful consideration. Open communication and mutual effort will be important.";
+      return "Average compatibility. Some differences may require understanding and compromise.";
     } else {
-      return "Low compatibility. The astrological analysis indicates significant differences in core areas. This match may face substantial challenges that require thorough discussion and professional guidance.";
+      return "Low compatibility. This match may face substantial challenges.";
     }
   };
 
   const getRecommendation = (score) => {
-    if (score >= 80) {
-      return "Highly Recommended - This match shows exceptional cosmic alignment. Proceed with confidence! ✨";
-    } else if (score >= 60) {
-      return "Recommended - Good compatibility with some areas to work on. Worth pursuing with open communication. 🌟";
-    } else if (score >= 40) {
-      return "Proceed with Caution - Consider consulting an expert astrologer for deeper analysis before making decisions. 💭";
-    } else {
-      return "Not Recommended - Significant challenges indicated. Consider other options or seek professional guidance. ⚠️";
-    }
+    if (score >= 80) return "Highly Recommended - Exceptional cosmic alignment! ✨";
+    if (score >= 60) return "Recommended - Good compatibility worth pursuing. 🌟";
+    if (score >= 40) return "Proceed with Caution - Consult an expert astrologer. 💭";
+    return "Not Recommended - Consider other options. ⚠️";
   };
 
   const getScoreColor = (score) => {
@@ -281,6 +527,66 @@ const Matchmaking = () => {
     if (score >= 60) return 'bg-orange-50 border-orange-200';
     if (score >= 40) return 'bg-yellow-50 border-yellow-200';
     return 'bg-red-50 border-red-200';
+  };
+
+  // Lagna Card Component
+  const LagnaCard = ({ person, lagnaName, data }) => {
+    if (!data) return null;
+    
+    return (
+      <div className="bg-white rounded-lg border border-purple-100 p-4">
+        <div className="flex items-center gap-2 mb-2">
+          <Star className="w-4 h-4 text-purple-500" />
+          <h4 className="font-semibold text-gray-800">{person} - {lagnaName} ({data.lagna_name_bn}) Lagna</h4>
+        </div>
+        <div className="mt-2 text-xs text-gray-500">
+          <p className="font-medium text-gray-700">Element: {data.element} • Ruling Planet: {data.ruling_planet}</p>
+          <p className="mt-1 line-clamp-2">{data.personality_traits?.[0]}</p>
+        </div>
+      </div>
+    );
+  };
+
+  // Sade Sati Card Component
+  const SadeSatiCard = ({ person, moonSign, sadeSati }) => {
+    if (!sadeSati) return null;
+    
+    return (
+      <div className="bg-white rounded-lg border border-gray-100 p-4">
+        <div className="flex items-center gap-2 mb-2">
+          <Saturn className="w-4 h-4 text-gray-700" />
+          <h4 className="font-semibold text-gray-800">{person}</h4>
+        </div>
+        <p className="text-sm text-gray-600">Moon Sign: <span className="font-medium">{moonSign}</span></p>
+        <div className="mt-2">
+          <span className={`text-xs px-2 py-1 rounded-full ${sadeSati.isActive ? 'bg-orange-100 text-orange-700' : 'bg-green-100 text-green-700'}`}>
+            {sadeSati.isActive ? `🔴 Active Sade Sati (${sadeSati.phase})` : '🟢 No Active Sade Sati'}
+          </span>
+        </div>
+        {sadeSati.isActive && sadeSati.data && (
+          <p className="text-xs text-gray-500 mt-2 line-clamp-2">{sadeSati.data.effect_description?.substring(0, 80)}...</p>
+        )}
+      </div>
+    );
+  };
+
+  const DarakarakaCard = ({ person, data }) => {
+    if (!data) return null;
+    
+    return (
+      <div className="bg-white rounded-lg border border-gray-100 p-4">
+        <div className="flex items-center gap-2 mb-2">
+          <Shield className="w-4 h-4 text-pink-500" />
+          <h4 className="font-semibold text-gray-800">{person}</h4>
+        </div>
+        <p className="text-sm text-gray-600">Darakaraka: <span className="font-bold text-pink-600">{data.planet}</span></p>
+        {data.details && (
+          <div className="mt-2 text-xs text-gray-500">
+            <p>{data.details.spiritual_lesson?.substring(0, 60)}...</p>
+          </div>
+        )}
+      </div>
+    );
   };
 
   const renderPersonForm = (person, label, icon) => {
@@ -538,6 +844,73 @@ const Matchmaking = () => {
                 </div>
               </div>
 
+              {/* Lagna Characteristics Section - NEW */}
+              {(result.lagnaDataA || result.lagnaDataB) && (
+                <div className="mb-6 p-4 bg-gradient-to-r from-purple-50 to-indigo-50 rounded-xl border border-purple-200">
+                  <h3 className="text-lg font-semibold text-gray-800 mb-3 flex items-center gap-2">
+                    <Star className="w-5 h-5 text-purple-500" />
+                    Ascendant (Lagna) Characteristics
+                  </h3>
+                  <div className="grid md:grid-cols-2 gap-4">
+                    {result.lagnaDataA && result.ascendantA && (
+                      <LagnaCard person="Person A" lagnaName={result.ascendantA} data={result.lagnaDataA} />
+                    )}
+                    {result.lagnaDataB && result.ascendantB && (
+                      <LagnaCard person="Person B" lagnaName={result.ascendantB} data={result.lagnaDataB} />
+                    )}
+                  </div>
+                </div>
+              )}
+
+              {/* Sade Sati Section - NEW */}
+              {(result.sadeSatiA || result.sadeSatiB) && (
+                <div className="mb-6 p-4 bg-gradient-to-r from-gray-50 to-gray-100 rounded-xl border border-gray-200">
+                  <h3 className="text-lg font-semibold text-gray-800 mb-3 flex items-center gap-2">
+                    <Saturn className="w-5 h-5 text-gray-700" />
+                    Shani Sade Sati Status
+                  </h3>
+                  <div className="grid md:grid-cols-2 gap-4">
+                    {result.sadeSatiA && result.moonSignA && (
+                      <SadeSatiCard person="Person A" moonSign={result.moonSignA} sadeSati={result.sadeSatiA} />
+                    )}
+                    {result.sadeSatiB && result.moonSignB && (
+                      <SadeSatiCard person="Person B" moonSign={result.moonSignB} sadeSati={result.sadeSatiB} />
+                    )}
+                  </div>
+                </div>
+              )}
+
+              {/* Darakaraka Section */}
+              {(result.darakarakaA || result.darakarakaB) && (
+                <div className="mb-6 p-4 bg-gradient-to-r from-pink-50 to-rose-50 rounded-xl border border-pink-200">
+                  <h3 className="text-lg font-semibold text-gray-800 mb-3 flex items-center gap-2">
+                    <Shield className="w-5 h-5 text-pink-500" />
+                    Darakaraka Analysis (Relationship Karma)
+                  </h3>
+                  <div className="grid md:grid-cols-2 gap-4 mb-4">
+                    <DarakarakaCard person="Person A" data={result.darakarakaA} />
+                    <DarakarakaCard person="Person B" data={result.darakarakaB} />
+                  </div>
+                  {result.darakarakaMatch && (
+                    <div className="mt-3 p-3 bg-white rounded-lg">
+                      <div className="flex items-center justify-between">
+                        <div>
+                          <p className="text-sm font-semibold text-gray-800">Darakaraka Compatibility</p>
+                          <p className="text-sm text-gray-600">{result.darakarakaMatch.compatibility}</p>
+                        </div>
+                        <div className={`text-center px-3 py-1 rounded-full ${
+                          result.darakarakaMatch.score >= 80 ? 'bg-green-100 text-green-700' :
+                          result.darakarakaMatch.score >= 60 ? 'bg-orange-100 text-orange-700' :
+                          'bg-yellow-100 text-yellow-700'
+                        }`}>
+                          <span className="text-sm font-bold">{result.darakarakaMatch.score}%</span>
+                        </div>
+                      </div>
+                    </div>
+                  )}
+                </div>
+              )}
+
               {/* Analysis */}
               <div className="mb-6 p-4 bg-gradient-to-r from-orange-50 to-amber-50 rounded-xl">
                 <h3 className="text-lg font-semibold text-gray-800 mb-3 flex items-center gap-2">
@@ -604,6 +977,12 @@ const Matchmaking = () => {
         }
         .animate-fadeIn {
           animation: fadeIn 0.5s ease-out;
+        }
+        .line-clamp-2 {
+          display: -webkit-box;
+          -webkit-line-clamp: 2;
+          -webkit-box-orient: vertical;
+          overflow: hidden;
         }
       `}</style>
     </div>
