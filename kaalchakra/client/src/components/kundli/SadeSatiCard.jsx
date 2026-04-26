@@ -1,6 +1,6 @@
 // client/src/components/kundli/SadeSatiCard.jsx
 import React from 'react';
-import { Saturn, Shield, Heart } from 'lucide-react';
+import { AlertCircle, Shield, Heart } from 'lucide-react'; 
 
 const SadeSatiCard = ({ sadeSatiData, sadeSatiStatus }) => {
   if (!sadeSatiStatus) return null;
@@ -9,7 +9,8 @@ const SadeSatiCard = ({ sadeSatiData, sadeSatiStatus }) => {
     <div className="px-8 pb-8">
       <div className="text-center mb-4">
         <h2 className="text-2xl font-bold text-gray-800 mb-2 flex items-center justify-center gap-2">
-          <Saturn className="w-6 h-6 text-gray-700" /> Shani Sade Sati
+          <AlertCircle className="w-6 h-6 text-gray-700" />
+          <span>Shani Sade Sati</span>
         </h2>
         <div className="w-20 h-px bg-gradient-to-r from-transparent via-gray-700 to-transparent mx-auto"></div>
         <p className="text-gray-500 text-sm mt-2">7.5 years of karmic growth and transformation</p>
@@ -21,7 +22,7 @@ const SadeSatiCard = ({ sadeSatiData, sadeSatiStatus }) => {
       }`}>
         <div className={`p-4 ${sadeSatiStatus.isActive ? 'bg-gradient-to-r from-gray-800 to-gray-900' : 'bg-gray-600'} text-white`}>
           <div className="flex items-center gap-2">
-            <Saturn className="w-6 h-6" />
+            <AlertCircle className="w-6 h-6" />
             <h3 className="font-bold text-lg">
               {sadeSatiStatus.isActive ? '🔴 Sade Sati is Active' : '🟢 No Active Sade Sati'}
             </h3>

@@ -136,8 +136,21 @@ const Navbar = () => {
 
                 {/* Brand Text */}
                 <div className="flex flex-col">
-                  <GradientText>Kaal Chakra</GradientText>
-                  <span className="text-[9px] md:text-[10px] tracking-[0.2em] text-[#d4af37]/80 font-bold -mt-0.5 hidden sm:flex">
+                  {/* FIX: Using explicit inline CSS background and clip so it cannot fail due to Tailwind config */}
+                  <span 
+                    className="inline-block text-2xl md:text-3xl font-bold tracking-wider" 
+                    style={{ 
+                      fontFamily: "'Cormorant Garamond', serif", 
+                      background: "linear-gradient(to right, #b8860b, #d4af37)",
+                      WebkitBackgroundClip: "text", 
+                      WebkitTextFillColor: "transparent",
+                      backgroundClip: "text",
+                      color: "transparent"
+                    }}
+                  >
+                    Kaal Chakra
+                  </span>
+                  <span className="text-[10px] tracking-[0.2em] text-[#d4af37]/80 font-bold -mt-0.5">
                     TIME KNOWS YOUR DESTINY
                   </span>
                 </div>

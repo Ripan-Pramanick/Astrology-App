@@ -12,3 +12,28 @@
     @apply bg-gradient-to-r from-[#F7931E] to-[#f4a460] text-white font-semibold px-6 py-2.5 rounded-xl shadow-md hover:shadow-lg transition-all duration-300;
   }
 }
+
+
+@keyframes twinkle {
+  0%, 100% { opacity: 0.3; }
+  50% { opacity: 1; }
+}
+
+@keyframes float {
+  0%, 100% { transform: translateY(0px); }
+  50% { transform: translateY(-10px); }
+}
+
+.particle-star {
+  animation: twinkle 2s ease-in-out infinite;
+}
+
+.particle-nakshatra {
+  animation: float 4s ease-in-out infinite;
+}
+
+/* Glowing effect for particles */
+canvas {
+  filter: drop-shadow(0 0 2px rgba(255, 215, 0, 0.3));
+}
+

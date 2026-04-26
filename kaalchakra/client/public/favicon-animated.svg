@@ -1,0 +1,99 @@
+<!-- client/public/favicon-animated.svg -->
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" width="64" height="64">
+  <defs>
+    <linearGradient id="goldEdgeAnim" x1="0" y1="0" x2="100" y2="100" gradientUnits="userSpaceOnUse">
+      <stop offset="0%" stopColor="#FFD700">
+        <animate attributeName="stop-color" values="#FFD700;#F5A623;#FFD700" dur="3s" repeatCount="indefinite" />
+      </stop>
+      <stop offset="50%" stopColor="#F5A623">
+        <animate attributeName="stop-color" values="#F5A623;#FFD700;#F5A623" dur="3s" repeatCount="indefinite" />
+      </stop>
+      <stop offset="100%" stopColor="#FFD700">
+        <animate attributeName="stop-color" values="#FFD700;#F5A623;#FFD700" dur="3s" repeatCount="indefinite" />
+      </stop>
+    </linearGradient>
+    
+    <radialGradient id="coreEnergyAnim" cx="50" cy="50" r="44" gradientUnits="userSpaceOnUse">
+      <stop offset="0%" stopColor="#FFE55C" stopOpacity="0.9">
+        <animate attributeName="stop-opacity" values="0.9;0.5;0.9" dur="2s" repeatCount="indefinite" />
+      </stop>
+      <stop offset="40%" stopColor="#F5A623" stopOpacity="0.6">
+        <animate attributeName="stop-opacity" values="0.6;0.3;0.6" dur="2s" repeatCount="indefinite" />
+      </stop>
+      <stop offset="100%" stopColor="#B87333" stopOpacity="0" />
+    </radialGradient>
+  </defs>
+  
+  <!-- Rotating outer ring -->
+  <g>
+    <animateTransform attributeName="transform" type="rotate" from="0 50 50" to="360 50 50" dur="10s" repeatCount="indefinite" />
+    <circle cx="50" cy="50" r="44" fill="none" stroke="url(#goldEdgeAnim)" strokeWidth="2.5" strokeDasharray="6 4" />
+  </g>
+  
+  <!-- Pulsing inner ring -->
+  <g>
+    <circle cx="50" cy="50" r="37" fill="none" stroke="url(#goldEdgeAnim)" strokeWidth="1.5" strokeOpacity="0.5">
+      <animate attributeName="r" values="37;40;37" dur="2s" repeatCount="indefinite" />
+      <animate attributeName="stroke-opacity" values="0.5;0.8;0.5" dur="2s" repeatCount="indefinite" />
+    </circle>
+  </g>
+  
+  <!-- Twinkling stars -->
+  <g fill="#FFD700" opacity="0.9">
+    <circle cx="50" cy="8" r="1.8">
+      <animate attributeName="opacity" values="0.3;1;0.3" dur="1.5s" repeatCount="indefinite" />
+    </circle>
+    <circle cx="76.5" cy="17.5" r="1.8">
+      <animate attributeName="opacity" values="1;0.3;1" dur="2s" repeatCount="indefinite" />
+    </circle>
+    <circle cx="92" cy="42" r="1.8">
+      <animate attributeName="opacity" values="0.5;1;0.5" dur="1.8s" repeatCount="indefinite" />
+    </circle>
+    <circle cx="92" cy="58" r="1.8">
+      <animate attributeName="opacity" values="1;0.5;1" dur="2.2s" repeatCount="indefinite" />
+    </circle>
+    <circle cx="76.5" cy="82.5" r="1.8">
+      <animate attributeName="opacity" values="0.3;1;0.3" dur="1.7s" repeatCount="indefinite" />
+    </circle>
+    <circle cx="50" cy="92" r="1.8">
+      <animate attributeName="opacity" values="1;0.3;1" dur="1.9s" repeatCount="indefinite" />
+    </circle>
+    <circle cx="23.5" cy="82.5" r="1.8">
+      <animate attributeName="opacity" values="0.5;1;0.5" dur="2.1s" repeatCount="indefinite" />
+    </circle>
+    <circle cx="8" cy="58" r="1.8">
+      <animate attributeName="opacity" values="1;0.5;1" dur="1.6s" repeatCount="indefinite" />
+    </circle>
+    <circle cx="8" cy="42" r="1.8">
+      <animate attributeName="opacity" values="0.3;1;0.3" dur="2.3s" repeatCount="indefinite" />
+    </circle>
+    <circle cx="23.5" cy="17.5" r="1.8">
+      <animate attributeName="opacity" values="1;0.3;1" dur="1.4s" repeatCount="indefinite" />
+    </circle>
+  </g>
+  
+  <!-- Pulsing center core -->
+  <g>
+    <circle cx="50" cy="50" r="22" fill="url(#coreEnergyAnim)">
+      <animate attributeName="r" values="22;25;22" dur="3s" repeatCount="indefinite" />
+    </circle>
+    <ellipse cx="50" cy="48" rx="8" ry="5.5" fill="#FFD700" opacity="0.9">
+      <animate attributeName="rx" values="8;10;8" dur="2s" repeatCount="indefinite" />
+    </ellipse>
+    
+    <!-- Pulsing center dot -->
+    <circle cx="50" cy="49" r="3.2" fill="#1c0a2e">
+      <animate attributeName="r" values="3.2;4;3.2" dur="1.5s" repeatCount="indefinite" />
+    </circle>
+    <circle cx="50" cy="49" r="1.5" fill="#FFEAA0">
+      <animate attributeName="r" values="1.5;2.5;1.5" dur="1.5s" repeatCount="indefinite" />
+      <animate attributeName="opacity" values="1;0.5;1" dur="1.5s" repeatCount="indefinite" />
+    </circle>
+    
+    <!-- Om symbol with pulse -->
+    <text x="50" y="56" text-anchor="middle" fill="#FFD700" font-size="14" font-weight="bold" font-family="Arial, sans-serif">
+      🕉
+      <animate attributeName="opacity" values="0.7;1;0.7" dur="1.5s" repeatCount="indefinite" />
+    </text>
+  </g>
+</svg>

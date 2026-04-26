@@ -1,7 +1,9 @@
+// client/src/pages/home/HomeServices.jsx
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import { Loader2, AlertCircle } from 'lucide-react';
-import api from '../../services/api.js';
+import { supabase } from '../../lib/supabase.js';
 
 const ServiceCard = ({ icon, title, subtitle, oldPrice, newPrice, index, onOrder }) => (
   <div className="relative group cursor-pointer" onClick={() => onOrder && onOrder()}>
@@ -44,6 +46,7 @@ const ServiceCardSkeleton = () => (
 );
 
 const HomeServices = () => {
+  const { t, i18n } = useTranslation(['services', 'common']);
   const [services, setServices] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
@@ -56,20 +59,42 @@ const HomeServices = () => {
   useEffect(() => {
     fetchServices();
     fetchKundaliBanner();
-  }, []);
+  }, [i18n.language]);
 
   const fetchServices = async () => {
     setLoading(true);
+    setError('');
+    
     try {
-      const response = await api.get('/services/home?limit=9');
-      if (response.data.success) {
-        setServices(response.data.services);
+      const currentLang = i18n.language || 'en';
+      
+      const { data, error: supabaseError } = await supabase
+        .from('services')
+        .select('*')
+        .eq('is_active', true)
+        .order('display_order', { ascending: true })
+        .limit(9);
+      
+      if (supabaseError) throw supabaseError;
+      
+      if (data && data.length > 0) {
+        const formattedServices = data.map(service => ({
+          id: service.id,
+          name: service[`name_${currentLang}`] || service.name_en,
+          subtitle: service[`subtitle_${currentLang}`] || service.subtitle_en,
+          original_price: service.original_price,
+          price: service.price,
+          icon_svg: service.icon_svg,
+          icon_type: service.icon_type
+        }));
+        setServices(formattedServices);
       } else {
-        setError('Failed to load services');
+        setServices(getFallbackServices(currentLang));
       }
     } catch (err) {
       console.error('Error fetching services:', err);
-      setError('Unable to connect to server');
+      setError(t('error.loadFailed') || 'Failed to load services');
+      setServices(getFallbackServices(i18n.language || 'en'));
     } finally {
       setLoading(false);
     }
@@ -77,14 +102,42 @@ const HomeServices = () => {
 
   const fetchKundaliBanner = async () => {
     try {
-      const response = await api.get('/home/kundali-banner');
-      if (response.data.success) {
-        setKundaliBanner(response.data.data);
+      const currentLang = i18n.language || 'en';
+      
+      const { data, error } = await supabase
+        .from('services_banner')
+        .select('*')
+        .eq('is_active', true)
+        .single();
+      
+      if (error) throw error;
+      
+      if (data) {
+        setKundaliBanner({
+          title: data[`title_${currentLang}`] || data.title_en,
+          price: data.price,
+          link: data.link
+        });
       }
     } catch (err) {
       console.error('Error fetching banner:', err);
-      // Keep default banner
     }
+  };
+
+  const getFallbackServices = (lang) => {
+    const isBengali = lang === 'bn';
+    
+    return [
+      { id: 1, name: isBengali ? "কুন্ডলী" : "Kundali", subtitle: isBengali ? "জন্ম কুন্ডলী বিশ্লেষণ" : "Birth Chart Analysis", original_price: 1500, price: 1100, icon_type: "Kundali" },
+      { id: 2, name: isBengali ? "কুন্ডলী মিলন" : "Matchmaking", subtitle: isBengali ? "জ্যোতিষীয় সামঞ্জস্য" : "Astrological Compatibility", original_price: 2000, price: 1500, icon_type: "Match" },
+      { id: 3, name: isBengali ? "বিবাহ জ্যোতিষ" : "Marriage Astrology", subtitle: isBengali ? "বিবাহ সংক্রান্ত গাইডেন্স" : "Marriage Guidance", original_price: 1800, price: 1300, icon_type: "Marriage" },
+      { id: 4, name: isBengali ? "সন্তান জ্যোতিষ" : "Progeny Astrology", subtitle: isBengali ? "সন্তান ও পরিবার বিশ্লেষণ" : "Children & Family Analysis", original_price: 1800, price: 1300, icon_type: "Progeny" },
+      { id: 5, name: isBengali ? "শিক্ষা জ্যোতিষ" : "Education Astrology", subtitle: isBengali ? "ক্যারিয়ার ও শিক্ষা পথনির্দেশ" : "Career & Education Guidance", original_price: 1600, price: 1200, icon_type: "Education" },
+      { id: 6, name: isBengali ? "ক্যারিয়ার জ্যোতিষ" : "Career Astrology", subtitle: isBengali ? "পেশাগত সাফল্যের পথ" : "Path to Professional Success", original_price: 1600, price: 1200, icon_type: "Career" },
+      { id: 7, name: isBengali ? "নামকরণ জ্যোতিষ" : "Name Astrology", subtitle: isBengali ? "জ্যোতিষ অনুযায়ী নাম নির্বাচন" : "Name Selection by Astrology", original_price: 1400, price: 1000, icon_type: "Name" },
+      { id: 8, name: isBengali ? "মুহুর্ত জ্যোতিষ" : "Muhurta Astrology", subtitle: isBengali ? "শুভ সময় নির্বাচন" : "Auspicious Timing", original_price: 1700, price: 1200, icon_type: "Muhurata" },
+      { id: 9, name: isBengali ? "উপায় জ্যোতিষ" : "Remedial Astrology", subtitle: isBengali ? "জ্যোতিষীয় সমাধান" : "Astrological Solutions", original_price: 1900, price: 1400, icon_type: "Good" }
+    ];
   };
 
   const handleOrder = async (serviceId, serviceName, price) => {
@@ -96,14 +149,21 @@ const HomeServices = () => {
     }
 
     try {
-      await api.post('/services/order', {
-        serviceId: serviceId,
-        userId: user.id,
-        userName: user.name || 'Guest',
-        userPhone: user.phone || '',
-        serviceName: serviceName,
-        price: price
-      });
+      const { error } = await supabase
+        .from('orders')
+        .insert([{
+          service_id: serviceId,
+          user_id: user.id,
+          user_name: user.name || 'Guest',
+          user_phone: user.phone || '',
+          service_name: serviceName,
+          price: price,
+          status: 'pending',
+          order_date: new Date()
+        }]);
+      
+      if (error) throw error;
+      
       window.location.href = '/kundli';
     } catch (err) {
       console.error('Order error:', err);
@@ -112,75 +172,98 @@ const HomeServices = () => {
   };
 
   // Icon mapping based on service name
-  const getServiceIcon = (serviceName, customIcon) => {
+  const getServiceIcon = (serviceName, customIcon, iconType) => {
     if (customIcon) return customIcon;
     
+    // SVG Icons (same as before)
+    const KundaliIcon = (
+      <svg className="w-10 h-10 text-[#F7931E]" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <path d="M12 2L15 8.5L22 9.5L17 14L18.5 21L12 17.5L5.5 21L7 14L2 9.5L9 8.5L12 2Z" fill="currentColor" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+        <circle cx="12" cy="12" r="2" fill="white" stroke="currentColor" strokeWidth="1.5" />
+      </svg>
+    );
+    
+    const MatchIcon = (
+      <svg className="w-10 h-10 text-[#F7931E]" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <path d="M12 21.35L10.55 20.03C5.4 15.36 2 12.27 2 8.5 2 5.41 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.08C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.41 22 8.5c0 3.77-3.4 6.86-8.55 11.54L12 21.35Z" fill="currentColor" stroke="currentColor" strokeWidth="1.5" />
+      </svg>
+    );
+    
+    const MarriageIcon = (
+      <svg className="w-10 h-10 text-[#F7931E]" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <path d="M20 21V19C20 16.8 18.2 15 16 15H8C5.8 15 4 16.8 4 19V21" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
+        <circle cx="12" cy="7" r="4" stroke="currentColor" strokeWidth="1.5" />
+        <path d="M17 3.5L19 5.5L23 1.5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+      </svg>
+    );
+    
+    const ProgenyIcon = (
+      <svg className="w-10 h-10 text-[#F7931E]" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <path d="M12 2C10 2 8.5 3.5 8.5 5.5C8.5 7.5 10 9 12 9C14 9 15.5 7.5 15.5 5.5C15.5 3.5 14 2 12 2Z" fill="currentColor" stroke="currentColor" strokeWidth="1.5" />
+        <path d="M5 22V19C5 16.8 6.8 15 9 15H15C17.2 15 19 16.8 19 19V22" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
+        <path d="M3 9L5 7L7 9" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+        <path d="M21 9L19 7L17 9" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+      </svg>
+    );
+    
+    const EducationIcon = (
+      <svg className="w-10 h-10 text-[#F7931E]" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <path d="M12 3L2 9L12 15L22 9L12 3Z" stroke="currentColor" strokeWidth="1.5" strokeLinejoin="round" />
+        <path d="M6 12L6 18L12 21L18 18L18 12" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+        <path d="M12 21V15" stroke="currentColor" strokeWidth="1.5" />
+      </svg>
+    );
+    
+    const CareerIcon = (
+      <svg className="w-10 h-10 text-[#F7931E]" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <rect x="2" y="7" width="20" height="14" rx="2" stroke="currentColor" strokeWidth="1.5" />
+        <path d="M16 21V5C16 3.9 15.1 3 14 3H10C8.9 3 8 3.9 8 5V21" stroke="currentColor" strokeWidth="1.5" />
+        <path d="M12 11V13" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
+        <path d="M12 16V17" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
+      </svg>
+    );
+    
+    const NameIcon = (
+      <svg className="w-10 h-10 text-[#F7931E]" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <path d="M12 2C6.48 2 2 6.48 2 12C2 17.52 6.48 22 12 22C17.52 22 22 17.52 22 12C22 6.48 17.52 2 12 2Z" stroke="currentColor" strokeWidth="1.5" />
+        <path d="M8 12H16" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
+        <path d="M12 8V16" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
+        <circle cx="12" cy="12" r="2" fill="currentColor" />
+      </svg>
+    );
+    
+    const MuhurataIcon = (
+      <svg className="w-10 h-10 text-[#F7931E]" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <circle cx="12" cy="12" r="9" stroke="currentColor" strokeWidth="1.5" />
+        <path d="M12 7V12L15 15" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
+        <path d="M4 4L8 8" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
+        <path d="M20 4L16 8" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
+      </svg>
+    );
+    
+    const GoodIcon = (
+      <svg className="w-10 h-10 text-[#F7931E]" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <path d="M12 2L15 8.5L22 9.5L17 14L18.5 21L12 17.5L5.5 21L7 14L2 9.5L9 8.5L12 2Z" fill="currentColor" stroke="currentColor" strokeWidth="1.5" />
+        <path d="M12 8V13" stroke="white" strokeWidth="1.5" strokeLinecap="round" />
+        <circle cx="12" cy="16" r="1" fill="white" />
+      </svg>
+    );
+    
     const icons = {
-      'Kundali': (
-        <svg className="w-10 h-10 text-[#F7931E]" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-          <path d="M12 2L15 8.5L22 9.5L17 14L18.5 21L12 17.5L5.5 21L7 14L2 9.5L9 8.5L12 2Z" fill="currentColor" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
-          <circle cx="12" cy="12" r="2" fill="white" stroke="currentColor" strokeWidth="1.5" />
-        </svg>
-      ),
-      'Match': (
-        <svg className="w-10 h-10 text-[#F7931E]" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-          <path d="M12 21.35L10.55 20.03C5.4 15.36 2 12.27 2 8.5 2 5.41 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.08C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.41 22 8.5c0 3.77-3.4 6.86-8.55 11.54L12 21.35Z" fill="currentColor" stroke="currentColor" strokeWidth="1.5" />
-        </svg>
-      ),
-      'Marriage': (
-        <svg className="w-10 h-10 text-[#F7931E]" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-          <path d="M20 21V19C20 16.8 18.2 15 16 15H8C5.8 15 4 16.8 4 19V21" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
-          <circle cx="12" cy="7" r="4" stroke="currentColor" strokeWidth="1.5" />
-          <path d="M17 3.5L19 5.5L23 1.5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
-        </svg>
-      ),
-      'Progeny': (
-        <svg className="w-10 h-10 text-[#F7931E]" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-          <path d="M12 2C10 2 8.5 3.5 8.5 5.5C8.5 7.5 10 9 12 9C14 9 15.5 7.5 15.5 5.5C15.5 3.5 14 2 12 2Z" fill="currentColor" stroke="currentColor" strokeWidth="1.5" />
-          <path d="M5 22V19C5 16.8 6.8 15 9 15H15C17.2 15 19 16.8 19 19V22" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
-          <path d="M3 9L5 7L7 9" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
-          <path d="M21 9L19 7L17 9" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
-        </svg>
-      ),
-      'Education': (
-        <svg className="w-10 h-10 text-[#F7931E]" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-          <path d="M12 3L2 9L12 15L22 9L12 3Z" stroke="currentColor" strokeWidth="1.5" strokeLinejoin="round" />
-          <path d="M6 12L6 18L12 21L18 18L18 12" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
-          <path d="M12 21V15" stroke="currentColor" strokeWidth="1.5" />
-        </svg>
-      ),
-      'Career': (
-        <svg className="w-10 h-10 text-[#F7931E]" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-          <rect x="2" y="7" width="20" height="14" rx="2" stroke="currentColor" strokeWidth="1.5" />
-          <path d="M16 21V5C16 3.9 15.1 3 14 3H10C8.9 3 8 3.9 8 5V21" stroke="currentColor" strokeWidth="1.5" />
-          <path d="M12 11V13" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
-          <path d="M12 16V17" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
-        </svg>
-      ),
-      'Name': (
-        <svg className="w-10 h-10 text-[#F7931E]" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-          <path d="M12 2C6.48 2 2 6.48 2 12C2 17.52 6.48 22 12 22C17.52 22 22 17.52 22 12C22 6.48 17.52 2 12 2Z" stroke="currentColor" strokeWidth="1.5" />
-          <path d="M8 12H16" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
-          <path d="M12 8V16" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
-          <circle cx="12" cy="12" r="2" fill="currentColor" />
-        </svg>
-      ),
-      'Muhurata': (
-        <svg className="w-10 h-10 text-[#F7931E]" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-          <circle cx="12" cy="12" r="9" stroke="currentColor" strokeWidth="1.5" />
-          <path d="M12 7V12L15 15" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
-          <path d="M4 4L8 8" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
-          <path d="M20 4L16 8" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
-        </svg>
-      ),
-      'Good': (
-        <svg className="w-10 h-10 text-[#F7931E]" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-          <path d="M12 2L15 8.5L22 9.5L17 14L18.5 21L12 17.5L5.5 21L7 14L2 9.5L9 8.5L12 2Z" fill="currentColor" stroke="currentColor" strokeWidth="1.5" />
-          <path d="M12 8V13" stroke="white" strokeWidth="1.5" strokeLinecap="round" />
-          <circle cx="12" cy="16" r="1" fill="white" />
-        </svg>
-      )
+      'Kundali': KundaliIcon,
+      'Match': MatchIcon,
+      'Marriage': MarriageIcon,
+      'Progeny': ProgenyIcon,
+      'Education': EducationIcon,
+      'Career': CareerIcon,
+      'Name': NameIcon,
+      'Muhurata': MuhurataIcon,
+      'Good': GoodIcon
     };
+    
+    if (iconType && icons[iconType]) {
+      return icons[iconType];
+    }
     
     for (const [key, icon] of Object.entries(icons)) {
       if (serviceName.includes(key)) {
@@ -188,8 +271,7 @@ const HomeServices = () => {
       }
     }
     
-    // Default icon
-    return icons['Kundali'];
+    return KundaliIcon;
   };
 
   if (loading) {
@@ -237,15 +319,20 @@ const HomeServices = () => {
     <div className="bg-[#f5f5f5] py-20 px-4">
       <div className="max-w-6xl mx-auto">
         <div className="text-center mb-12">
-          <h2 className="text-5xl md:text-6xl font-bold text-gray-800 mb-4 tracking-tight">Our Services</h2>
+          {/* Title - "Our Services" fixed */}
+          <style>{`
+        @import url('https://fonts.googleapis.com/css2?family=Stoke&display=swap');
+      `}</style>
+          <h2 className="text-5xl md:text-6xl font-bold text-gray-800 mb-4 tracking-tight" style={{ fontFamily: "'Stoke', serif", color: "#b87333" }}>Our Services</h2>
           <div className="flex items-center justify-center gap-2 text-gray-600">
             <span className="text-xl">🙏</span>
+            {/* Subtitle - "May All The Worlds Be Happy" fixed */}
             <p className="text-lg md:text-xl font-medium">May All The Worlds Be Happy</p>
             <span className="text-xl">🙏</span>
           </div>
         </div>
 
-        {/* Kundali Banner - From Database */}
+        {/* Kundali Banner */}
         <div className="mb-20">
           <div className="bg-gradient-to-r from-[#f3e0c7] to-[#f7931e] rounded-2xl shadow-xl overflow-hidden transition-transform hover:scale-[1.01] duration-300 text-orange-500">
             <div className="flex flex-col md:flex-row items-center justify-between p-6 md:p-8 gap-6">
@@ -290,7 +377,7 @@ const HomeServices = () => {
                 key={service.id} 
                 icon={service.icon_svg ? (
                   <div dangerouslySetInnerHTML={{ __html: service.icon_svg }} className="w-10 h-10 text-[#F7931E]" />
-                ) : getServiceIcon(service.name)}
+                ) : getServiceIcon(service.name, null, service.icon_type)}
                 title={service.name}
                 subtitle={service.subtitle}
                 oldPrice={service.original_price}

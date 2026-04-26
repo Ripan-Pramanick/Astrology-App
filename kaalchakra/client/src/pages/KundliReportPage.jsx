@@ -2,8 +2,8 @@
 import React, { useState, useEffect } from 'react';
 import { PDFViewer, PDFDownloadLink } from '@react-pdf/renderer';
 import { KundliReportGenerator } from '../components/KundliReportGenerator';
-import { Loader2, AlertCircle, RefreshCw, Info, Sparkles, MapPin, Calendar, Clock, Moon, Sun, Eye, Heart, Shield, Users, HeartHandshake, Star, TrendingUp, AlertTriangle, Saturn } from 'lucide-react';
-import api from '../services/api';
+import { Loader2, AlertCircle, RefreshCw, Info, Sparkles, MapPin, Calendar, Clock, Moon, Sun, Eye, Heart, Shield, Users, HeartHandshake, Star, TrendingUp, AlertTriangle } from 'lucide-react';
+// import api from '../services/api';
 import astrologyServices from '../services/astrologyApi.js';
 import { supabase } from '../lib/supabase.js';
 
@@ -606,7 +606,7 @@ const KundliReportPage = () => {
       <div className={`rounded-xl overflow-hidden border-2 ${status.isActive ? 'border-orange-500 bg-gradient-to-br from-orange-50 to-amber-50' : 'border-gray-200 bg-gray-50'}`}>
         <div className={`p-4 ${status.isActive ? 'bg-gradient-to-r from-gray-800 to-gray-900' : 'bg-gray-600'} text-white`}>
           <div className="flex items-center gap-2">
-            <Saturn className="w-6 h-6" />
+            <AlertCircle className="w-6 h-6" />
             <h3 className="font-bold text-lg">
               {status.isActive ? '🔴 Sade Sati is Active' : '🟢 No Active Sade Sati'}
             </h3>
@@ -759,7 +759,7 @@ const KundliReportPage = () => {
           <div className="mb-6">
             <div className="text-center mb-4">
               <h2 className="text-2xl font-bold text-gray-800 mb-2 flex items-center justify-center gap-2">
-                <Saturn className="w-6 h-6 text-gray-700" /> Shani Sade Sati
+                <AlertCircle className="w-6 h-6 text-gray-700" /> Shani Sade Sati
               </h2>
               <div className="w-20 h-px bg-gradient-to-r from-transparent via-gray-700 to-transparent mx-auto"></div>
               <p className="text-gray-500 text-sm mt-2">7.5 years of karmic growth and transformation</p>

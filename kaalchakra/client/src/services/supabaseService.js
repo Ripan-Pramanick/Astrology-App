@@ -2,7 +2,7 @@
 import { supabase } from '../lib/supabase';
 
 export const supabaseService = {
-  // Services ফেচ করা
+  // ==================== SERVICES ====================
   getServices: async (language = 'en', limit = 9) => {
     try {
       const { data, error } = await supabase
@@ -14,7 +14,6 @@ export const supabaseService = {
       
       if (error) throw error;
       
-      // ভাষা অনুযায়ী ডাটা ফরম্যাট করা
       const formattedServices = data.map(service => ({
         id: service.id,
         name: service[`name_${language}`] || service.name_en,
@@ -22,26 +21,18 @@ export const supabaseService = {
         original_price: service.original_price,
         price: service.price,
         icon_svg: service.icon_svg,
-        icon_type: service.icon_type,
-        display_order: service.display_order
+        icon_type: service.icon_type
       }));
       
-      return {
-        success: true,
-        services: formattedServices
-      };
+      return { success: true, services: formattedServices };
     } catch (error) {
       console.error('Error fetching services:', error);
-      return {
-        success: false,
-        error: error.message,
-        services: []
-      };
+      return { success: false, error: error.message, services: [] };
     }
   },
-  
-  // Banner ফেচ করা
-  getServicesBanner: async (language = 'en') => {
+
+  // ==================== BANNER ====================
+  getBanner: async (language = 'en') => {
     try {
       const { data, error } = await supabase
         .from('services_banner')
@@ -61,84 +52,212 @@ export const supabaseService = {
       };
     } catch (error) {
       console.error('Error fetching banner:', error);
-      return {
-        success: false,
-        error: error.message
-      };
+      return { success: false, error: error.message };
     }
   },
-  
-  // অর্ডার তৈরি করা
-  createOrder: async (orderData) => {
+
+  // ==================== LAGNA CHARACTERISTICS ====================
+  getLagnaCharacteristics: async (lagnaName) => {
+    if (!lagnaName) return { success: false, data: null };
+    
     try {
       const { data, error } = await supabase
-        .from('orders')
-        .insert([{
-          service_id: orderData.serviceId,
-          user_id: orderData.userId,
-          user_name: orderData.userName,
-          user_phone: orderData.userPhone,
-          service_name: orderData.serviceName,
-          price: orderData.price,
-          language: orderData.language,
-          status: 'pending',
-          created_at: new Date()
-        }])
-        .select();
+        .from('lagna_characteristics')
+        .select('*')
+        .eq('lagna_name', lagnaName)
+        .single();
       
       if (error) throw error;
       
-      return {
-        success: true,
-        order: data[0]
-      };
+      return { success: true, data };
     } catch (error) {
-      console.error('Error creating order:', error);
-      return {
-        success: false,
-        error: error.message
-      };
+      console.error('Error fetching lagna data:', error);
+      return { success: false, error: error.message, data: null };
+    }
+  },
+
+  // ==================== SADE SATI ====================
+  getCurrentSaturnPosition: async () => {
+    try {
+      const { data, error } = await supabase
+        .from('current_sade_sati')
+        .select('*')
+        .single();
+      
+      if (error) throw error;
+      return { success: true, data };
+    } catch (error) {
+      console.error('Error fetching Saturn position:', error);
+      return { success: false, error: error.message };
+    }
+  },
+
+  getSadeSatiByMoonSign: async (moonSign, phase = null) => {
+    if (!moonSign) return { success: false, data: null };
+    
+    try {
+      let query = supabase
+        .from('sade_sati')
+        .select('*')
+        .eq('moon_sign', moonSign);
+      
+      if (phase) {
+        query = query.eq('phase', phase);
+      }
+      
+      const { data, error } = await query;
+      
+      if (error) throw error;
+      
+      return { success: true, data };
+    } catch (error) {
+      console.error('Error fetching Sade Sati:', error);
+      return { success: false, error: error.message, data: null };
+    }
+  },
+
+  // ==================== COMPATIBILITY ====================
+  getCompatibilityScores: async (sign) => {
+    if (!sign) return { success: false, data: [] };
+    
+    try {
+      const { data, error } = await supabase
+        .from('compatibility_scores')
+        .select('*')
+        .or(`sign1.eq.${sign},sign2.eq.${sign}`)
+        .order('score', { ascending: false });
+      
+      if (error) throw error;
+      
+      return { success: true, data };
+    } catch (error) {
+      console.error('Error fetching compatibility:', error);
+      return { success: false, error: error.message, data: [] };
+    }
+  },
+
+  getPartnerCompatibility: async (sign1, sign2) => {
+    if (!sign1 || !sign2) return { success: false, data: null };
+    
+    try {
+      const { data, error } = await supabase
+        .from('compatibility_scores')
+        .select('*')
+        .or(`and(sign1.eq.${sign1},sign2.eq.${sign2}),and(sign1.eq.${sign2},sign2.eq.${sign1})`)
+        .single();
+      
+      if (error) throw error;
+      
+      return { success: true, data };
+    } catch (error) {
+      console.error('Error fetching partner compatibility:', error);
+      return { success: false, error: error.message, data: null };
+    }
+  },
+
+  // ==================== DARAKARAKA ====================
+  getDarakarakaByPlanet: async (planetName) => {
+    if (!planetName) return { success: false, data: null };
+    
+    try {
+      const { data, error } = await supabase
+        .from('darakaraka_planets')
+        .select('*')
+        .eq('planet', planetName)
+        .single();
+      
+      if (error) throw error;
+      
+      return { success: true, data };
+    } catch (error) {
+      console.error('Error fetching Darakaraka:', error);
+      return { success: false, error: error.message, data: null };
+    }
+  },
+
+  // ==================== DRISHTI ====================
+  getPlanetDrishti: async (planet, baseSign) => {
+    if (!planet || !baseSign) return { success: false, data: null };
+    
+    try {
+      const { data, error } = await supabase
+        .from('planet_drishti')
+        .select('*')
+        .eq('planet', planet)
+        .eq('base_sign', baseSign)
+        .single();
+      
+      if (error) throw error;
+      
+      return { success: true, data };
+    } catch (error) {
+      console.error(`Error fetching ${planet} drishti:`, error);
+      return { success: false, error: error.message, data: null };
+    }
+  },
+
+  getPlanetOtherEffects: async (planetFrom, planetTo) => {
+    try {
+      const { data, error } = await supabase
+        .from('planet_other_effects')
+        .select('*')
+        .eq('planet_aspect', `${planetFrom} → ${planetTo}`)
+        .single();
+      
+      if (error) throw error;
+      
+      return { success: true, data };
+    } catch (error) {
+      console.error('Error fetching planet aspect:', error);
+      return { success: false, error: error.message, data: null };
+    }
+  },
+
+  // ==================== REMEDIES ====================
+  getRemedies: async (type = null, language = 'bn') => {
+    try {
+      let query = supabase
+        .from('remedies')
+        .select('*')
+        .eq('language', language);
+      
+      if (type) {
+        query = query.eq('type', type);
+      }
+      
+      const { data, error } = await query;
+      
+      if (error) throw error;
+      
+      return { success: true, data };
+    } catch (error) {
+      console.error('Error fetching remedies:', error);
+      return { success: false, error: error.message, data: [] };
+    }
+  },
+
+  // ==================== CONCEPTS ====================
+  getConcepts: async (type = null, language = 'bn') => {
+    try {
+      let query = supabase
+        .from('concepts')
+        .select('*')
+        .eq('language', language);
+      
+      if (type) {
+        query = query.eq('type', type);
+      }
+      
+      const { data, error } = await query;
+      
+      if (error) throw error;
+      
+      return { success: true, data };
+    } catch (error) {
+      console.error('Error fetching concepts:', error);
+      return { success: false, error: error.message, data: [] };
     }
   }
 };
 
-getBlogPosts: async (language = 'en', limit = 9, offset = 0, category = null) => {
-  try {
-    let query = supabase
-      .from('blog_posts')
-      .select('*')
-      .eq('is_published', true)
-      .order('published_at', { ascending: false })
-      .range(offset, offset + limit - 1);
-    
-    if (category && category !== 'all') {
-      query = query.eq('category', category);
-    }
-    
-    const { data, error } = await query;
-    
-    if (error) throw error;
-    
-    const formattedPosts = data.map(post => ({
-      id: post.id,
-      title: post[`title_${language}`] || post.title_en,
-      excerpt: post[`excerpt_${language}`] || post.excerpt_en,
-      content: post[`content_${language}`] || post.content_en,
-      slug: post.slug,
-      category: post.category,
-      author: post.author,
-      author_name: post.author_name,
-      image_url: post.image_url,
-      read_time: post.read_time,
-      is_featured: post.is_featured,
-      is_trending: post.is_trending,
-      published_at: post.published_at,
-      created_at: post.created_at
-    }));
-    
-    return { success: true, posts: formattedPosts };
-  } catch (error) {
-    console.error('Error fetching blog posts:', error);
-    return { success: false, error: error.message, posts: [] };
-  }
-}
+export default supabaseService;

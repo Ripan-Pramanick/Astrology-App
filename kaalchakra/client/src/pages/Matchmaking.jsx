@@ -1,8 +1,30 @@
 // client/src/pages/Matchmaking.jsx
 import React, { useState, useEffect } from 'react';
-import { Heart, Sparkles, MapPin, Calendar, Clock, User, Loader2, AlertCircle, CheckCircle, XCircle, TrendingUp, Shield, Moon, Sun, Eye, Star, Saturn } from 'lucide-react';
+import { Heart, Sparkles, MapPin, Calendar, Clock, User, Loader2, AlertCircle, CheckCircle, XCircle, TrendingUp, Shield, Moon, Sun, Eye, Star,  } from 'lucide-react';
 import astrologyServices from '../services/astrologyApi.js';
 import { supabase } from '../lib/supabase.js';
+
+// Zodiac Images
+const zodiacImages = {
+  'Aries': '/images/zodiac/aries.png',
+  'Taurus': '/images/zodiac/taurus.png',
+  'Gemini': '/images/zodiac/gemini.png',
+  'Cancer': '/images/zodiac/cancer.png',
+  'Leo': '/images/zodiac/leo.png',
+  'Virgo': '/images/zodiac/virgo.png',
+  'Libra': '/images/zodiac/libra.png',
+  'Scorpio': '/images/zodiac/scorpio.png',
+  'Sagittarius': '/images/zodiac/sagittarius.png',
+  'Capricorn': '/images/zodiac/capricorn.png',
+  'Aquarius': '/images/zodiac/aquarius.png',
+  'Pisces': '/images/zodiac/pisces.png'
+};
+
+const zodiacNames = {
+  'Aries': 'মেষ', 'Taurus': 'বৃষ', 'Gemini': 'মিথুন', 'Cancer': 'কর্কট',
+  'Leo': 'সিংহ', 'Virgo': 'কন্যা', 'Libra': 'তুলা', 'Scorpio': 'বৃশ্চিক',
+  'Sagittarius': 'ধনু', 'Capricorn': 'মকর', 'Aquarius': 'কুম্ভ', 'Pisces': 'মীন'
+};
 
 const Matchmaking = () => {
   const [personA, setPersonA] = useState({
@@ -529,19 +551,33 @@ const Matchmaking = () => {
     return 'bg-red-50 border-red-200';
   };
 
-  // Lagna Card Component
+  // Get zodiac image with fallback
+  const getZodiacImage = (sign) => {
+    return zodiacImages[sign] || '/images/zodiac/aries.png';
+  };
+
+  // Lagna Card Component with Image
   const LagnaCard = ({ person, lagnaName, data }) => {
     if (!data) return null;
     
     return (
-      <div className="bg-white rounded-lg border border-purple-100 p-4">
-        <div className="flex items-center gap-2 mb-2">
-          <Star className="w-4 h-4 text-purple-500" />
-          <h4 className="font-semibold text-gray-800">{person} - {lagnaName} ({data.lagna_name_bn}) Lagna</h4>
+      <div className="bg-white rounded-lg border border-purple-100 p-4 hover:shadow-md transition-shadow">
+        <div className="flex items-center gap-3 mb-2">
+          <img 
+            src={getZodiacImage(lagnaName)} 
+            alt={lagnaName}
+            className="w-10 h-10 rounded-full object-contain"
+            onError={(e) => {
+              e.target.style.display = 'none';
+            }}
+          />
+          <div>
+            <h4 className="font-semibold text-gray-800">{person} - {lagnaName} ({data.lagna_name_bn}) Lagna</h4>
+            <p className="text-xs text-gray-500">Element: {data.element} • Ruling: {data.ruling_planet}</p>
+          </div>
         </div>
         <div className="mt-2 text-xs text-gray-500">
-          <p className="font-medium text-gray-700">Element: {data.element} • Ruling Planet: {data.ruling_planet}</p>
-          <p className="mt-1 line-clamp-2">{data.personality_traits?.[0]}</p>
+          <p className="line-clamp-2">{data.personality_traits?.[0]}</p>
         </div>
       </div>
     );
@@ -552,12 +588,15 @@ const Matchmaking = () => {
     if (!sadeSati) return null;
     
     return (
-      <div className="bg-white rounded-lg border border-gray-100 p-4">
+      <div className="bg-white rounded-lg border border-gray-100 p-4 hover:shadow-md transition-shadow">
         <div className="flex items-center gap-2 mb-2">
-          <Saturn className="w-4 h-4 text-gray-700" />
+          <AlertCircle className="w-4 h-4 text-gray-700" />
           <h4 className="font-semibold text-gray-800">{person}</h4>
         </div>
-        <p className="text-sm text-gray-600">Moon Sign: <span className="font-medium">{moonSign}</span></p>
+        <div className="flex items-center gap-2">
+          <img src={getZodiacImage(moonSign)} alt={moonSign} className="w-5 h-5 object-contain" />
+          <p className="text-sm text-gray-600">Moon Sign: <span className="font-medium">{moonSign} ({zodiacNames[moonSign]})</span></p>
+        </div>
         <div className="mt-2">
           <span className={`text-xs px-2 py-1 rounded-full ${sadeSati.isActive ? 'bg-orange-100 text-orange-700' : 'bg-green-100 text-green-700'}`}>
             {sadeSati.isActive ? `🔴 Active Sade Sati (${sadeSati.phase})` : '🟢 No Active Sade Sati'}
@@ -574,7 +613,7 @@ const Matchmaking = () => {
     if (!data) return null;
     
     return (
-      <div className="bg-white rounded-lg border border-gray-100 p-4">
+      <div className="bg-white rounded-lg border border-gray-100 p-4 hover:shadow-md transition-shadow">
         <div className="flex items-center gap-2 mb-2">
           <Shield className="w-4 h-4 text-pink-500" />
           <h4 className="font-semibold text-gray-800">{person}</h4>
@@ -844,7 +883,7 @@ const Matchmaking = () => {
                 </div>
               </div>
 
-              {/* Lagna Characteristics Section - NEW */}
+              {/* Lagna Characteristics Section */}
               {(result.lagnaDataA || result.lagnaDataB) && (
                 <div className="mb-6 p-4 bg-gradient-to-r from-purple-50 to-indigo-50 rounded-xl border border-purple-200">
                   <h3 className="text-lg font-semibold text-gray-800 mb-3 flex items-center gap-2">
@@ -862,11 +901,11 @@ const Matchmaking = () => {
                 </div>
               )}
 
-              {/* Sade Sati Section - NEW */}
+              {/* Sade Sati Section */}
               {(result.sadeSatiA || result.sadeSatiB) && (
                 <div className="mb-6 p-4 bg-gradient-to-r from-gray-50 to-gray-100 rounded-xl border border-gray-200">
                   <h3 className="text-lg font-semibold text-gray-800 mb-3 flex items-center gap-2">
-                    <Saturn className="w-5 h-5 text-gray-700" />
+                    <AlertCircle className="w-5 h-5 text-gray-700" />
                     Shani Sade Sati Status
                   </h3>
                   <div className="grid md:grid-cols-2 gap-4">

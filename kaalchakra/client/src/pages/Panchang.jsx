@@ -1,6 +1,6 @@
 // client/src/pages/Panchang.jsx
 import React, { useState, useEffect } from 'react';
-import { Calendar, MapPin, Search, ChevronLeft, ChevronRight, CheckCircle2, XCircle, Sun, Moon, Star, Clock, Sparkles, Loader2, AlertCircle } from 'lucide-react';
+import { Calendar, MapPin, Search, ChevronLeft, ChevronRight, CheckCircle2, XCircle, Sun, Moon, Star, Clock, Sparkles, Loader2, AlertCircle, Navigation } from 'lucide-react';
 import astrologyServices from '../services/astrologyApi.js';
 
 // ==========================================
@@ -95,6 +95,7 @@ const Panchang = () => {
   const [location, setLocation] = useState("New Delhi, India");
   const [coordinates, setCoordinates] = useState({ lat: 28.6139, lng: 77.2090, timezone: 5.5 });
   const [loading, setLoading] = useState(true);
+  const [locationLoading, setLocationLoading] = useState(false);
   const [error, setError] = useState('');
   const [panchangData, setPanchangData] = useState({
     tithi: { name: "--", endTime: "--" },
@@ -119,6 +120,42 @@ const Panchang = () => {
   const [suggestions, setSuggestions] = useState([]);
   const [showSuggestions, setShowSuggestions] = useState(false);
   const [isSearching, setIsSearching] = useState(false);
+
+  // Get user's current location
+  const getUserLocation = () => {
+    setLocationLoading(true);
+    
+    if (!navigator.geolocation) {
+      setError("Geolocation is not supported by your browser");
+      setLocationLoading(false);
+      return;
+    }
+    
+    navigator.geolocation.getCurrentPosition(
+      async (position) => {
+        const { latitude, longitude } = position.coords;
+        setCoordinates({ lat: latitude, lng: longitude, timezone: 5.5 });
+        
+        // Get city name from coordinates (reverse geocoding)
+        try {
+          const response = await fetch(`https://api.bigdatacloud.net/data/reverse-geocode-client?latitude=${latitude}&longitude=${longitude}&localityLanguage=en`);
+          const data = await response.json();
+          const cityName = data.city || data.locality || data.principalSubdivision || "Unknown Location";
+          setLocation(`${cityName}, ${data.countryName || "India"}`);
+        } catch (err) {
+          console.error("Error getting city name:", err);
+          setLocation(`${latitude.toFixed(2)}, ${longitude.toFixed(2)}`);
+        }
+        
+        setLocationLoading(false);
+      },
+      (error) => {
+        console.error("Location error:", error);
+        setError("Unable to get your location. Using default location.");
+        setLocationLoading(false);
+      }
+    );
+  };
 
   // Fetch location suggestions
   useEffect(() => {
@@ -164,131 +201,189 @@ const Panchang = () => {
     setError('');
     
     try {
-      const params = {
+      const payload = {
         day: selectedDate.getDate(),
         month: selectedDate.getMonth() + 1,
         year: selectedDate.getFullYear(),
-        hour: selectedDate.getHours(),
-        minute: selectedDate.getMinutes(),
-        second: selectedDate.getSeconds(),
+        hour: 12,
+        minute: 0,
+        second: 0,
         latitude: coordinates.lat,
         longitude: coordinates.lng,
         timezone: coordinates.timezone,
         ayanamsa: "lahiri"
       };
 
-      console.log("Fetching Panchang data...", params);
+      console.log("🌞 Fetching Panchang data...", payload);
 
-      // Fetch basic panchang
-      const basicPanchang = await astrologyServices.panchang.getBasicPanchang(params);
-      console.log("Basic Panchang:", basicPanchang);
+      // Fetch birth details (contains panchang info)
+      const birthDetails = await astrologyServices.kundli.getBirthDetails(payload);
+      console.log("📊 Birth Details response:", birthDetails);
 
-      // Fetch advanced panchang for more details
-      const advancedPanchang = await astrologyServices.panchang.getAdvancedPanchang(params);
-      console.log("Advanced Panchang:", advancedPanchang);
-
-      if (basicPanchang) {
+      if (birthDetails) {
         setPanchangData({
           tithi: { 
-            name: basicPanchang.tithi?.name || "--", 
-            endTime: basicPanchang.tithi?.end_time || "--" 
+            name: birthDetails.tithi_name || getTithiName(selectedDate), 
+            endTime: birthDetails.tithi_end_time || "12:15 PM" 
           },
           nakshatra: { 
-            name: basicPanchang.nakshatra?.name || "--", 
-            endTime: basicPanchang.nakshatra?.end_time || "--" 
+            name: birthDetails.nakshatra_name || getNakshatraName(selectedDate), 
+            endTime: birthDetails.nakshatra_end_time || "05:15 AM" 
           },
           yoga: { 
-            name: basicPanchang.yoga?.name || "--", 
-            endTime: basicPanchang.yoga?.end_time || "--" 
+            name: birthDetails.yoga_name || getYogaName(selectedDate), 
+            endTime: birthDetails.yoga_end_time || "05:53 AM" 
           },
           karana: { 
-            name: basicPanchang.karana?.name || "--", 
-            endTime: basicPanchang.karana?.end_time || "--" 
+            name: birthDetails.karana_name || getKaranaName(selectedDate), 
+            endTime: birthDetails.karana_end_time || "12:12 PM" 
           },
-          vaar: { name: basicPanchang.vaar || getWeekdayName(selectedDate.getDay()) },
-          sunrise: basicPanchang.sunrise || formatTime(6, 18),
-          sunset: basicPanchang.sunset || formatTime(17, 57),
-          moonrise: basicPanchang.moonrise || formatTime(12, 10),
-          moonset: basicPanchang.moonset || formatTime(22, 13),
+          vaar: { name: getWeekdayName(selectedDate.getDay()) },
+          sunrise: birthDetails.sunrise || getSunriseTime(),
+          sunset: birthDetails.sunset || getSunsetTime(),
+          moonrise: birthDetails.moonrise || getMoonriseTime(),
+          moonset: birthDetails.moonset || getMoonsetTime(),
           samvat: {
-            vikram: basicPanchang.vikram_samvat || "2081",
-            shaka: basicPanchang.shaka_samvat || "1946"
+            vikram: birthDetails.vikram_samvat || String(selectedDate.getFullYear() + 57),
+            shaka: birthDetails.shaka_samvat || String(selectedDate.getFullYear() - 78)
           },
           month: {
-            amanta: basicPanchang.amanta_month || "Ashwina",
-            purnimanta: basicPanchang.purnimanta_month || "Ashwina"
+            amanta: birthDetails.amanta_month || getMonthName(selectedDate.getMonth()),
+            purnimanta: birthDetails.purnimanta_month || getMonthName(selectedDate.getMonth())
           },
-          sunSign: basicPanchang.sun_sign || "Kanya (Virgo)",
-          moonSign: basicPanchang.moon_sign || "Dhanu (Sagittarius)",
-          ritu: basicPanchang.ritu || "Sharad (Autumn)",
-          ayan: basicPanchang.ayan || "Dakshinayana"
+          sunSign: getSunSign(selectedDate),
+          moonSign: getMoonSign(selectedDate),
+          ritu: getRitu(selectedDate.getMonth()),
+          ayan: getAyan(selectedDate)
         });
 
-        // Set timings from API or use defaults
+        // Set default timings
         setAuspiciousTimings([
-          { name: "Abhijit Muhurat", time: basicPanchang.abhijit_muhurat || "11:45 AM - 12:31 PM", desc: "Most auspicious window", icon: "🌟" },
-          { name: "Amrit Kalam", time: basicPanchang.amrit_kalam || "11:45 PM - 01:15 AM", desc: "Best for new beginnings", icon: "💧" },
-          { name: "Brahma Muhurat", time: basicPanchang.brahma_muhurat || "04:42 AM - 05:30 AM", desc: "Best for meditation", icon: "🧘" },
-          { name: "Godhuli Muhurat", time: basicPanchang.godhuli_muhurat || "05:57 PM - 06:21 PM", desc: "Twilight hour", icon: "🌅" },
-          { name: "Vijaya Muhurat", time: basicPanchang.vijaya_muhurat || "02:30 PM - 03:18 PM", desc: "For success in ventures", icon: "🏆" }
+          { name: "Abhijit Muhurat", time: "11:45 AM - 12:31 PM", desc: "Most auspicious window", icon: "🌟" },
+          { name: "Amrit Kalam", time: "11:45 PM - 01:15 AM", desc: "Best for new beginnings", icon: "💧" },
+          { name: "Brahma Muhurat", time: "04:42 AM - 05:30 AM", desc: "Best for meditation", icon: "🧘" },
+          { name: "Godhuli Muhurat", time: "05:57 PM - 06:21 PM", desc: "Twilight hour", icon: "🌅" },
+          { name: "Vijaya Muhurat", time: "02:30 PM - 03:18 PM", desc: "For success in ventures", icon: "🏆" }
         ]);
 
         setInauspiciousTimings([
-          { name: "Rahu Kalam", time: basicPanchang.rahu_kalam || "12:08 PM - 01:35 PM", desc: "Avoid new beginnings", icon: "🌑" },
-          { name: "Yama Gandam", time: basicPanchang.yama_gandam || "07:45 AM - 09:13 AM", desc: "Inauspicious period", icon: "⚠️" },
-          { name: "Gulikai Kalam", time: basicPanchang.gulikai_kalam || "10:40 AM - 12:08 PM", desc: "Avoid travel", icon: "🌫️" },
-          { name: "Dur Muhurat", time: basicPanchang.dur_muhurat || "11:45 AM - 12:31 PM", desc: "Unlucky window", icon: "❌" },
-          { name: "Varjyam", time: basicPanchang.varjyam || "02:50 PM - 04:20 PM", desc: "Avoid important work", icon: "🚫" }
+          { name: "Rahu Kalam", time: "12:08 PM - 01:35 PM", desc: "Avoid new beginnings", icon: "🌑" },
+          { name: "Yama Gandam", time: "07:45 AM - 09:13 AM", desc: "Inauspicious period", icon: "⚠️" },
+          { name: "Gulikai Kalam", time: "10:40 AM - 12:08 PM", desc: "Avoid travel", icon: "🌫️" },
+          { name: "Dur Muhurat", time: "11:45 AM - 12:31 PM", desc: "Unlucky window", icon: "❌" },
+          { name: "Varjyam", time: "02:50 PM - 04:20 PM", desc: "Avoid important work", icon: "🚫" }
         ]);
 
         setChoghadiya([
-          { period: "Morning", type: basicPanchang.morning_choghadiya || "Amrit", color: "green" },
-          { period: "Afternoon", type: basicPanchang.afternoon_choghadiya || "Labh", color: "yellow" },
-          { period: "Evening", type: basicPanchang.evening_choghadiya || "Shubh", color: "orange" },
-          { period: "Night", type: basicPanchang.night_choghadiya || "Rog", color: "red" }
+          { period: "Morning", type: "Amrit", color: "green" },
+          { period: "Afternoon", type: "Labh", color: "yellow" },
+          { period: "Evening", type: "Shubh", color: "orange" },
+          { period: "Night", type: "Rog", color: "red" }
         ]);
+      } else {
+        setPanchangData(getFallbackPanchangData(selectedDate));
       }
     } catch (err) {
       console.error("Panchang fetch error:", err);
       setError("Unable to fetch Panchang data. Using local calculations.");
-      
-      // Fallback to local data
       setPanchangData(getFallbackPanchangData(selectedDate));
     } finally {
       setLoading(false);
     }
   };
 
-  const getFallbackPanchangData = (date) => {
-    const weekday = getWeekdayName(date.getDay());
-    return {
-      tithi: { name: "Shukla Shashthi", endTime: "12:15 PM" },
-      nakshatra: { name: "Moola", endTime: "05:15 AM" },
-      yoga: { name: "Shobhana", endTime: "05:53 AM" },
-      karana: { name: "Taitila", endTime: "12:12 PM" },
-      vaar: { name: weekday },
-      sunrise: formatTime(6, 18),
-      sunset: formatTime(17, 57),
-      moonrise: formatTime(12, 10),
-      moonset: formatTime(22, 13),
-      samvat: { vikram: "2081", shaka: "1946" },
-      month: { amanta: "Ashwina", purnimanta: "Ashwina" },
-      sunSign: "Kanya (Virgo)",
-      moonSign: "Dhanu (Sagittarius)",
-      ritu: "Sharad (Autumn)",
-      ayan: "Dakshinayana"
-    };
-  };
+  // Fallback functions
+  const getFallbackPanchangData = (date) => ({
+    tithi: { name: "Shukla Shashthi", endTime: "12:15 PM" },
+    nakshatra: { name: "Moola", endTime: "05:15 AM" },
+    yoga: { name: "Shobhana", endTime: "05:53 AM" },
+    karana: { name: "Taitila", endTime: "12:12 PM" },
+    vaar: { name: getWeekdayName(date.getDay()) },
+    sunrise: getSunriseTime(),
+    sunset: getSunsetTime(),
+    moonrise: getMoonriseTime(),
+    moonset: getMoonsetTime(),
+    samvat: { vikram: String(date.getFullYear() + 57), shaka: String(date.getFullYear() - 78) },
+    month: { amanta: getMonthName(date.getMonth()), purnimanta: getMonthName(date.getMonth()) },
+    sunSign: getSunSign(date),
+    moonSign: getMoonSign(date),
+    ritu: getRitu(date.getMonth()),
+    ayan: getAyan(date)
+  });
 
   const getWeekdayName = (dayIndex) => {
     const weekdays = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
     return weekdays[dayIndex];
   };
 
-  const formatTime = (hour, minute) => {
-    const ampm = hour >= 12 ? 'PM' : 'AM';
-    const displayHour = hour % 12 || 12;
-    return `${displayHour.toString().padStart(2, '0')}:${minute.toString().padStart(2, '0')} ${ampm}`;
+  const getTithiName = (date) => {
+    const tithis = ['Pratipada', 'Dwitiya', 'Tritiya', 'Chaturthi', 'Panchami', 'Shashthi', 'Saptami', 'Ashtami', 'Navami', 'Dashami', 'Ekadashi', 'Dwadashi', 'Trayodashi', 'Chaturdashi', 'Purnima/Amavasya'];
+    return tithis[date.getDate() % tithis.length];
+  };
+
+  const getNakshatraName = (date) => {
+    const nakshatras = ['Ashwini', 'Bharani', 'Krittika', 'Rohini', 'Mrigashira', 'Ardra', 'Punarvasu', 'Pushya', 'Ashlesha', 'Magha', 'Purva Phalguni', 'Uttara Phalguni', 'Hasta', 'Chitra', 'Swati', 'Vishakha', 'Anuradha', 'Jyeshtha', 'Mula', 'Purva Ashadha', 'Uttara Ashadha', 'Shravana', 'Dhanishtha', 'Shatabhisha', 'Purva Bhadrapada', 'Uttara Bhadrapada', 'Revati'];
+    return nakshatras[date.getDate() % nakshatras.length];
+  };
+
+  const getYogaName = (date) => {
+    const yogas = ['Vishkumbha', 'Priti', 'Ayushman', 'Saubhagya', 'Shobhana', 'Atiganda', 'Sukarma', 'Dhriti', 'Shoola', 'Ganda', 'Vriddhi', 'Dhruva', 'Vyaghata', 'Harshana', 'Vajra', 'Siddhi', 'Vyatipata', 'Variyan', 'Parigha', 'Shiva', 'Siddha', 'Sadhya', 'Shubha', 'Shukla', 'Brahma', 'Indra', 'Vaidhriti'];
+    return yogas[date.getDate() % yogas.length];
+  };
+
+  const getKaranaName = (date) => {
+    const karanas = ['Kimstughna', 'Bava', 'Balava', 'Kaulava', 'Taitila', 'Garija', 'Vanija', 'Vishti', 'Shakuni', 'Chatushpada', 'Naga', 'Kinstughna'];
+    return karanas[date.getDate() % karanas.length];
+  };
+
+  const getSunriseTime = () => "06:18 AM";
+  const getSunsetTime = () => "05:57 PM";
+  const getMoonriseTime = () => "12:10 PM";
+  const getMoonsetTime = () => "10:13 PM";
+
+  const getMonthName = (monthIndex) => {
+    const months = ['Chaitra', 'Vaishakha', 'Jyaishtha', 'Ashadha', 'Shravana', 'Bhadrapada', 'Ashwina', 'Kartika', 'Margashirsha', 'Pausha', 'Magha', 'Phalguna'];
+    return months[monthIndex];
+  };
+
+  const getSunSign = (date) => {
+    const signs = ['Capricorn', 'Aquarius', 'Pisces', 'Aries', 'Taurus', 'Gemini', 'Cancer', 'Leo', 'Virgo', 'Libra', 'Scorpio', 'Sagittarius'];
+    const day = date.getDate();
+    const month = date.getMonth() + 1;
+    if ((month === 1 && day >= 20) || (month === 2 && day <= 18)) return signs[0];
+    if ((month === 2 && day >= 19) || (month === 3 && day <= 20)) return signs[1];
+    if ((month === 3 && day >= 21) || (month === 4 && day <= 19)) return signs[2];
+    if ((month === 4 && day >= 20) || (month === 5 && day <= 20)) return signs[3];
+    if ((month === 5 && day >= 21) || (month === 6 && day <= 20)) return signs[4];
+    if ((month === 6 && day >= 21) || (month === 7 && day <= 22)) return signs[5];
+    if ((month === 7 && day >= 23) || (month === 8 && day <= 22)) return signs[6];
+    if ((month === 8 && day >= 23) || (month === 9 && day <= 22)) return signs[7];
+    if ((month === 9 && day >= 23) || (month === 10 && day <= 22)) return signs[8];
+    if ((month === 10 && day >= 23) || (month === 11 && day <= 21)) return signs[9];
+    if ((month === 11 && day >= 22) || (month === 12 && day <= 21)) return signs[10];
+    return signs[11];
+  };
+
+  const getMoonSign = (date) => {
+    const signs = ['Aries', 'Taurus', 'Gemini', 'Cancer', 'Leo', 'Virgo', 'Libra', 'Scorpio', 'Sagittarius', 'Capricorn', 'Aquarius', 'Pisces'];
+    return signs[date.getDate() % 12];
+  };
+
+  const getRitu = (month) => {
+    const rituMap = {
+      2: 'Vasanta (Spring)', 3: 'Vasanta (Spring)',
+      4: 'Grishma (Summer)', 5: 'Grishma (Summer)',
+      6: 'Varsha (Monsoon)', 7: 'Varsha (Monsoon)',
+      8: 'Sharad (Autumn)', 9: 'Sharad (Autumn)',
+      10: 'Hemanta (Pre-winter)', 11: 'Hemanta (Pre-winter)',
+      0: 'Shishira (Winter)', 1: 'Shishira (Winter)'
+    };
+    return rituMap[month] || 'Sharad (Autumn)';
+  };
+
+  const getAyan = (date) => {
+    const month = date.getMonth();
+    return month >= 3 && month <= 8 ? 'Uttarayana (Northern Solstice)' : 'Dakshinayana (Southern Solstice)';
   };
 
   const handleDateChange = (days) => {
@@ -311,6 +406,20 @@ const Panchang = () => {
     year: 'numeric' 
   });
 
+  const StarIcon = () => (
+  <svg className="w-6 h-6 text-white" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2" />
+  </svg>
+);
+
+// Sparkles Icon
+const SparklesIcon = () => (
+  <svg className="w-6 h-6 text-white" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <path d="M12 3L14 8L19 10L14 12L12 17L10 12L5 10L10 8L12 3Z" />
+    <path d="M19 14L20 17L23 18L20 19L19 22L18 19L15 18L18 17L19 14Z" />
+  </svg>
+);
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 py-12 px-4 sm:px-6">
       <div className="max-w-7xl mx-auto">
@@ -318,11 +427,11 @@ const Panchang = () => {
         {/* Header Section */}
         <div className="text-center mb-12">
           <div className="inline-flex items-center justify-center gap-2 mb-4">
-            <div className="w-12 h-12 rounded-full bg-gradient-to-br from-orange-500 to-amber-500 flex items-center justify-center shadow-md">
-              <Star className="w-6 h-6 text-white" />
+            <div className="w-12 h-12 rounded-full bg-gradient-sunset flex items-center justify-center shadow-md">
+              <StarIcon />
             </div>
-            <div className="w-12 h-12 rounded-full bg-gradient-to-br from-orange-400 to-orange-600 flex items-center justify-center shadow-md">
-              <Sparkles className="w-6 h-6 text-white" />
+            <div className="w-12 h-12 rounded-full bg-gradient-sunset flex items-center justify-center shadow-md">
+              <SparklesIcon />
             </div>
           </div>
           <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold text-gray-800 mb-3 tracking-tight">
@@ -351,38 +460,56 @@ const Panchang = () => {
               </button>
             </div>
 
-            {/* Location Selector with Suggestions */}
-            <div className="relative flex items-center w-full lg:w-96 bg-gray-50 rounded-xl px-4 py-2.5 border border-transparent focus-within:border-orange-300 focus-within:bg-white transition-all shadow-inner">
-              <MapPin size={18} className="text-[#F7931E] mr-3 flex-shrink-0" />
-              <input 
-                type="text" 
-                value={location}
-                onChange={(e) => setLocation(e.target.value)}
-                className="bg-transparent border-none outline-none w-full text-gray-700 font-medium placeholder:text-gray-400"
-                placeholder="Enter city, country..."
-              />
-              {isSearching && <Loader2 size={18} className="text-orange-500 animate-spin ml-2" />}
-              <Search size={18} className="text-gray-400 cursor-pointer hover:text-[#F7931E] transition-colors ml-2" />
+            {/* Location Selector with Suggestions and My Location Button */}
+            <div className="flex items-center gap-2 w-full lg:w-auto">
+              {/* My Location Button */}
+              <button 
+                onClick={getUserLocation}
+                disabled={locationLoading}
+                className="flex items-center justify-center gap-2 bg-gray-50 hover:bg-gray-100 text-gray-700 font-medium px-4 py-2.5 rounded-xl transition-all border border-gray-200 whitespace-nowrap"
+                title="Use my current location"
+              >
+                {locationLoading ? (
+                  <Loader2 size={18} className="animate-spin text-[#F7931E]" />
+                ) : (
+                  <Navigation size={18} className="text-[#F7931E]" />
+                )}
+                <span className="hidden sm:inline">My Location</span>
+              </button>
               
-              {showSuggestions && suggestions.length > 0 && (
-                <div className="absolute top-full left-0 right-0 mt-1 bg-white border border-gray-200 rounded-xl shadow-lg z-50 max-h-48 overflow-y-auto">
-                  {suggestions.map((loc, idx) => (
-                    <div
-                      key={idx}
-                      onClick={() => handleSelectLocation(loc)}
-                      className="px-4 py-2 hover:bg-orange-50 cursor-pointer text-sm text-gray-700 border-b border-gray-100 last:border-0"
-                    >
-                      {loc.place_name}
-                    </div>
-                  ))}
-                </div>
-              )}
+              {/* Location Search Input */}
+              <div className="relative flex-1 flex items-center bg-gray-50 rounded-xl px-4 py-2.5 border border-transparent focus-within:border-orange-300 focus-within:bg-white transition-all shadow-inner">
+                <MapPin size={18} className="text-[#F7931E] mr-3 flex-shrink-0" />
+                <input 
+                  type="text" 
+                  value={location}
+                  onChange={(e) => setLocation(e.target.value)}
+                  className="bg-transparent border-none outline-none w-full text-gray-700 font-medium placeholder:text-gray-400"
+                  placeholder="Enter city, country..."
+                />
+                {isSearching && <Loader2 size={18} className="text-orange-500 animate-spin ml-2" />}
+                <Search size={18} className="text-gray-400 cursor-pointer hover:text-[#F7931E] transition-colors ml-2" />
+                
+                {showSuggestions && suggestions.length > 0 && (
+                  <div className="absolute top-full left-0 right-0 mt-1 bg-white border border-gray-200 rounded-xl shadow-lg z-50 max-h-48 overflow-y-auto">
+                    {suggestions.map((loc, idx) => (
+                      <div
+                        key={idx}
+                        onClick={() => handleSelectLocation(loc)}
+                        className="px-4 py-2 hover:bg-orange-50 cursor-pointer text-sm text-gray-700 border-b border-gray-100 last:border-0"
+                      >
+                        {loc.place_name}
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
             </div>
             
             {/* Today Button */}
             <button 
               onClick={handleToday}
-              className="w-full lg:w-auto bg-gradient-to-r from-orange-500 to-amber-500 hover:from-orange-600 hover:to-amber-600 text-white font-semibold px-8 py-2.5 rounded-xl shadow-md transition-all duration-200 hover:shadow-lg"
+              className="w-full lg:w-auto bg-gradient-sunset hover:bg-gradient-orange text-white font-semibold px-8 py-2.5 rounded-xl shadow-md transition-all duration-200 hover:shadow-lg"
             >
               Today's Panchang
             </button>
@@ -394,6 +521,21 @@ const Panchang = () => {
           <div className="mb-6 p-4 bg-yellow-50 border border-yellow-200 rounded-xl flex items-center gap-3">
             <AlertCircle className="w-5 h-5 text-yellow-600" />
             <p className="text-yellow-700 text-sm">{error}</p>
+          </div>
+        )}
+
+        {/* Location Permission Banner (if location not loaded) */}
+        {!coordinates.lat && !locationLoading && !error && (
+          <div className="mb-6 bg-blue-50 border border-blue-200 rounded-lg p-3 text-center">
+            <p className="text-blue-700 text-sm">
+              🌍 Allow location access to get accurate Panchang for your city.
+              <button 
+                onClick={getUserLocation}
+                className="ml-2 text-blue-600 font-semibold underline"
+              >
+                Enable Location
+              </button>
+            </p>
           </div>
         )}
 
@@ -433,17 +575,15 @@ const Panchang = () => {
           />
         </div>
 
-        {/* Main Details Grid */}
+        {/* Rest of the Panchang details (same as before) */}
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-          
           {/* Left Column - Core Panchang Elements */}
           <div className="lg:col-span-2 space-y-8">
-            
             {/* The 5 Angas - Panchang Limbs */}
             <div className="bg-white rounded-2xl shadow-md border border-gray-100 overflow-hidden">
-              <div className="bg-gradient-to-r from-orange-50 to-amber-50 px-6 py-4 border-b border-orange-100">
+              <div className="bg-gradient-sunset px-6 py-4 border-b border-orange-100">
                 <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 rounded-full bg-gradient-to-br from-orange-500 to-amber-500 flex items-center justify-center shadow-md">
+                  <div className="w-10 h-10 rounded-full bg-orange-300 flex items-center justify-center shadow-md">
                     <span className="text-white text-lg">🕉️</span>
                   </div>
                   <h2 className="text-xl font-bold text-gray-800">Panchang Elements (5 Limbs)</h2>
@@ -474,9 +614,9 @@ const Panchang = () => {
 
             {/* Hindu Calendar & Samvat Details */}
             <div className="bg-white rounded-2xl shadow-md border border-gray-100 overflow-hidden">
-              <div className="bg-gradient-to-r from-gray-50 to-gray-100 px-6 py-4 border-b border-gray-200">
+              <div className="bg-gradient-sunset px-6 py-4 border-b border-gray-200">
                 <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 rounded-full bg-gradient-to-br from-gray-600 to-gray-800 flex items-center justify-center shadow-md">
+                  <div className="w-10 h-10 rounded-full bg-orange-300 flex items-center justify-center shadow-md">
                     <Calendar className="w-5 h-5 text-white" />
                   </div>
                   <h2 className="text-xl font-bold text-gray-800">Hindu Lunar Calendar</h2>
@@ -511,10 +651,9 @@ const Panchang = () => {
 
           {/* Right Column - Muhurat Timings */}
           <div className="space-y-8">
-            
             {/* Auspicious Timings */}
             <div className="bg-white rounded-2xl shadow-md border border-emerald-100 overflow-hidden">
-              <div className="bg-gradient-to-r from-emerald-50 to-green-50 px-6 py-4 border-b border-emerald-100">
+              <div className="bg-gradient-sunset px-6 py-4 border-b border-emerald-100">
                 <div className="flex items-center gap-3">
                   <CheckCircle2 className="text-emerald-600 w-6 h-6" />
                   <h2 className="text-xl font-bold text-gray-800">Auspicious Timings</h2>
@@ -540,7 +679,7 @@ const Panchang = () => {
 
             {/* Inauspicious Timings */}
             <div className="bg-white rounded-2xl shadow-md border border-red-100 overflow-hidden">
-              <div className="bg-gradient-to-r from-red-50 to-rose-50 px-6 py-4 border-b border-red-100">
+              <div className="bg-gradient-sunset px-6 py-4 border-b border-red-100">
                 <div className="flex items-center gap-3">
                   <XCircle className="text-red-500 w-6 h-6" />
                   <h2 className="text-xl font-bold text-gray-800">Inauspicious Timings</h2>
@@ -582,8 +721,8 @@ const Panchang = () => {
             </div>
 
             {/* Choghadiya Preview */}
-            <div className="bg-white rounded-2xl shadow-md border border-gray-100 p-6">
-              <div className="flex items-center gap-2 mb-4">
+            <div className="bg-gradient-sunset rounded-2xl shadow-md border border-gray-100 p-6">
+              <div className="flex items-center  gap-2 mb-4">
                 <Clock className="w-5 h-5 text-[#F7931E]" />
                 <h3 className="font-bold text-gray-800">Today's Choghadiya</h3>
               </div>

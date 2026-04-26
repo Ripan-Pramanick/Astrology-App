@@ -5,6 +5,7 @@ import QuickPanchang from './home/QuickPanchang.jsx';
 import HomeServices from './home/HomeServices.jsx';
 import NewsArticles from './home/NewsArticles.jsx';
 import Testimonials from './home/Testimonials.jsx';
+import UltraOptimizedParticles from '../components/common/UltraOptimizedParticles.jsx';
 // import AIHoroscope from './home/AIHoroscope.jsx';
 
 const Home = () => {
@@ -43,7 +44,7 @@ const Home = () => {
 
   return (
     <>
-      {/* Basic meta tags for localhost */}
+      {/* Basic meta tags */}
       <title>Kaal Chakra | Vedic Astrology & Kundli Analysis Platform</title>
       <meta 
         name="description" 
@@ -56,51 +57,19 @@ const Home = () => {
       <meta name="author" content="Kaal Chakra" />
       <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 
-      <div className="home-container overflow-x-hidden">
-        {/* Hero Section */}
-        <section 
-          ref={sectionRefs.hero}
-          className="opacity-0 transition-all duration-700"
-        >
+      <div className="home-container overflow-x-hidden relative">
+        
+        {/* 🌌 Dark Theme Particles - Only particles are dark, background transparent */}
+        <UltraOptimizedParticles />
+        
+        {/* Main Content */}
+        <div className="relative z-10">
           <HeroSection />
-        </section>
-
-        {/* Quick Panchang Section */}
-        <section 
-          ref={sectionRefs.panchang}
-          className="opacity-0 transition-all duration-700 delay-100"
-        >
           <QuickPanchang />
-        </section>
-
-        {/* Services Section */}
-        <section 
-          ref={sectionRefs.services}
-          className="opacity-0 transition-all duration-700 delay-200"
-        >
           <HomeServices />
-        </section>
-
-        {/* News & Articles Section */}
-        <section 
-          ref={sectionRefs.articles}
-          className="opacity-0 transition-all duration-700 delay-300"
-        >
           <NewsArticles />
-        </section>
-
-        {/* Testimonials Section */}
-        <section 
-          ref={sectionRefs.testimonials}
-          className="opacity-0 transition-all duration-700 delay-400"
-        >
           <Testimonials />
-        </section>
-
-        {/* Optional: AI Horoscope Section (commented) */}
-        {/* <section className="opacity-0 transition-all duration-700 delay-500">
-          <AIHoroscope />
-        </section> */}
+        </div>
 
         {/* Floating Action Button for quick consultation */}
         <div className="fixed bottom-6 right-6 z-40 md:hidden">

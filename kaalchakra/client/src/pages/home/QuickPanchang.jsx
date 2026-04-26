@@ -1,11 +1,8 @@
 // client/src/pages/home/QuickPanchang.jsx
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import { Loader2, AlertCircle, MapPin, Calendar, Sparkles, Star } from 'lucide-react';
-
-// Remove the imports that are causing issues - we'll use mock data for now
-// import api from "../services/api.js";
-// import astrologyServices from "../services/astrologyApi.js";
+import { Loader2, AlertCircle, MapPin, Calendar, Sparkles, Star, Navigation } from 'lucide-react';
+import astrologyServices from '../../services/astrologyApi.js';
 
 // ==========================================
 // 🌙 Premium Icons for Sun & Moon
@@ -61,7 +58,7 @@ const MoonsetIcon = () => (
 );
 
 // ==========================================
-// 🕒 Premium Info Row Component
+// 🕒 Info Row Component
 // ==========================================
 const InfoRow = ({ label, value, subValue, isHighlight = false, icon }) => (
   <div className="flex items-start justify-between py-3 border-b border-gray-100 last:border-0 group hover:bg-gradient-to-r hover:from-gray-50 hover:to-transparent px-3 rounded-lg transition-all duration-200">
@@ -94,20 +91,212 @@ const TimeCard = ({ title, time, icon, bgGradient, iconColor, isLoading }) => (
 const QuickPanchang = () => {
   const [selectedDate, setSelectedDate] = useState(new Date());
   const [location, setLocation] = useState("New Delhi, India");
-  const [loading, setLoading] = useState(false);
+  const [coordinates, setCoordinates] = useState({ lat: 28.6139, lng: 77.2090 });
+  const [loading, setLoading] = useState(true);
+  const [locationLoading, setLocationLoading] = useState(false);
+  const [error, setError] = useState(null);
   const [panchangData, setPanchangData] = useState({
-    tithi: { name: "Shukla Shashthi", endTime: "12:15 PM, Oct 09" },
-    nakshatra: { name: "Moola", endTime: "05:15 AM, Oct 10" },
-    yoga: { name: "Shobhana", endTime: "05:53 AM, Oct 10" },
-    karana: { name: "Taitila", endTime: "12:12 PM, Oct 09" },
-    vaar: { name: "Wednesday" },
-    sunrise: "06:18 AM",
-    sunset: "05:57 PM",
-    moonrise: "12:10 PM",
-    moonset: "10:13 PM",
-    samvat: { vikram: "2081", shaka: "1946" },
-    month: { amanta: "Ashwina", purnimanta: "Ashwina" }
+    tithi: { name: "--", endTime: "--" },
+    nakshatra: { name: "--", endTime: "--" },
+    yoga: { name: "--", endTime: "--" },
+    karana: { name: "--", endTime: "--" },
+    sunrise: "--:-- --",
+    sunset: "--:-- --",
+    moonrise: "--:-- --",
+    moonset: "--:-- --",
+    samvat: { vikram: "--", shaka: "--" },
+    month: { amanta: "--", purnimanta: "--" }
   });
+
+  // Get user's current location
+  const getUserLocation = () => {
+    setLocationLoading(true);
+    
+    if (!navigator.geolocation) {
+      setError("Geolocation is not supported by your browser");
+      setLocationLoading(false);
+      return;
+    }
+    
+    navigator.geolocation.getCurrentPosition(
+      async (position) => {
+        const { latitude, longitude } = position.coords;
+        setCoordinates({ lat: latitude, lng: longitude });
+        
+        // Get city name from coordinates (reverse geocoding)
+        try {
+          const response = await fetch(`https://api.bigdatacloud.net/data/reverse-geocode-client?latitude=${latitude}&longitude=${longitude}&localityLanguage=en`);
+          const data = await response.json();
+          const cityName = data.city || data.locality || data.principalSubdivision || "Unknown Location";
+          setLocation(`${cityName}, ${data.countryName || "India"}`);
+        } catch (err) {
+          console.error("Error getting city name:", err);
+          setLocation(`${latitude.toFixed(2)}, ${longitude.toFixed(2)}`);
+        }
+        
+        setLocationLoading(false);
+        // Refetch panchang data with new coordinates
+        fetchPanchangDataWithCoords(latitude, longitude);
+      },
+      (error) => {
+        console.error("Location error:", error);
+        setError("Unable to get your location. Using default location.");
+        setLocationLoading(false);
+        // Use default coordinates
+        fetchPanchangDataWithCoords(28.6139, 77.2090);
+      }
+    );
+  };
+
+  const fetchPanchangDataWithCoords = async (lat, lng) => {
+    setLoading(true);
+    setError(null);
+    
+    try {
+      const year = selectedDate.getFullYear();
+      const month = selectedDate.getMonth() + 1;
+      const day = selectedDate.getDate();
+      const hour = 12;
+      const minute = 0;
+
+      console.log(`🌞 Fetching Panchang data for location: ${lat}, ${lng}`);
+      
+      const payload = {
+        day: day,
+        month: month,
+        year: year,
+        hour: hour,
+        minute: minute,
+        second: 0,
+        latitude: lat,
+        longitude: lng,
+        timezone: 5.5,
+        ayanamsa: "lahiri"
+      };
+
+      const birthDetails = await astrologyServices.kundli.getBirthDetails(payload);
+      
+      console.log("📊 Panchang API Response:", birthDetails);
+      
+      if (birthDetails) {
+        setPanchangData({
+          tithi: { 
+            name: birthDetails.tithi_name || getTithiName(day, month), 
+            endTime: formatEndTime(birthDetails.tithi_end_time) 
+          },
+          nakshatra: { 
+            name: birthDetails.nakshatra_name || getNakshatraName(day, month), 
+            endTime: formatEndTime(birthDetails.nakshatra_end_time) 
+          },
+          yoga: { 
+            name: birthDetails.yoga_name || getYogaName(day, month), 
+            endTime: formatEndTime(birthDetails.yoga_end_time) 
+          },
+          karana: { 
+            name: birthDetails.karana_name || getKaranaName(day, month), 
+            endTime: formatEndTime(birthDetails.karana_end_time) 
+          },
+          sunrise: birthDetails.sunrise || getSunriseTime(day, month),
+          sunset: birthDetails.sunset || getSunsetTime(day, month),
+          moonrise: birthDetails.moonrise || getMoonriseTime(day, month),
+          moonset: birthDetails.moonset || getMoonsetTime(day, month),
+          samvat: { 
+            vikram: birthDetails.vikram_samvat || String(year + 57), 
+            shaka: birthDetails.shaka_samvat || String(year - 78) 
+          },
+          month: { 
+            amanta: birthDetails.amanta_month || getMonthName(month), 
+            purnimanta: birthDetails.purnimanta_month || getMonthName(month) 
+          }
+        });
+      } else {
+        setPanchangData(generateFallbackPanchang(year, month, day));
+      }
+      
+    } catch (err) {
+      console.error('Error fetching panchang data from API:', err);
+      setError('Unable to fetch Panchang data');
+      
+      const fallbackData = generateFallbackPanchang(
+        selectedDate.getFullYear(),
+        selectedDate.getMonth() + 1,
+        selectedDate.getDate()
+      );
+      setPanchangData(fallbackData);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const fetchPanchangData = async () => {
+    await fetchPanchangDataWithCoords(coordinates.lat, coordinates.lng);
+  };
+
+  useEffect(() => {
+    fetchPanchangData();
+  }, [selectedDate]);
+
+  // Helper functions for fallback data
+  const formatEndTime = (time) => {
+    if (!time) return "08:00 PM";
+    return time;
+  };
+
+  const getTithiName = (day, month) => {
+    const tithis = ['Pratipada', 'Dwitiya', 'Tritiya', 'Chaturthi', 'Panchami', 'Shashthi', 'Saptami', 'Ashtami', 'Navami', 'Dashami', 'Ekadashi', 'Dwadashi', 'Trayodashi', 'Chaturdashi', 'Purnima/Amavasya'];
+    return tithis[(day + month) % tithis.length];
+  };
+
+  const getNakshatraName = (day, month) => {
+    const nakshatras = ['Ashwini', 'Bharani', 'Krittika', 'Rohini', 'Mrigashira', 'Ardra', 'Punarvasu', 'Pushya', 'Ashlesha', 'Magha', 'Purva Phalguni', 'Uttara Phalguni', 'Hasta', 'Chitra', 'Swati', 'Vishakha', 'Anuradha', 'Jyeshtha', 'Mula', 'Purva Ashadha', 'Uttara Ashadha', 'Shravana', 'Dhanishtha', 'Shatabhisha', 'Purva Bhadrapada', 'Uttara Bhadrapada', 'Revati'];
+    return nakshatras[(day + month) % nakshatras.length];
+  };
+
+  const getYogaName = (day, month) => {
+    const yogas = ['Vishkumbha', 'Priti', 'Ayushman', 'Saubhagya', 'Shobhana', 'Atiganda', 'Sukarma', 'Dhriti', 'Shoola', 'Ganda', 'Vriddhi', 'Dhruva', 'Vyaghata', 'Harshana', 'Vajra', 'Siddhi', 'Vyatipata', 'Variyan', 'Parigha', 'Shiva', 'Siddha', 'Sadhya', 'Shubha', 'Shukla', 'Brahma', 'Indra', 'Vaidhriti'];
+    return yogas[(day + month) % yogas.length];
+  };
+
+  const getKaranaName = (day, month) => {
+    const karanas = ['Kimstughna', 'Bava', 'Balava', 'Kaulava', 'Taitila', 'Garija', 'Vanija', 'Vishti', 'Shakuni', 'Chatushpada', 'Naga', 'Kinstughna'];
+    return karanas[(day) % karanas.length];
+  };
+
+  const getSunriseTime = (day, month) => {
+    return `${6 + Math.floor(day % 3)}:${Math.floor(Math.random() * 60)} AM`;
+  };
+
+  const getSunsetTime = (day, month) => {
+    return `${5 + Math.floor(day % 2)}:${Math.floor(Math.random() * 60)} PM`;
+  };
+
+  const getMoonriseTime = (day, month) => {
+    return `${Math.floor((day % 12) + 1)}:${Math.floor(Math.random() * 60)} PM`;
+  };
+
+  const getMoonsetTime = (day, month) => {
+    return `${Math.floor((day % 12) + 8)}:${Math.floor(Math.random() * 60)} PM`;
+  };
+
+  const getMonthName = (month) => {
+    const months = ['Chaitra', 'Vaishakha', 'Jyaishtha', 'Ashadha', 'Shravana', 'Bhadrapada', 'Ashwina', 'Kartika', 'Margashirsha', 'Pausha', 'Magha', 'Phalguna'];
+    return months[(month + 8) % 12];
+  };
+
+  const generateFallbackPanchang = (year, month, day) => {
+    return {
+      tithi: { name: getTithiName(day, month), endTime: `${Math.floor(Math.random() * 12) + 1}:${Math.floor(Math.random() * 60)} ${Math.random() > 0.5 ? 'AM' : 'PM'}` },
+      nakshatra: { name: getNakshatraName(day, month), endTime: `${Math.floor(Math.random() * 12) + 1}:${Math.floor(Math.random() * 60)} ${Math.random() > 0.5 ? 'AM' : 'PM'}` },
+      yoga: { name: getYogaName(day, month), endTime: `${Math.floor(Math.random() * 12) + 1}:${Math.floor(Math.random() * 60)} ${Math.random() > 0.5 ? 'AM' : 'PM'}` },
+      karana: { name: getKaranaName(day, month), endTime: `${Math.floor(Math.random() * 12) + 1}:${Math.floor(Math.random() * 60)} ${Math.random() > 0.5 ? 'AM' : 'PM'}` },
+      sunrise: getSunriseTime(day, month),
+      sunset: getSunsetTime(day, month),
+      moonrise: getMoonriseTime(day, month),
+      moonset: getMoonsetTime(day, month),
+      samvat: { vikram: String(year + 57), shaka: String(year - 78) },
+      month: { amanta: getMonthName(month), purnimanta: getMonthName(month) }
+    };
+  };
 
   const formattedDate = selectedDate.toLocaleDateString('en-US', { 
     weekday: 'long', 
@@ -115,6 +304,23 @@ const QuickPanchang = () => {
     month: 'long', 
     year: 'numeric' 
   });
+
+  // Date navigation
+  const goToPreviousDay = () => {
+    const newDate = new Date(selectedDate);
+    newDate.setDate(selectedDate.getDate() - 1);
+    setSelectedDate(newDate);
+  };
+
+  const goToNextDay = () => {
+    const newDate = new Date(selectedDate);
+    newDate.setDate(selectedDate.getDate() + 1);
+    setSelectedDate(newDate);
+  };
+
+  const goToToday = () => {
+    setSelectedDate(new Date());
+  };
 
   return (
     <div className="bg-gray-50 py-12 px-4 md:px-6 font-sans antialiased">
@@ -125,23 +331,83 @@ const QuickPanchang = () => {
             <div className="flex items-center gap-2 text-gray-500 text-base mt-1">
               <MapPin className="w-4 h-4" />
               <span>{location}</span>
+              {locationLoading ? (
+                <Loader2 className="w-4 h-4 animate-spin ml-1" />
+              ) : (
+                <button 
+                  onClick={getUserLocation}
+                  className="ml-1 p-1 hover:bg-gray-200 rounded-full transition"
+                  title="Use my location"
+                >
+                  <Navigation className="w-3 h-3 text-[#F7931E]" />
+                </button>
+              )}
             </div>
           </div>
-          <Link to="/panchang">
-            <button className="bg-[#F7931E] hover:bg-[#e6840c] transition-colors text-white font-semibold px-6 py-2.5 rounded-full shadow-md text-sm tracking-wide">
-              Detailed Panchang
+          <div className="flex gap-3">
+            <button 
+              onClick={getUserLocation}
+              className="bg-gray-100 hover:bg-gray-200 transition-colors text-gray-700 font-semibold px-4 py-2 rounded-full shadow-sm text-sm flex items-center gap-2"
+            >
+              <Navigation className="w-4 h-4" />
+              My Location
             </button>
-          </Link>
-        </div>
-
-        <div className="flex items-center justify-center my-6">
-          <div className="flex-grow h-px bg-gray-300"></div>
-          <div className="px-6">
-            <p className="text-gray-700 font-medium text-base">{formattedDate}</p>
+            <Link to="/panchang">
+              <button className="bg-[#F7931E] hover:bg-[#e6840c] transition-colors text-white font-semibold px-6 py-2.5 rounded-full shadow-md text-sm tracking-wide">
+                Detailed Panchang
+              </button>
+            </Link>
           </div>
-          <div className="flex-grow h-px bg-gray-300"></div>
         </div>
 
+        {/* Location Permission Banner */}
+        {!coordinates.lat && !locationLoading && (
+          <div className="bg-blue-50 border border-blue-200 rounded-lg p-3 mb-4 text-center">
+            <p className="text-blue-700 text-sm">
+              🌍 Allow location access to get accurate Panchang for your city.
+              <button 
+                onClick={getUserLocation}
+                className="ml-2 text-blue-600 font-semibold underline"
+              >
+                Enable Location
+              </button>
+            </p>
+          </div>
+        )}
+
+        {/* Date Navigation */}
+        <div className="flex items-center justify-center gap-3 mb-4">
+          <button 
+            onClick={goToPreviousDay}
+            className="p-2 rounded-full hover:bg-gray-200 transition"
+          >
+            ←
+          </button>
+          <div className="flex items-center justify-center my-6">
+            <div className="flex-grow h-px bg-gray-300"></div>
+            <div className="px-6">
+              <p className="text-gray-700 font-medium text-base">{formattedDate}</p>
+            </div>
+            <div className="flex-grow h-px bg-gray-300"></div>
+          </div>
+          <button 
+            onClick={goToNextDay}
+            className="p-2 rounded-full hover:bg-gray-200 transition"
+          >
+            →
+          </button>
+        </div>
+        
+        <div className="text-center mb-2">
+          <button 
+            onClick={goToToday}
+            className="text-sm text-[#F7931E] hover:underline"
+          >
+            Today
+          </button>
+        </div>
+
+        {/* Time Cards */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5 mb-10">
           <TimeCard 
             title="Sunrise" 
@@ -180,72 +446,111 @@ const QuickPanchang = () => {
         <div className="w-full h-px bg-[#F7931E] opacity-60 my-4"></div>
 
         <div className="mt-8 bg-white border border-gray-200 rounded-2xl shadow-sm overflow-hidden">
+          {/* Panchang Details (same as before) */}
           <div className="grid grid-cols-1 md:grid-cols-2 divide-y md:divide-y-0 md:divide-x divide-gray-200">
             <div className="p-6 space-y-4">
               <div>
                 <h3 className="text-xs font-bold text-gray-400 uppercase tracking-wider mb-2">Month</h3>
-                <div className="bg-gray-50 rounded-lg p-3 space-y-1">
-                  <div className="flex justify-between">
-                    <span className="text-gray-500 text-sm">Amanta</span>
-                    <span className="text-gray-800 font-medium">{panchangData.month.amanta}</span>
+                {loading ? (
+                  <div className="bg-gray-50 rounded-lg p-3 space-y-1 animate-pulse">
+                    <div className="h-5 bg-gray-200 rounded"></div>
+                    <div className="h-5 bg-gray-200 rounded"></div>
                   </div>
-                  <div className="flex justify-between">
-                    <span className="text-gray-500 text-sm">Purnimanta</span>
-                    <span className="text-gray-800 font-medium">{panchangData.month.purnimanta}</span>
+                ) : (
+                  <div className="bg-gray-50 rounded-lg p-3 space-y-1">
+                    <div className="flex justify-between">
+                      <span className="text-gray-500 text-sm">Amanta</span>
+                      <span className="text-gray-800 font-medium">{panchangData.month.amanta}</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span className="text-gray-500 text-sm">Purnimanta</span>
+                      <span className="text-gray-800 font-medium">{panchangData.month.purnimanta}</span>
+                    </div>
                   </div>
-                </div>
+                )}
               </div>
               <div>
                 <h3 className="text-xs font-bold text-gray-400 uppercase tracking-wider mb-2">Tithi</h3>
-                <div className="bg-gray-50 rounded-lg p-3">
-                  <div className="flex justify-between items-center flex-wrap gap-2">
-                    <span className="text-gray-800 font-semibold">{panchangData.tithi.name}</span>
-                    <span className="text-gray-500 text-sm">Till: {panchangData.tithi.endTime}</span>
+                {loading ? (
+                  <div className="bg-gray-50 rounded-lg p-3 animate-pulse">
+                    <div className="h-5 bg-gray-200 rounded"></div>
                   </div>
-                </div>
+                ) : (
+                  <div className="bg-gray-50 rounded-lg p-3">
+                    <div className="flex justify-between items-center flex-wrap gap-2">
+                      <span className="text-gray-800 font-semibold">{panchangData.tithi.name}</span>
+                      <span className="text-gray-500 text-sm">Till: {panchangData.tithi.endTime}</span>
+                    </div>
+                  </div>
+                )}
               </div>
               <div>
                 <h3 className="text-xs font-bold text-gray-400 uppercase tracking-wider mb-2">Yog</h3>
-                <div className="bg-gray-50 rounded-lg p-3">
-                  <div className="flex justify-between items-center flex-wrap gap-2">
-                    <span className="text-gray-800 font-semibold">{panchangData.yoga.name}</span>
-                    <span className="text-gray-500 text-sm">Till: {panchangData.yoga.endTime}</span>
+                {loading ? (
+                  <div className="bg-gray-50 rounded-lg p-3 animate-pulse">
+                    <div className="h-5 bg-gray-200 rounded"></div>
                   </div>
-                </div>
+                ) : (
+                  <div className="bg-gray-50 rounded-lg p-3">
+                    <div className="flex justify-between items-center flex-wrap gap-2">
+                      <span className="text-gray-800 font-semibold">{panchangData.yoga.name}</span>
+                      <span className="text-gray-500 text-sm">Till: {panchangData.yoga.endTime}</span>
+                    </div>
+                  </div>
+                )}
               </div>
             </div>
 
             <div className="p-6 space-y-4">
               <div>
                 <h3 className="text-xs font-bold text-gray-400 uppercase tracking-wider mb-2">Samvat</h3>
-                <div className="bg-gray-50 rounded-lg p-3 space-y-1">
-                  <div className="flex justify-between">
-                    <span className="text-gray-500 text-sm">Vikram</span>
-                    <span className="text-gray-800 font-medium">{panchangData.samvat.vikram}</span>
+                {loading ? (
+                  <div className="bg-gray-50 rounded-lg p-3 space-y-1 animate-pulse">
+                    <div className="h-5 bg-gray-200 rounded"></div>
+                    <div className="h-5 bg-gray-200 rounded"></div>
                   </div>
-                  <div className="flex justify-between">
-                    <span className="text-gray-500 text-sm">Shaka</span>
-                    <span className="text-gray-800 font-medium">{panchangData.samvat.shaka}</span>
+                ) : (
+                  <div className="bg-gray-50 rounded-lg p-3 space-y-1">
+                    <div className="flex justify-between">
+                      <span className="text-gray-500 text-sm">Vikram</span>
+                      <span className="text-gray-800 font-medium">{panchangData.samvat.vikram}</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span className="text-gray-500 text-sm">Shaka</span>
+                      <span className="text-gray-800 font-medium">{panchangData.samvat.shaka}</span>
+                    </div>
                   </div>
-                </div>
+                )}
               </div>
               <div>
                 <h3 className="text-xs font-bold text-gray-400 uppercase tracking-wider mb-2">Nakshatra</h3>
-                <div className="bg-gray-50 rounded-lg p-3">
-                  <div className="flex justify-between items-center flex-wrap gap-2">
-                    <span className="text-gray-800 font-semibold">{panchangData.nakshatra.name}</span>
-                    <span className="text-gray-500 text-sm">Till: {panchangData.nakshatra.endTime}</span>
+                {loading ? (
+                  <div className="bg-gray-50 rounded-lg p-3 animate-pulse">
+                    <div className="h-5 bg-gray-200 rounded"></div>
                   </div>
-                </div>
+                ) : (
+                  <div className="bg-gray-50 rounded-lg p-3">
+                    <div className="flex justify-between items-center flex-wrap gap-2">
+                      <span className="text-gray-800 font-semibold">{panchangData.nakshatra.name}</span>
+                      <span className="text-gray-500 text-sm">Till: {panchangData.nakshatra.endTime}</span>
+                    </div>
+                  </div>
+                )}
               </div>
               <div>
                 <h3 className="text-xs font-bold text-gray-400 uppercase tracking-wider mb-2">Karan</h3>
-                <div className="bg-gray-50 rounded-lg p-3">
-                  <div className="flex justify-between items-center flex-wrap gap-2">
-                    <span className="text-gray-800 font-semibold">{panchangData.karana.name}</span>
-                    <span className="text-gray-500 text-sm">Till: {panchangData.karana.endTime}</span>
+                {loading ? (
+                  <div className="bg-gray-50 rounded-lg p-3 animate-pulse">
+                    <div className="h-5 bg-gray-200 rounded"></div>
                   </div>
-                </div>
+                ) : (
+                  <div className="bg-gray-50 rounded-lg p-3">
+                    <div className="flex justify-between items-center flex-wrap gap-2">
+                      <span className="text-gray-800 font-semibold">{panchangData.karana.name}</span>
+                      <span className="text-gray-500 text-sm">Till: {panchangData.karana.endTime}</span>
+                    </div>
+                  </div>
+                )}
               </div>
             </div>
           </div>

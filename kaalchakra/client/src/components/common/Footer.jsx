@@ -1,10 +1,23 @@
 import React from 'react';
-import { Link } from 'react-router-dom';
+import { BrowserRouter, Link } from 'react-router-dom';
 import { Phone, Mail, Twitter, Facebook, Instagram } from 'lucide-react';
 
 const Footer = () => {
   return (
     <>
+      {/* Injecting custom animations so the SVG effects work perfectly */}
+      <style>
+        {`
+          .animate-spin-slow { animation: spin 12s linear infinite; }
+          .animate-pulse-glow { animation: pulseGlow 3s ease-in-out infinite; }
+          .animate-ping-slow { animation: ping 3s cubic-bezier(0, 0, 0.2, 1) infinite; }
+          @keyframes pulseGlow {
+            0%, 100% { opacity: 1; filter: brightness(1); }
+            50% { opacity: 0.8; filter: brightness(1.3); }
+          }
+        `}
+      </style>
+
       <footer className="bg-white pt-16 pb-6 border-t border-[#cf9f4a]/30 font-sans">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           
@@ -14,29 +27,34 @@ const Footer = () => {
             {/* 🌌 Kaal Chakra Logo & Brand Name */}
             <div className="flex flex-col items-center md:items-start mb-8 md:mb-0 group cursor-pointer hover:opacity-90 transition">
               <div className="flex items-center gap-3">
-                {/* SVG Cosmic Logo from Navbar */}
+                {/* SVG Cosmic Logo */}
                 <div className="relative w-12 h-12">
-                  <svg viewBox="0 0 100 100" className="w-full h-full animate-spin-slow drop-shadow-lg">
+                  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" className="w-full h-full animate-spin-slow drop-shadow-lg">
                     <defs>
-                      <linearGradient id="goldEdgeFooter" x1="0%" y1="0%" x2="100%" y2="100%">
+                      {/* FIX: userSpaceOnUse ensures the gradient maps perfectly to the 100x100 box regardless of browser quirks */}
+                      <linearGradient id="goldEdgeFooter" x1="0" y1="0" x2="100" y2="100" gradientUnits="userSpaceOnUse">
                         <stop offset="0%" stopColor="#FFD700" />
                         <stop offset="50%" stopColor="#F5A623" />
                         <stop offset="100%" stopColor="#FFD700" />
                       </linearGradient>
-                      <radialGradient id="coreEnergyFooter" cx="50%" cy="50%" r="50%">
+                      <radialGradient id="coreEnergyFooter" cx="50" cy="50" r="44" gradientUnits="userSpaceOnUse">
                         <stop offset="0%" stopColor="#FFE55C" stopOpacity="0.9" />
                         <stop offset="40%" stopColor="#F5A623" stopOpacity="0.6" />
                         <stop offset="100%" stopColor="#B87333" stopOpacity="0" />
                       </radialGradient>
                       <filter id="goldGlowFooter" x="-30%" y="-30%" width="160%" height="160%">
-                        <feGaussianBlur stdDeviation="2.5" result="blur" />
+                        <feGaussianBlur stdDeviation="3" result="blur" />
                         <feMerge>
                           <feMergeNode in="blur" />
                           <feMergeNode in="SourceGraphic" />
                         </feMerge>
                       </filter>
                     </defs>
-                    <circle cx="50" cy="50" r="44" fill="none" stroke="url(#goldEdgeFooter)" strokeWidth="2.2" strokeDasharray="8 6" filter="url(#goldGlowFooter)" className="animate-pulse-glow" />
+                    
+                    {/* SVG Elements utilizing the bulletproofed gradients */}
+                    <circle cx="50" cy="50" r="44" fill="none" stroke="#F5A623" strokeWidth="4" opacity="0.3" filter="url(#goldGlowFooter)" />
+                    <circle cx="50" cy="50" r="44" fill="none" stroke="url(#goldEdgeFooter)" strokeWidth="2.2" strokeDasharray="8 6" className="animate-pulse-glow" />
+                    
                     <circle cx="50" cy="50" r="37" fill="none" stroke="url(#goldEdgeFooter)" strokeWidth="1.2" strokeOpacity="0.5" />
                     <g fill="#FFD700" opacity="0.9">
                       <circle cx="50" cy="8" r="1.8" /><circle cx="76.5" cy="17.5" r="1.8" /><circle cx="92" cy="42" r="1.8" />
@@ -53,7 +71,18 @@ const Footer = () => {
                 
                 {/* Brand Text */}
                 <div className="flex flex-col">
-                  <span className="text-2xl md:text-3xl font-bold tracking-wider bg-gradient-to-r from-[#b8860b] to-[#d4af37] bg-clip-text text-transparent" style={{ fontFamily: "'Cormorant Garamond', serif" }}>
+                  {/* FIX: Using explicit inline CSS background and clip so it cannot fail due to Tailwind config */}
+                  <span 
+                    className="inline-block text-2xl md:text-3xl font-bold tracking-wider" 
+                    style={{ 
+                      fontFamily: "'Cormorant Garamond', serif", 
+                      background: "linear-gradient(to right, #b8860b, #d4af37)",
+                      WebkitBackgroundClip: "text", 
+                      WebkitTextFillColor: "transparent",
+                      backgroundClip: "text",
+                      color: "transparent"
+                    }}
+                  >
                     Kaal Chakra
                   </span>
                   <span className="text-[10px] tracking-[0.2em] text-[#d4af37]/80 font-bold -mt-0.5">
@@ -130,9 +159,11 @@ const Footer = () => {
                   placeholder="Your Email"
                   className="w-full px-4 py-3 rounded-xl border border-[#cf9f4a]/40 text-slate-700 bg-amber-50/30 focus:outline-none focus:border-[#d4af37] focus:ring-1 focus:ring-[#d4af37] placeholder-slate-400 transition"
                 />
+                {/* FIX: Using explicit inline CSS background so it cannot fail due to Tailwind config */}
                 <button 
                   type="button" 
-                  className="w-full bg-gradient-to-r from-[#d4af37] to-[#e4b363] text-white font-bold text-lg px-4 py-3 rounded-xl hover:from-[#b8860b] hover:to-[#d4af37] shadow-[0_4px_10px_rgba(212,175,55,0.2)] transition-all duration-300"
+                  className="w-full text-white font-bold text-lg px-4 py-3 rounded-xl hover:opacity-90 shadow-[0_4px_10px_rgba(212,175,55,0.2)] transition-all duration-300"
+                  style={{ background: "linear-gradient(to right, #d4af37, #e4b363)" }}
                 >
                   Subscribe Now
                 </button>
