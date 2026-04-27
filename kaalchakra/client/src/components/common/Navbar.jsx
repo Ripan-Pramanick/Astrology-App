@@ -212,7 +212,7 @@ const Navbar = () => {
               ) : (
                 <div className="flex items-center gap-3 pl-2">
                   <Link to="/login" className="px-5 py-2 text-[#b8860b] font-bold hover:bg-amber-50 rounded-full transition">Login</Link>
-                  <Link to="/register" className="px-6 py-2 bg-gradient-to-r from-[#d4af37] to-[#e4b363] text-white font-bold rounded-full hover:from-[#b8860b] hover:to-[#d4af37] shadow-[0_4px_10px_rgba(212,175,55,0.2)] transition-all">Sign Up</Link>
+                  <Link to="/register" className="px-6 py-2 text-white font-bold rounded-full hover:from-[#b8860b] hover:to-[#d4af37] shadow-[0_4px_10px_rgba(212,175,55,0.2)] transition-all" style={{ backgroundImage: 'linear-gradient(to right, #d4af37, #e4b363)' }}>Sign Up</Link>
                 </div>
               )}
             </div>

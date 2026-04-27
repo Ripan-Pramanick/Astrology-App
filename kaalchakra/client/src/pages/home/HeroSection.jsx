@@ -171,14 +171,14 @@ const HeroSection = () => {
             {zodiacImages.slice(0, 6).map((zodiac, idx) => (
               <div
                 key={idx}
-                // এখানে p-[2px] যোগ করা হয়েছে যাতে ইমেজের বাইরে হালকা বর্ডার গ্যাপ থাকে
+                
                 className="w-10 h-10 rounded-full bg-white/80 shadow-md flex items-center justify-center cursor-pointer transition-all duration-300 hover:scale-110 hover:bg-white zodiac-icon p-[2px]"
                 style={{ borderLeft: `3px solid ${zodiac.color}` }}
               >
                 <img
                   src={zodiac.image}
                   alt={zodiac.name}
-                  // আগের w-6 h-6 object-contain সরিয়ে নতুন ক্লাস দেওয়া হলো
+                  
                   className="w-full h-full object-cover object-center rounded-full"
                 />
               </div>
@@ -191,14 +191,14 @@ const HeroSection = () => {
             {zodiacImages.slice(6, 12).map((zodiac, idx) => (
               <div
                 key={idx}
-                // এখানে p-[2px] যোগ করা হয়েছে ইমেজের বাইরে হালকা বর্ডার গ্যাপ রাখার জন্য
+                
                 className="w-10 h-10 rounded-full bg-white/80 shadow-md flex items-center justify-center cursor-pointer transition-all duration-300 hover:scale-110 hover:bg-white zodiac-icon p-[2px]"
                 style={{ borderRight: `3px solid ${zodiac.color}` }}
               >
                 <img
                   src={zodiac.image}
                   alt={zodiac.name}
-                  // আগের w-6 h-6 object-contain সরিয়ে object-cover করে দেওয়া হলো
+                  
                   className="w-full h-full object-cover object-center rounded-full"
                 />
               </div>
@@ -262,7 +262,7 @@ const HeroSection = () => {
         <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
           <Link
             to={heroData?.buttonLink || "/services"}
-            className="group inline-flex items-center gap-2 bg-gradient-to-r from-orange-500 to-amber-500 hover:from-orange-600 hover:to-amber-600 text-white font-semibold px-8 py-3.5 rounded-xl shadow-md hover:shadow-lg transition-all duration-300 hover:scale-105"
+            className="group inline-flex items-center gap-2 bg-gradient-sunset hover:from-orange-600 hover:to-amber-600 text-white font-semibold px-8 py-3.5 rounded-xl shadow-md hover:shadow-lg transition-all duration-300 hover:scale-105"
           >
             <span>{heroData?.buttonText || "Explore Services"}</span>
             <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />

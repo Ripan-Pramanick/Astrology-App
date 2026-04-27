@@ -88,7 +88,7 @@ const Login = () => {
             <div className="bg-gradient-to-tr from-[#d4af37] to-[#f4a460] p-2 rounded-xl shadow-lg">
               <Star className="text-white w-6 h-6" fill="currentColor" />
             </div>
-            <span className="text-3xl font-bold bg-gradient-to-r from-[#b8860b] to-[#d4af37] bg-clip-text text-transparent tracking-tighter">
+            <span className="text-3xl font-bold  bg-clip-text text-transparent tracking-tighter" style={{ backgroundImage: 'linear-gradient(to right, #b8860b, #d4af37)' }}>
               Kaal Chakra
             </span>
           </Link>
@@ -163,7 +163,7 @@ const Login = () => {
             <button
               type="submit"
               disabled={loading}
-              className="w-full flex justify-center items-center gap-2 py-3.5 px-4 rounded-xl shadow-[0_4px_15px_rgba(212,175,55,0.3)] text-sm font-bold text-white bg-gradient-to-r from-[#d4af37] to-[#e4b363] hover:from-[#b8860b] hover:to-[#d4af37] transition-all disabled:opacity-50"
+              className="w-full flex justify-center items-center gap-2 py-3.5 px-4 rounded-xl shadow-[0_4px_15px_rgba(212,175,55,0.3)] text-sm font-bold text-white transition-all disabled:opacity-50" style={{ backgroundImage: 'linear-gradient(to right, #b8860b, #d4af37)' }}
             >
               {loading ? (
                 <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
