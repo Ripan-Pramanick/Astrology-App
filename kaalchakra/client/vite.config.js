@@ -79,5 +79,11 @@ export default defineConfig({
         drop_debugger: true
       }
     }
+  },
+  optimizeDeps: {
+    include: ['@react-pdf/renderer']
+  },
+  esbuild: {
+    loader: 'jsx'
   }
 })

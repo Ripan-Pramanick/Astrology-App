@@ -90,7 +90,11 @@ const getFromChartData = (chartData, key, defaultValue) => {
 
 // ==================== FREE REPORT (50+ Pages) ====================
 export const FreeKundliReport = ({ birthDetails, chartData }) => {
-  console.log("📄 Generating FREE Report (50+ pages) with data:", chartData);
+  console.log("📄 FREE Report - Received data:", {
+    birthDetails: !!birthDetails,
+    chartData: !!chartData,
+    chartDataKeys: chartData ? Object.keys(chartData) : []
+  });
 
   const name = birthDetails?.name || "Client Name";
   const dob = birthDetails?.dob || "Birth Date";
@@ -235,7 +239,10 @@ export const FreeKundliReport = ({ birthDetails, chartData }) => {
 
 // ==================== PREMIUM REPORT (200+ Pages) ====================
 export const PremiumKundliReport = ({ birthDetails, chartData }) => {
-  console.log("📄 Generating PREMIUM Report (200+ pages) with data:", chartData);
+  console.log("📄 PREMIUM Report - Received data:", {
+    birthDetails: !!birthDetails,
+    chartData: !!chartData
+  });
 
   const name = birthDetails?.name || "Client Name";
   const dob = birthDetails?.dob || "Birth Date";

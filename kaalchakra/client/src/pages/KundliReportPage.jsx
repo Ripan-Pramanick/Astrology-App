@@ -4,6 +4,7 @@ import { PDFViewer, PDFDownloadLink } from '@react-pdf/renderer';
 import { KundliReportGenerator } from '../components/KundliReportGenerator';
 import { Loader2, AlertCircle, RefreshCw, Info, Sparkles, MapPin, Calendar, Clock, Moon, Sun, Eye, Heart, Shield, HeartHandshake, Star, TrendingUp } from 'lucide-react';
 import astrologyServices from '../services/astrologyApi.js';
+import { fallbackChartData } from '../data/fallbackData';
 import { supabase } from '../lib/supabase.js';
 
 const KundliReportPage = () => {
@@ -255,7 +256,9 @@ const KundliReportPage = () => {
           darakaraka: { planet: darakarakaPlanet, data: darakaraka }, lagna: ascendant, moonSign, sadeSatiStatus
         }));
       } else {
-        throw new Error('Failed to fetch astrological data');
+        console.log("Using fallback data");
+        setChartData(fallbackChartData);
+        setApiStatus('fallback');
       }
     } catch (err) {
       console.error("Error fetching from AstrologyAPI:", err);
@@ -268,6 +271,10 @@ const KundliReportPage = () => {
       setChartData(getLocalChartData(birthDetails));
       setApiStatus('fallback');
       setError("Using local calculations. For accurate results, please check your connection.");
+       console.error("Error:", err);
+      // Use fallback on error
+      setChartData(fallbackChartData);
+      setApiStatus('fallback');
     } finally {
       setLoading(false);
     }
@@ -412,7 +419,15 @@ const KundliReportPage = () => {
 
   const handleInputChange = (e) => setBirthDetails({ ...birthDetails, [e.target.name]: e.target.value });
 
-  useEffect(() => { fetchAstrologyData(); }, []);
+  useEffect(() => {
+    fetchAstrologyData();
+    console.log("🔍 Debug Info:", {
+      isPremium,
+      chartData: !!chartData,
+      birthDetails,
+      user
+    });
+  }, []);
 
   const zodiacSigns = ['Aries', 'Taurus', 'Gemini', 'Cancer', 'Leo', 'Virgo', 'Libra', 'Scorpio', 'Sagittarius', 'Capricorn', 'Aquarius', 'Pisces'];
 
@@ -505,7 +520,7 @@ const KundliReportPage = () => {
         <div className="bg-white rounded-2xl shadow-md border border-gray-100 p-4 h-[80vh]">
           {chartData ? (
             <PDFViewer width="100%" height="100%">
-              <KundliReportGenerator
+              {/* <KundliReportGenerator
                 clientType={isPremium ? 'premium' : 'free'}
                 birthDetails={birthDetails}
                 chartData={chartData}
@@ -515,7 +530,8 @@ const KundliReportPage = () => {
                 lagnaData={lagnaData}
                 sadeSatiData={sadeSatiData}
                 sadeSatiStatus={sadeSatiStatus}
-              />
+              /> */}
+              <TestPDF />
             </PDFViewer>
           ) : (
             <div className="flex items-center justify-center h-full">
