@@ -1,0 +1,19 @@
+{
+  "siteName": "Kaal Chakra",
+  "tagline": "TIME KNOWS YOUR DESTINY",
+  "home": "Home",
+  "about": "About",
+  "services": "Services",
+  "dailyHoroscope": "Daily Horoscope",
+  "matchMaking": "Match Making",
+  "todaysPanchang": "Today's Panchang",
+  "viewAllServices": "View All Services",
+  "kundli": "Kundli",
+  "contact": "Contact",
+  "dashboard": "Dashboard",
+  "adminPanel": "Admin Panel",
+  "login": "Login",
+  "signUp": "Sign Up",
+  "logout": "Logout",
+  "profile": "Profile"
+}

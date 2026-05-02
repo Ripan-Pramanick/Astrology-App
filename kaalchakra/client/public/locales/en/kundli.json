@@ -1,0 +1,34 @@
+{
+  "title": "North Indian Kundli",
+  "lagnaLabel": "Lagna (Ascendant)",
+  "lagnaShort": "LAGNA",
+  "vedicChartBadge": "Vedic Chart",
+  "clickAnyHouse": "Click any house",
+  "tapHint": "Tap a bhava (house) in the chart to reveal its rashi (sign) and grahas (planets).",
+  "bhava": "Bhava",
+  "rashi": "Rashi",
+  "grahas": "Grahas",
+  "planetsInHouse": "Planets in this house",
+  "noGrahas": "No grahas placed here.",
+  "retrogradeShort": "R",
+  "retrogradeLabel": "Retrograde",
+  "close": "Close",
+  "zodiac": [
+    "Aries", "Taurus", "Gemini", "Cancer", "Leo", "Virgo",
+    "Libra", "Scorpio", "Sagittarius", "Capricorn", "Aquarius", "Pisces"
+  ],
+  "houses": {
+    "1": "Lagna",
+    "2": "Dhana",
+    "3": "Sahaja",
+    "4": "Sukha",
+    "5": "Putra",
+    "6": "Ripu",
+    "7": "Yuvati",
+    "8": "Randhra",
+    "9": "Dharma",
+    "10": "Karma",
+    "11": "Labha",
+    "12": "Vyaya"
+  }
+}

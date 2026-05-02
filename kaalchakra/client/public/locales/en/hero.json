@@ -1,0 +1,14 @@
+{
+  "title": "ॐ Gan Ganapataye Namo Namah",
+  "subtitle": "॥ Shri Siddhi Vinayak Namo Namah ॥",
+  "description": "Om Gan Ganapataye Namo Namah, Shri Siddhi Vinayak Namo Namah, Ashtavinayak Namo Namah, Ganapati Bappa Moraya",
+  "exploreServices": "Explore Services",
+  "consultNow": "Consult Now",
+  "ganeshaAlt": "Lord Ganesha - Remover of Obstacles",
+  "stats": {
+    "happyClients": "{{count}} Happy Clients",
+    "yearsOfService": "{{years}} Years of Service",
+    "certifiedAstrologers": "Certified Astrologers",
+    "support": "24/7 Support"
+  }
+}
