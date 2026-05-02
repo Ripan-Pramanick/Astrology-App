@@ -117,7 +117,7 @@ const BlogCard = ({ article, onBookmarkChange }) => {
             )}
             
             {isPremium && (
-              <span className="absolute top-3 right-3 bg-gradient-to-r from-yellow-500 to-amber-500 text-white text-xs font-semibold px-2.5 py-1 rounded-full flex items-center gap-1 shadow-md">
+              <span className="absolute top-3 right-3  text-white text-xs font-semibold px-2.5 py-1 rounded-full flex items-center gap-1 shadow-md" style={{ backgroundImage: 'linear-gradient(to right, #eab308, #f59e0b)' }}>
                 <TrendingUp size={12} /> Premium
               </span>
             )}

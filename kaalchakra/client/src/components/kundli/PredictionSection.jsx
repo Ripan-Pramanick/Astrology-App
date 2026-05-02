@@ -1,7 +1,7 @@
 // client/src/components/kundli/PredictionSection.jsx
 import React, { useState, useEffect } from 'react';
-import { 
-  Sparkles, Brain, TrendingUp, Heart, Briefcase, 
+import {
+  Sparkles, Brain, TrendingUp, Heart, Briefcase,
   Activity, Shield, RefreshCw, ChevronDown, ChevronUp,
   Star, Zap
 } from 'lucide-react';
@@ -25,7 +25,7 @@ const PredictionSection = ({ birthDetails, kundliData, planetsList, basicInfo })
   const fetchPrediction = async () => {
     setLoading(true);
     setError('');
-    
+
     try {
       const requestData = {
         planets: planetsList || [],
@@ -41,14 +41,14 @@ const PredictionSection = ({ birthDetails, kundliData, planetsList, basicInfo })
       };
 
       const response = await api.post('/ai/interpret', requestData);
-      
+
       if (response.data.success) {
         const parsedPrediction = parseAIPrediction(response.data.interpretation);
         setPrediction(parsedPrediction);
       } else {
         throw new Error('Failed to get prediction');
       }
-      
+
     } catch (err) {
       console.error('AI Prediction error:', err);
       setError(err.message || 'Failed to fetch AI prediction');
@@ -60,7 +60,7 @@ const PredictionSection = ({ birthDetails, kundliData, planetsList, basicInfo })
 
   const parseAIPrediction = (interpretation) => {
     if (typeof interpretation === 'object') return interpretation;
-    
+
     return {
       summary: interpretation?.substring(0, 300) || getDefaultSummary(birthDetails, basicInfo),
       career: getDefaultCareerPrediction(birthDetails),
@@ -117,7 +117,7 @@ const PredictionSection = ({ birthDetails, kundliData, planetsList, basicInfo })
 
   if (loading) {
     return (
-      <div className="bg-gradient-to-br from-purple-50 to-indigo-50 rounded-2xl p-8 shadow-lg">
+      <div className=" rounded-2xl p-8 shadow-lg" style={{ backgroundImage: 'linear-gradient(to bottom right, #faf5ff, #eef2ff)' }}>
         <div className="flex flex-col items-center justify-center py-12">
           <div className="relative">
             <div className="w-16 h-16 border-4 border-purple-200 border-t-purple-600 rounded-full animate-spin"></div>
@@ -132,7 +132,7 @@ const PredictionSection = ({ birthDetails, kundliData, planetsList, basicInfo })
 
   if (error && !prediction) {
     return (
-      <div className="bg-gradient-to-br from-red-50 to-orange-50 rounded-2xl p-8 shadow-lg text-center">
+      <div className=" rounded-2xl p-8 shadow-lg text-center" style={{ backgroundImage: 'linear-gradient(to bottom right, #fffbeb, #fff7ed)' }}>
         <div className="w-20 h-20 mx-auto bg-red-100 rounded-full flex items-center justify-center mb-4">
           <Shield className="text-red-500" size={32} />
         </div>
@@ -152,17 +152,17 @@ const PredictionSection = ({ birthDetails, kundliData, planetsList, basicInfo })
   return (
     <div className="space-y-6">
       {/* Header Section */}
-      <div className="bg-gradient-to-r from-purple-600 to-indigo-600 rounded-2xl p-6 text-white shadow-lg">
+      <div className="rounded-2xl p-6 text-white shadow-lg" style={{ background: '#fff' }}>
         <div className="flex items-center gap-3 mb-3">
           <div className="w-12 h-12 bg-white/20 rounded-full flex items-center justify-center">
-            <Brain size={24} className="text-white" />
+            <Brain size={24} className="text-yellow-600" />
           </div>
           <div>
-            <h3 className="text-xl font-bold">AI Cosmic Insights</h3>
-            <p className="text-purple-200 text-sm">Powered by Google Gemini AI</p>
+            <h3 className="text-xl font-bold text-black">AI Cosmic Insights</h3>
+            <p className="text-black text-sm">Powered by Google Gemini AI</p>
           </div>
         </div>
-        <p className="text-purple-100 leading-relaxed">
+        <p className="text-black leading-relaxed">
           {prediction.summary}
         </p>
       </div>
@@ -184,7 +184,7 @@ const PredictionSection = ({ birthDetails, kundliData, planetsList, basicInfo })
           </div>
           {expandedSections.career ? <ChevronUp size={20} /> : <ChevronDown size={20} />}
         </button>
-        
+
         {expandedSections.career && (
           <div className="px-5 pb-5">
             <p className="text-gray-600 leading-relaxed">{prediction.career}</p>
@@ -213,7 +213,7 @@ const PredictionSection = ({ birthDetails, kundliData, planetsList, basicInfo })
           </div>
           {expandedSections.love ? <ChevronUp size={20} /> : <ChevronDown size={20} />}
         </button>
-        
+
         {expandedSections.love && (
           <div className="px-5 pb-5">
             <p className="text-gray-600 leading-relaxed">{prediction.love}</p>
@@ -242,7 +242,7 @@ const PredictionSection = ({ birthDetails, kundliData, planetsList, basicInfo })
           </div>
           {expandedSections.health ? <ChevronUp size={20} /> : <ChevronDown size={20} />}
         </button>
-        
+
         {expandedSections.health && (
           <div className="px-5 pb-5">
             <p className="text-gray-600 leading-relaxed">{prediction.health}</p>
@@ -271,7 +271,7 @@ const PredictionSection = ({ birthDetails, kundliData, planetsList, basicInfo })
           </div>
           {expandedSections.spiritual ? <ChevronUp size={20} /> : <ChevronDown size={20} />}
         </button>
-        
+
         {expandedSections.spiritual && (
           <div className="px-5 pb-5">
             <p className="text-gray-600 leading-relaxed">{prediction.spiritual}</p>
@@ -280,7 +280,7 @@ const PredictionSection = ({ birthDetails, kundliData, planetsList, basicInfo })
       </div>
 
       {/* Lucky Elements Card */}
-      <div className="bg-gradient-to-r from-amber-50 to-orange-50 rounded-2xl p-5 border border-amber-200">
+      <div className=" rounded-2xl p-5 border border-amber-200" style={{ backgroundImage: 'linear-gradient(to bottom right, #fffbeb, #fff7ed)' }}>
         <h4 className="font-bold text-gray-800 mb-3 flex items-center gap-2">
           <TrendingUp className="text-orange-500" size={18} />
           Your Lucky Elements

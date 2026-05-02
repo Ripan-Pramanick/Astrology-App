@@ -12,13 +12,13 @@ const SadeSatiCard = ({ sadeSatiData, sadeSatiStatus }) => {
           <AlertCircle className="w-6 h-6 text-gray-700" />
           <span>Shani Sade Sati</span>
         </h2>
-        <div className="w-20 h-px bg-gradient-to-r from-transparent via-gray-700 to-transparent mx-auto"></div>
+        <div className="w-20 h-px  mx-auto"></div>
         <p className="text-gray-500 text-sm mt-2">7.5 years of karmic growth and transformation</p>
         <p className="text-xs text-gray-400 mt-1">Your Moon Sign: {sadeSatiStatus.moonSign}</p>
       </div>
       
       <div className={`rounded-xl overflow-hidden border-2 ${
-        sadeSatiStatus.isActive ? 'border-orange-500 bg-gradient-to-br from-orange-50 to-amber-50' : 'border-gray-200 bg-gray-50'
+        sadeSatiStatus.isActive ? 'border-orange-500' : 'border-gray-200 bg-gray-50'
       }`}>
         <div className={`p-4 ${sadeSatiStatus.isActive ? 'bg-gradient-to-r from-gray-800 to-gray-900' : 'bg-gray-600'} text-white`}>
           <div className="flex items-center gap-2">

@@ -254,7 +254,7 @@ const ViewReport = () => {
           {/* AI Insights Section */}
           <div className="px-8 pb-8">
             <div className="bg-white rounded-2xl shadow-md border border-[#f0e7db] overflow-hidden">
-              <div className="bg-gradient-to-r from-[#fffbf5] to-[#fef7ed] border-l-[5px] border-[#e6b34c] text-[#4a3727] font-bold text-lg py-3 px-6 border-b flex items-center gap-2">
+              <div className=" border-l-[5px] border-[#e6b34c] text-[#4a3727] font-bold text-lg py-3 px-6 border-b flex items-center gap-2" style={{backgroundImage: 'linear-gradient(to right, #fffbf5, #fef7ed)'}}>
                 <Sparkles size={20} className="text-[#e6b34c]" /> AI Cosmic Insights
               </div>
               <div className="p-8">

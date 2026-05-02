@@ -129,7 +129,7 @@ const SimpleStarParticles = () => {
           }}
         >
           <div className="w-1 h-1 bg-white rounded-full" />
-          <div className="absolute top-0 left-0 w-20 h-0.5 bg-gradient-to-r from-transparent via-white to-transparent" />
+          <div className="absolute top-0 left-0 w-20 h-0.5" style={{ backgroundImage: 'linear-gradient(to right, #ffffff, #808080)' }} />
         </div>
       ))}
       
@@ -140,7 +140,7 @@ const SimpleStarParticles = () => {
       <div className="absolute bottom-[10%] left-[20%] w-[350px] h-[350px] rounded-full bg-cyan-500/5 blur-3xl animate-pulse-slow-delayed" />
       
       {/* Milky Way Effect */}
-      <div className="absolute inset-0 bg-gradient-to-t from-transparent via-white/5 to-transparent opacity-30" />
+      <div className="absolute inset-0  opacity-30" style={{ backgroundImage: 'linear-gradient(to top, transparent, rgba(255, 255, 255, 0.05), transparent)' }} />
       
       <style>{`
         @keyframes twinkle {

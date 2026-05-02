@@ -100,16 +100,16 @@ const KundliChart = ({
 
   return (
     <div className="w-full max-w-3xl mx-auto" data-testid="kundli-chart-root">
-      <div className="relative rounded-3xl p-6 md:p-8 bg-gradient-to-br from-amber-50 via-orange-50 to-rose-50 border border-amber-200 shadow-[0_10px_40px_-10px_rgba(234,88,12,0.25)]">
+      <div className="relative rounded-3xl p-6 md:p-8 border border-amber-200 shadow-[0_10px_40px_-10px_rgba(234,88,12,0.25)]" style={{ backgroundImage: 'linear-gradient(to bottom right, #fffbeb, #fff7ed, #fff1f2)' }}>
         {/* Header */}
         <div className="flex items-center justify-between mb-5">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-orange-500 to-rose-500 flex items-center justify-center text-white font-bold shadow-md">
+            <div className="w-10 h-10 rounded-xl flex items-center justify-center text-white font-bold shadow-md" style={{ backgroundImage: 'linear-gradient(to bottom right, #f97316, #f43f5e)' }}>
               ॐ
             </div>
             <div>
               <h3 className="text-lg md:text-xl font-bold text-stone-800 tracking-tight" data-testid="kundli-title">
-                North Indian Kundli
+                Vedic Indian Astrology
               </h3>
               <p className="text-xs text-stone-500">
                 Lagna (Ascendant):{" "}
@@ -305,7 +305,7 @@ const HouseDetails = ({ selected, ascendant, planetsByHouse, onClear }) => {
   if (!selected) {
     return (
       <div className="h-full min-h-[280px] rounded-2xl border border-dashed border-amber-300 bg-white/60 backdrop-blur-sm p-5 flex flex-col items-center justify-center text-center">
-        <div className="w-14 h-14 rounded-full bg-gradient-to-br from-amber-200 to-orange-300 flex items-center justify-center text-2xl mb-3">
+        <div className="w-14 h-14 rounded-full  flex items-center justify-center text-2xl mb-3" style={{ backgroundImage: 'linear-gradient(to bottom right, #fde68a, #fdba74)' }}>
           ✦
         </div>
         <p className="text-sm font-semibold text-stone-700">Click any house</p>
@@ -346,13 +346,13 @@ const HouseDetails = ({ selected, ascendant, planetsByHouse, onClear }) => {
       </div>
 
       <div className="mt-4 grid grid-cols-2 gap-2.5 text-sm">
-        <div className="rounded-lg bg-gradient-to-br from-amber-50 to-orange-50 border border-amber-100 p-2.5">
+        <div className="rounded-lg  border border-amber-100 p-2.5" style={{ backgroundImage: 'linear-gradient(to bottom right, #fffbeb, #fff7ed)' }}>
           <p className="text-[10px] uppercase tracking-wider text-stone-500">Rashi</p>
           <p className="font-semibold text-stone-800 mt-0.5">
             {sign.name} <span className="text-orange-600">#{sign.num}</span>
           </p>
         </div>
-        <div className="rounded-lg bg-gradient-to-br from-amber-50 to-orange-50 border border-amber-100 p-2.5">
+        <div className="rounded-lg  border border-amber-100 p-2.5" style={{ backgroundImage: 'linear-gradient(to bottom right, #fffbeb, #fff7ed)' }}>
           <p className="text-[10px] uppercase tracking-wider text-stone-500">Grahas</p>
           <p className="font-semibold text-stone-800 mt-0.5">{ps.length}</p>
         </div>

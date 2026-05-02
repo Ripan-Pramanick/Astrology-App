@@ -70,7 +70,7 @@ const PlanetTable = ({ planets }) => {
   return (
     <div className="w-full overflow-x-auto">
       <table className="min-w-full bg-white rounded-lg overflow-hidden shadow-sm">
-        <thead className="bg-gradient-to-r from-orange-500 to-amber-500">
+        <thead className="" style={{backgroundImage: 'linear-gradient(to right, #f97316, #f59e0b)'}}>
           <tr>
             <th 
               onClick={() => handleSort('name')}

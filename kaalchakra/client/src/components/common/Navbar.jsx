@@ -194,7 +194,7 @@ const Navbar = () => {
                     to={user?.role === 'admin' ? '/admin' : '/dashboard'}
                     className="flex items-center gap-2 text-slate-700 hover:text-[#d4af37] cursor-pointer transition"
                   >
-                    <div className={`w-8 h-8 rounded-full flex items-center justify-center border shadow-sm ${user?.role === 'admin' ? 'bg-gradient-to-tr from-[#d4af37] to-[#b8860b] border-[#cf9f4a]' : 'bg-amber-50 border-[#cf9f4a]/40'}`}>
+                    <div className={`w-8 h-8 rounded-full flex items-center justify-center border shadow-sm ${user?.role === 'admin' ? 'border-[#cf9f4a]' : 'border-[#cf9f4a]/40'}`} style={{ backgroundImage: 'linear-gradient(to bottom right, #d4af37, #b8860b)' }}>
                       {user?.role === 'admin' ? <ShieldCheck size={16} className="text-white" /> : <User size={18} className="text-[#b8860b]" />}
                     </div>
                     <span className={`font-bold text-sm ${user?.role === 'admin' ? 'text-[#b8860b]' : 'text-slate-700'}`}>
@@ -272,7 +272,7 @@ const Navbar = () => {
                 ) : (
                   <div className="grid grid-cols-2 gap-4 px-3 py-2">
                     <Link to="/login" className="text-center py-2 border border-[#cf9f4a] text-[#b8860b] hover:bg-amber-50 rounded-lg font-bold transition" onClick={() => setIsOpen(false)}>Login</Link>
-                    <Link to="/register" className="text-center py-2 bg-gradient-to-r from-[#d4af37] to-[#e4b363] text-white rounded-lg font-bold shadow-md transition" onClick={() => setIsOpen(false)}>
+                    <Link to="/register" className="text-center py-2  rounded-lg font-bold shadow-md transition" onClick={() => setIsOpen(false)} style={{ backgroundImage: 'linear-gradient(to right, #d4af37, #e4b363)' }}>
                     <GradientText>Sign Up</GradientText></Link>
                   </div>
                 )}

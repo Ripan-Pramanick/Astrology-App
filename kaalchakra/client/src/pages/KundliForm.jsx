@@ -147,7 +147,7 @@ const KundliResult = () => {
           <button 
             onClick={handleDownloadPdf} 
             disabled={isDownloading}
-            className="flex items-center gap-2 bg-gradient-to-r from-orange-500 to-amber-500 text-white font-bold px-6 py-2 rounded-xl shadow-md hover:shadow-lg disabled:opacity-50 transition"
+            className="flex items-center gap-2 text-white font-bold px-6 py-2 rounded-xl shadow-md hover:shadow-lg disabled:opacity-50 transition" style={{backgroundImage: 'linear-gradient(to right, #f97316, #f59e0b)'}}
           >
             {isDownloading ? <Loader2 className="animate-spin" size={18} /> : <Download size={18} />} 
             Download PDF
@@ -158,7 +158,7 @@ const KundliResult = () => {
         <div ref={reportRef} className="bg-white rounded-2xl shadow-2xl overflow-hidden">
           
           {/* Header */}
-          <div className="bg-gradient-to-r from-orange-500 to-amber-500 p-8 text-white">
+          <div className=" p-8 text-white " style={{backgroundImage: 'linear-gradient(to right, #f97316, #f59e0b)'}}>
             <h1 className="text-3xl font-bold flex items-center gap-2">
               <Sparkles className="w-8 h-8" /> Comprehensive Astrological Report
             </h1>

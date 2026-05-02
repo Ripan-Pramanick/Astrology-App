@@ -536,11 +536,11 @@ const KundliResult = () => {
         {/* Main Report Content */}
         <div ref={reportRef} className="bg-white rounded-2xl shadow-2xl overflow-hidden">
           {/* Header */}
-          <div className="bg-gradient-to-r from-orange-500 to-amber-500 p-8 text-white">
+          <div className="p-8 text-white bg-[radial-gradient(circle_at_top_right,_#f59e0b,_#f67e21,_#e63946,_#457b9d)]">
             <h1 className="text-3xl font-bold flex items-center gap-2">
-              <Sparkles className="w-8 h-8" /> Comprehensive Astrological Report
+              <Sparkles className="w-8 h-8 text-black" /> Comprehensive Astrological Report
             </h1>
-            <p className="text-orange-100 mt-2">Vedic Astrology • Janam Kundali Analysis • AI Predictions</p>
+            <p className="text-black mt-2">Vedic Astrology • Janam Kundali Analysis • AI Predictions</p>
           </div>
 
           {/* Birth Details Section */}
