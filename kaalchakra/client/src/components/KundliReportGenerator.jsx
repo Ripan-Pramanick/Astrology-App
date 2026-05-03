@@ -89,7 +89,7 @@ const getFromChartData = (chartData, key, defaultValue) => {
 };
 
 // ==================== FREE REPORT (50+ Pages) ====================
-export const FreeKundliReport = ({ birthDetails, chartData }) => {
+export const FreeKundliReport = ({ birthDetails, chartData,  darakarakaHouses }) => {
   console.log("📄 FREE Report - Received data:", {
     birthDetails: !!birthDetails,
     chartData: !!chartData,
@@ -228,6 +228,15 @@ export const FreeKundliReport = ({ birthDetails, chartData }) => {
           <View style={styles.footer}><Text>Page {i} of Free Kundli Report</Text></View>
         </Page>
       );
+
+      pages.push(
+      <Page key="darakaraka-houses" size="A4" style={styles.page}>
+        <PDFDarakarakaHouses darakarakas={darakarakaHouses} />
+        <View style={styles.footer}>
+          <Text>Page {pages.length + 1} of Free Kundli Report</Text>
+        </View>
+      </Page>
+    );
     }
 
     console.log(`✅ Free Report: ${pages.length} pages generated`);
@@ -438,6 +447,44 @@ const getNakshatraDescription = (nakshatra) => {
   };
   return `${nakshatra} Nakshatra represents ${descriptions[nakshatra] || 'unique qualities and life path.'}`;
 };
+
+const PDFDarakarakaHouses = ({ darakarakas }) => {
+  if (!darakarakas || darakarakas.length === 0) return null;
+
+  const uniqueHouses = darakarakas.reduce((acc, curr) => {
+    if (!acc.find(item => item.house_number === curr.house_number)) {
+      acc.push(curr);
+    }
+    return acc;
+  }, []);
+
+  const sortedHouses = [...uniqueHouses].sort((a, b) => a.house_number - b.house_number);
+
+  return (
+    <View style={{ marginBottom: 20 }}>
+      <Text style={{ fontSize: 16, fontWeight: 'bold', marginBottom: 12, color: '#1f2a44' }}>
+        🏠 Darakaraka Houses Analysis
+      </Text>
+      <Text style={{ fontSize: 10, color: '#666', marginBottom: 15 }}>
+        The house where Darakaraka planet resides reveals the area of life where relationship karma unfolds
+      </Text>
+
+      <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 10 }}>
+        {sortedHouses.map((house) => (
+          <View key={house.id} style={{ width: '48%', padding: 10, backgroundColor: '#f8f9fb', borderRadius: 8, marginBottom: 10 }}>
+            <Text style={{ fontSize: 14, fontWeight: 'bold', color: '#F7931E', marginBottom: 4 }}>
+              House {house.house_number}
+            </Text>
+            <Text style={{ fontSize: 10, color: '#666', marginBottom: 4 }}>Theme: {house.theme}</Text>
+            <Text style={{ fontSize: 9, color: '#444', lineHeight: 1.4 }}>{house.effect}</Text>
+          </View>
+        ))}
+      </View>
+    </View>
+  );
+};
+
+
 
 // Main component
 export const KundliReportGenerator = ({ clientType = 'free', birthDetails, chartData }) => {

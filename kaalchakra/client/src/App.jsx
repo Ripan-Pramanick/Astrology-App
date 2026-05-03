@@ -12,11 +12,9 @@ import Services from './pages/Services';
 import KundliForm from './pages/KundliForm';
 import KundliResult from './pages/KundliResult';
 import Contact from './pages/Contact';
-// import OTPVerify from './pages/OTPVerify';
 import Dashboard from './pages/Dashboard';
 import Matchmaking from './pages/Matchmaking';
 import NotFound from './pages/NotFound';
-import ViewReport from './pages/ViewReport';
 import Horoscope from './pages/Horoscope';
 import Panchang from './pages/Panchang';
 import AuthPage from './pages/AuthPage';
@@ -36,11 +34,11 @@ import Footer from './components/common/Footer';
 import ScrollToTop from './components/common/ScrollToTop';
 
 // Define exclude paths (pages where you don't want auto-scroll)
-const excludePaths = ['/kundli-result', '/kundli'];
+const excludePaths = ['/kundli-result', '/kundli/result'];
 
 function App() {
   return (
-   <Router future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
+    <Router future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
       <AuthProvider>
         <ScrollToTop excludePaths={excludePaths} />
         <div className="flex flex-col min-h-screen">
@@ -52,14 +50,15 @@ function App() {
               <Route path="/about" element={<About />} />
               <Route path="/services" element={<Services />} />
               <Route path="/kundli" element={<KundliForm />} />
+              {/* Multiple paths for KundliResult to handle all cases */}
               <Route path="/kundli-result" element={<KundliResult />} />
+              <Route path="/result" element={<KundliResult />} />
               <Route path="/kundli-result/:id" element={<KundliResult />} />
+              <Route path="/report/:id" element={<KundliResult />} />
               <Route path="/contact" element={<Contact />} />
               <Route path="/matchmaking" element={<Matchmaking />} />
               <Route path="/login" element={<AuthPage />} />
               <Route path="/register" element={<AuthPage />} />
-              {/* <Route path="/verify-otp" element={<OTPVerify />} /> */}
-              <Route path="/report/:id" element={<ViewReport />} />
               <Route path="/horoscope" element={<Horoscope />} />
               <Route path="/panchang" element={<Panchang />} />
               <Route path="/blog" element={<Blog />} />
