@@ -669,6 +669,57 @@ app.use((req, res) => {
     res.status(404).json({ message: 'Route not found' });
 });
 
+
+app.get('/hero', async (req, res) => {
+    try {
+        const { data, error } = await supabase
+            .from('hero_section')
+            .select('*')
+            .eq('is_active', true)
+            .single();
+        if (error) throw error;
+        res.json({ success: true, hero: data || {} });
+    } catch (error) {
+        res.json({ success: true, hero: { title: "Discover Your Cosmic Path", subtitle: "Personalized Vedic Astrology Readings", ctaText: "Get Started", ctaLink: "/kundli" } });
+    }
+});
+
+app.get('/articles', async (req, res) => {
+    try {
+        const { data, error } = await supabase
+            .from('articles')
+            .select('*')
+            .eq('status', 'published')
+            .order('created_at', { ascending: false });
+        if (error) throw error;
+        res.json({ success: true, articles: data || [] });
+    } catch (error) {
+        res.json({ success: true, articles: [] });
+    }
+});
+
+app.get('/testimonials', async (req, res) => {
+    try {
+        const { is_approved, limit } = req.query;
+        let query = supabase.from('testimonials').select('*').order('created_at', { ascending: false });
+        if (is_approved === 'true') query = query.eq('is_approved', true);
+        if (limit) query = query.limit(parseInt(limit));
+        const { data, error } = await query;
+        if (error) throw error;
+        res.json({ success: true, testimonials: data || [] });
+    } catch (error) {
+        res.json({ success: true, testimonials: [] });
+    }
+});
+
+app.get('/hero/stats', async (req, res) => {
+    res.json({ success: true, stats: { users: 10000, readings: 25000, satisfaction: 98, astrologers: 50 } });
+});
+
+app.get('/testimonials/stats', async (req, res) => {
+    res.json({ success: true, stats: { total: 156, averageRating: 4.8, fiveStarCount: 128, fourStarCount: 22, threeStarCount: 6 } });
+});
+
 // Global error handler
 app.use(errorHandler);
 
