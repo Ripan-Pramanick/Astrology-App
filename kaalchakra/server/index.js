@@ -77,8 +77,19 @@ const app = express();
 // ============================================
 // CORS CONFIGURATION
 // ============================================
+const allowedOrigins = [
+    appConfig.clientUrl,
+    'http://localhost:5173',
+    'http://localhost:5174',
+].filter(Boolean);
+
 app.use(cors({
-    origin: true,
+    origin: (origin, callback) => {
+        // Allow requests with no origin (e.g. mobile apps, curl)
+        if (!origin) return callback(null, true);
+        if (allowedOrigins.includes(origin)) return callback(null, true);
+        return callback(new Error('Not allowed by CORS'));
+    },
     credentials: true,
     methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS', 'PATCH'],
     allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With', 'Accept']
@@ -158,30 +169,33 @@ const getMockPlanets = () => [
 ];
 
 const callAstrologyAPI = async (endpoint, payload) => {
+    const userId = process.env.ASTROLOGY_USER_ID?.trim();
     const walletToken = process.env.ASTROLOGY_WALLET_TOKEN?.trim();
 
-    if (!walletToken) {
-        console.warn("⚠️ Wallet Token missing. Using Mock Data.");
-        return getMockResponse(endpoint);
+    if (!userId || !walletToken) {
+        // ❌ credentials নেই — error throw করো, mock না দিয়ে
+        throw new Error("ASTROLOGY_USER_ID বা ASTROLOGY_WALLET_TOKEN সেট নেই .env তে!");
     }
+
+    const authString = Buffer.from(`${userId}:${walletToken}`).toString('base64');
 
     try {
         const response = await axios.post(
-            `https://json.astrologyapi.com/v1/${endpoint}`, 
-            payload, 
+            `https://json.astrologyapi.com/v1/${endpoint}`,
+            payload,
             {
-                headers: { 
-                    'x-astrologyapi-key': walletToken, 
-                    'Content-Type': 'application/json' 
+                headers: {
+                    'Authorization': `Basic ${authString}`,
+                    'Content-Type': 'application/json'
                 },
-                timeout: 10000 
+                timeout: 10000
             }
         );
-        console.log(`✅ Real Data fetched from API (${endpoint})`);
+        console.log(`✅ Real Data fetched from AstrologyAPI (${endpoint})`);
         return response.data;
     } catch (err) {
-        console.warn(`⚠️ API Error for ${endpoint}. Using Mock Data.`);
-        return getMockResponse(endpoint);
+        console.error(`❌ AstrologyAPI Error for ${endpoint}:`, err.response?.data || err.message);
+        throw err; // ← mock না দিয়ে error throw করো
     }
 };
 
@@ -201,6 +215,33 @@ const getMockResponse = (endpoint) => {
 // ============================================
 // ASTROLOGY API ROUTES
 // ============================================
+
+app.post('/api/astrology/birth_details', async (req, res) => {
+    try {
+        const data = await callAstrologyAPI('birth_details', req.body);
+        res.json({ success: true, data });
+    } catch (error) {
+        res.status(500).json({ 
+            success: false, 
+            message: error.message,
+            error: error.response?.data || error.message 
+        });
+    }
+});
+
+app.post('/api/astrology/planets', async (req, res) => {
+    try {
+        const data = await callAstrologyAPI('planets/extended', req.body);
+        res.json({ success: true, data });
+    } catch (error) {
+        res.status(500).json({ 
+            success: false, 
+            message: error.message 
+        });
+    }
+});
+
+
 app.post('/api/astrology/geo_details', async (req, res) => {
     try {
         console.log("📍 Location search request:", req.body);
@@ -227,16 +268,9 @@ app.post('/api/astrology/geo_details', async (req, res) => {
     }
 });
 
-app.post('/api/astrology/birth_details', async (req, res) => {
-    try {
-        const data = await callAstrologyAPI('birth_details', req.body);
-        res.json({ success: true, data });
-    } catch (error) {
-        res.json({ success: true, data: getMockBirthDetails() });
-    }
-});
 
-app.post('/api/astrology/planets', async (req, res) => {
+// Also support /api/astrology/planets/extended directly
+app.post('/api/astrology/planets/extended', async (req, res) => {
     try {
         const data = await callAstrologyAPI('planets/extended', req.body);
         res.json({ success: true, data });
@@ -269,7 +303,7 @@ app.post('/api/ai/interpret', async (req, res) => {
             return res.json({ success: true, interpretation: fallbackText });
         }
         
-        const model = genAI.getGenerativeModel({ model: "gemini-pro" });
+        const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
         const prompt = `You are an expert Vedic Astrologer. Analyze Lagna: ${basic?.ascendant || 'Unknown'}, Moon Sign: ${basic?.sign || 'Unknown'}, Nakshatra: ${basic?.Naksahtra || 'Unknown'}. Positions: ${JSON.stringify(planets)}. Give a professional reading in 4 short paragraphs.`;
 
         const result = await model.generateContent(prompt);
@@ -342,66 +376,6 @@ app.get('/api/reports/:phone', async (req, res) => {
         res.status(200).json({ success: true, reports: data });
     } catch (error) {
         res.status(500).json({ success: false, message: "Fetch failed" });
-    }
-});
-
-// ============================================
-// PAYMENT API
-// ============================================
-const razorpay = new Razorpay({
-    key_id: process.env.RAZORPAY_KEY_ID, 
-    key_secret: process.env.RAZORPAY_KEY_SECRET,
-});
-
-app.post('/api/payment/create-order', async (req, res) => {
-    try {
-        const order = await razorpay.orders.create({ 
-            amount: 1100 * 100, 
-            currency: "INR", 
-            receipt: `rcpt_${Date.now()}` 
-        });
-        res.json({ success: true, order });
-    } catch (error) {
-        console.error("❌ Razorpay Error:", error.error || error);
-        res.status(500).json({ success: false, message: "Order creation failed" }); 
-    }
-});
-
-app.post('/api/payment/verify-payment', async (req, res) => {
-    try {
-        const { razorpay_order_id, razorpay_payment_id, razorpay_signature, user_phone } = req.body;
-        
-        const crypto = await import('crypto');
-        const sign = razorpay_order_id + "|" + razorpay_payment_id;
-        const expectedSignature = crypto.createHmac("sha256", process.env.RAZORPAY_KEY_SECRET)
-            .update(sign.toString())
-            .digest("hex");
-
-        if (razorpay_signature !== expectedSignature) {
-            return res.status(400).json({ success: false, message: "Invalid payment signature" });
-        }
-
-        const expiryDate = new Date();
-        expiryDate.setFullYear(expiryDate.getFullYear() + 1);
-
-        const { data: updatedUser, error: updateError } = await supabase
-            .from('users')
-            .update({
-                subscription: 'premium',
-                is_premium: true,
-                premium_expiry: expiryDate.toISOString(),
-                premium_activated_at: new Date().toISOString()
-            })
-            .eq('phone', user_phone)
-            .select()
-            .single();
-
-        if (updateError) throw updateError;
-
-        res.json({ success: true, message: "Premium activated successfully!", user: updatedUser });
-    } catch (error) {
-        console.error("Payment verification error:", error);
-        res.status(500).json({ success: false, message: error.message });
     }
 });
 
@@ -498,18 +472,32 @@ app.use((req, res) => {
 // Global error handler
 app.use(errorHandler);
 
-// ============================================
-// START SERVER
-// ============================================
-const PORT = appConfig.port || 5000;
-app.listen(PORT, () => {
-    logger.info(`🚀 Server safely running on port ${PORT}`);
-    console.log(`\n✅ Server started successfully!`);
-    console.log(`📍 Health check: http://localhost:${PORT}/health`);
-    console.log(`🔧 Test endpoint: http://localhost:${PORT}/api/test`);
-    console.log(`🔧 Debug geo: http://localhost:${PORT}/api/debug/geo-response`);
-    console.log(`🔑 Firebase: ${admin.apps.length ? '✅ Initialized' : '❌ Not initialized'}`);
-    console.log(`💾 Supabase: ${process.env.SUPABASE_URL ? '✅ Configured' : '❌ Not configured'}`);
+
+app.get('/api/reports/by-email/:email', async (req, res) => {
+    try {
+        const email = decodeURIComponent(req.params.email);
+        // Find user by email first, then fetch their reports
+        const { data: user } = await supabase
+            .from('users')
+            .select('phone')
+            .eq('email', email)
+            .maybeSingle();
+        
+        let query = supabase.from('saved_reports').select('*').order('created_at', { ascending: false });
+        
+        if (user?.phone) {
+            query = query.eq('user_phone', user.phone);
+        } else {
+            // Search by email in basic_info or return empty
+            return res.status(200).json({ success: true, reports: [] });
+        }
+        
+        const { data, error } = await query;
+        if (error) throw error;
+        res.status(200).json({ success: true, reports: data });
+    } catch (error) {
+        res.status(500).json({ success: false, message: 'Fetch failed' });
+    }
 });
 
 // Add this endpoint for user status check
@@ -557,6 +545,21 @@ app.put('/api/user/profile/:identifier', async (req, res) => {
         console.error("Profile update error:", error);
         res.status(500).json({ success: false, message: error.message });
     }
+});
+
+
+// ============================================
+// START SERVER
+// ============================================
+const PORT = appConfig.port || 5000;
+app.listen(PORT, () => {
+    logger.info(`🚀 Server safely running on port ${PORT}`);
+    console.log(`\n✅ Server started successfully!`);
+    console.log(`📍 Health check: http://localhost:${PORT}/health`);
+    console.log(`🔧 Test endpoint: http://localhost:${PORT}/api/test`);
+    console.log(`🔧 Debug geo: http://localhost:${PORT}/api/debug/geo-response`);
+    console.log(`🔑 Firebase: ${admin.apps.length ? '✅ Initialized' : '❌ Not initialized'}`);
+    console.log(`💾 Supabase: ${process.env.SUPABASE_URL ? '✅ Configured' : '❌ Not configured'}`);
 });
 
 export default app;

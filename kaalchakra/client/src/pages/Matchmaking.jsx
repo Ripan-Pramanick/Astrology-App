@@ -5,19 +5,33 @@ import astrologyServices from '../services/astrologyApi.js';
 import { supabase } from '../lib/supabase.js';
 
 // Zodiac Images
+// Import zodiac images from assets
+import AriesImg from '../assets/images/Aries.webp';
+import TaurusImg from '../assets/images/Taurus.webp';
+import GeminiImg from '../assets/images/Gemini.webp';
+import CancerImg from '../assets/images/Cancer.webp';
+import LeoImg from '../assets/images/Leo.webp';
+import VirgoImg from '../assets/images/Virgo.webp';
+import LibraImg from '../assets/images/Libra.webp';
+import ScorpioImg from '../assets/images/Scorpio.webp';
+import SagittariusImg from '../assets/images/Sagittarius.webp';
+import CapricornImg from '../assets/images/Capricorn.webp';
+import AquariusImg from '../assets/images/Aquarius.webp';
+import PiscesImg from '../assets/images/Pisces.webp';
+
 const zodiacImages = {
-  'Aries': '/images/zodiac/aries.png',
-  'Taurus': '/images/zodiac/taurus.png',
-  'Gemini': '/images/zodiac/gemini.png',
-  'Cancer': '/images/zodiac/cancer.png',
-  'Leo': '/images/zodiac/leo.png',
-  'Virgo': '/images/zodiac/virgo.png',
-  'Libra': '/images/zodiac/libra.png',
-  'Scorpio': '/images/zodiac/scorpio.png',
-  'Sagittarius': '/images/zodiac/sagittarius.png',
-  'Capricorn': '/images/zodiac/capricorn.png',
-  'Aquarius': '/images/zodiac/aquarius.png',
-  'Pisces': '/images/zodiac/pisces.png'
+  'Aries': AriesImg,
+  'Taurus': TaurusImg,
+  'Gemini': GeminiImg,
+  'Cancer': CancerImg,
+  'Leo': LeoImg,
+  'Virgo': VirgoImg,
+  'Libra': LibraImg,
+  'Scorpio': ScorpioImg,
+  'Sagittarius': SagittariusImg,
+  'Capricorn': CapricornImg,
+  'Aquarius': AquariusImg,
+  'Pisces': PiscesImg
 };
 
 const zodiacNames = {

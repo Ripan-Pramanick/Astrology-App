@@ -158,41 +158,50 @@ const KundliForm = () => {
     ];
   };
 
-  // Save data to Supabase
+  // Save data to Supabase (uses saved_reports table which exists)
   const saveToSupabase = async (data) => {
     try {
-      const kundliRequest = {
-        user_id: user?.id || null,
+      // Zero-pad month and day for proper ISO date format
+      const month = String(data.birthDate.month).padStart(2, '0');
+      const day = String(data.birthDate.day).padStart(2, '0');
+      const minute = String(data.birthTime.minute).padStart(2, '0');
+
+      const reportRecord = {
+        user_phone: data.phone || null,
         name: data.name,
-        phone: data.phone,
-        email: data.email,
-        gender: data.gender,
-        birth_date: `${data.birthDate.year}-${data.birthDate.month}-${data.birthDate.day}`,
-        birth_time: `${data.birthTime.hour24}:${data.birthTime.minute}:00`,
-        birth_place: data.place,
-        latitude: data.latitude,
-        longitude: data.longitude,
-        timezone: data.timezone,
-        ascendant: data.ascendant,
-        moon_sign: data.moonSign,
-        nakshatra: data.nakshatra,
-        planets: data.planets,
-        status: 'payment_pending',
-        report_data: data.reportData
+        dob: `${data.birthDate.year}-${month}-${day}`,
+        basic_info: {
+          gender: data.gender,
+          email: data.email,
+          birth_time: `${data.birthTime.hour24}:${minute}:00`,
+          birth_place: data.place,
+          latitude: data.latitude,
+          longitude: data.longitude,
+          timezone: data.timezone,
+          ascendant: data.ascendant,
+          moon_sign: data.moonSign,
+          nakshatra: data.nakshatra,
+        },
+        planets_data: data.planets,
+        ai_insights: null,
+        created_at: new Date().toISOString(),
       };
 
       const { data: savedData, error: supabaseError } = await supabase
-        .from('kundli_requests')
-        .insert([kundliRequest])
+        .from('saved_reports')
+        .insert([reportRecord])
         .select();
 
-      if (supabaseError) throw supabaseError;
+      if (supabaseError) {
+        console.error("❌ Supabase save error:", supabaseError.message);
+        return null; // Non-blocking - don't stop payment
+      }
 
       console.log("✅ Data saved to Supabase:", savedData);
       return savedData?.[0]?.id;
     } catch (err) {
       console.error("❌ Supabase save error:", err);
-      return null;
+      return null; // Non-blocking
     }
   };
 
@@ -318,7 +327,11 @@ const KundliForm = () => {
         throw new Error('Razorpay SDK failed to load');
       }
 
-      const orderResponse = await fetch('http://localhost:5000/api/payment/create-order', { method: 'POST' });
+      const orderResponse = await fetch('/api/payment/create-order', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ amount: 1100, currency: 'INR' })
+      });
       const orderData = await orderResponse.json();
 
       if (!orderData.success) {
@@ -326,7 +339,7 @@ const KundliForm = () => {
       }
 
       const options = {
-        key: "rzp_test_SZrJ56ltWYlhmu",
+        key: import.meta.env.VITE_RAZORPAY_KEY_ID || orderData.razorpayKey || "rzp_test_SZrJ56ltWYlhmu",
         amount: orderData.order.amount,
         currency: "INR",
         name: "Kaal Chakra",
@@ -339,12 +352,9 @@ const KundliForm = () => {
           // Update payment status in Supabase
           if (requestId) {
             await supabase
-              .from('kundli_requests')
+              .from('saved_reports')
               .update({
-                payment_id: response.razorpay_payment_id,
-                payment_status: 'completed',
-                status: 'completed',
-                updated_at: new Date().toISOString()
+                ai_insights: { payment_id: response.razorpay_payment_id, payment_status: 'completed' }
               })
               .eq('id', requestId);
           }

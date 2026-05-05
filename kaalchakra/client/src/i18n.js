@@ -1,13 +1,28 @@
-// client/src/i18n.js (সর্বনিম্ন ভার্সন)
+// client/src/i18n.js
 import i18n from 'i18next';
 import { initReactI18next } from 'react-i18next';
+import LanguageDetector from 'i18next-browser-languagedetector';
+import HttpBackend from 'i18next-http-backend';
 
-// শুধু ভাষা সনাক্তকরণের জন্য minimal configuration
-i18n.use(initReactI18next).init({
-  fallbackLng: 'en',
-  interpolation: {
-    escapeValue: false,
-  },
-});
+i18n
+  .use(HttpBackend)
+  .use(LanguageDetector)
+  .use(initReactI18next)
+  .init({
+    fallbackLng: 'en',
+    supportedLngs: ['en', 'bn', 'hi', 'mr', 'ta', 'te'],
+    backend: {
+      loadPath: '/locales/{{lng}}/{{ns}}.json',
+    },
+    ns: ['common', 'hero', 'kundli', 'navigation'],
+    defaultNS: 'common',
+    detection: {
+      order: ['localStorage', 'navigator'],
+      caches: ['localStorage'],
+    },
+    interpolation: {
+      escapeValue: false,
+    },
+  });
 
 export default i18n;

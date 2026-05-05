@@ -1,14 +1,16 @@
 // server/routes/payment.js
 import express from 'express';
 import { createOrder, verifyPayment } from '../controllers/paymentController.js';
-import { protect } from '../middleware/authMiddleware.js';
 
 const router = express.Router();
 
-// Create order (protected route)
-router.post('/create-order', protect, createOrder);
+// Create order - public (guests can also pay for kundli)
+router.post('/create-order', createOrder);
 
-// Verify payment (public, but can be protected if needed)
+// Verify payment
 router.post('/verify', verifyPayment);
+
+// Keep the premium subscription verify endpoint
+router.post('/verify-payment', verifyPayment);
 
 export default router;

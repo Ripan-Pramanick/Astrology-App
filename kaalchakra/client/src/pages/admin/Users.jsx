@@ -24,7 +24,7 @@ const Users = () => {
     newThisMonth: 0
   });
 
-  const API_URL = 'http://localhost:5000/api/admin/users';
+  const API_URL = '/api/admin/users';
 
   useEffect(() => {
     fetchUsers();

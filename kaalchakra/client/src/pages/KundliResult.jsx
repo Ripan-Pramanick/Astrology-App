@@ -1,20 +1,19 @@
 // client/src/pages/KundliResult.jsx
 import React, { useState, useEffect, useRef } from 'react';
-import { useNavigate, useLocation } from 'react-router-dom';
-import { Download, ArrowLeft, Loader2, Sparkles, AlertTriangle, Calendar, Star, Zap, Gem, User, MapPin, Moon, Sun, Eye, Heart, Shield, Brain, Users, HeartHandshake } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
+import { Download, ArrowLeft, Loader2, Sparkles, AlertTriangle, Calendar, Star, User, MapPin, Moon, Sun, Eye, Heart, Shield, HeartHandshake } from 'lucide-react';
 import { toPng } from 'html-to-image';
 import jsPDF from 'jspdf';
-import KundliChart from '../components/kundli/KundliChart.jsx';
-import PlanetTable from '../components/kundli/PlanetTable.jsx';
-import PredictionSection from '../components/kundli/PredictionSection.jsx';
-import SadeSatiCard from '../components/kundli/SadeSatiCard.jsx';
-import DarakarakaHouses from '../components/kundli/DarakarakaHouses/DarakarakaHouses.jsx';
-import { useAuth } from '../context/AuthContext.jsx';
-import { supabase } from '../lib/supabase.js';
+import KundliChart from '../components/kundli/KundliChart';
+import PlanetTable from '../components/kundli/PlanetTable';
+import SadeSatiCard from '../components/kundli/SadeSatiCard';
+import DarakarakaHouses from '../components/kundli/DarakarakaHouses/DarakarakaHouses';
+import { useAuth } from '../context/AuthContext';
+import { supabase } from '../lib/supabase';
+import api from '../services/api';
 
 // ==================== HELPER COMPONENTS ====================
 
-// Lagna Card Component
 const LagnaCard = ({ data }) => {
   if (!data) return null;
   return (
@@ -22,26 +21,25 @@ const LagnaCard = ({ data }) => {
       <div className="grid md:grid-cols-2 gap-6">
         <div>
           <p className="text-sm text-gray-500">Characteristics</p>
-          <p className="font-medium text-gray-800 mt-1">{data.characteristics || data.lagna_characteristics || 'N/A'}</p>
+          <p className="font-medium text-gray-800 mt-1">{data.characteristics || 'N/A'}</p>
         </div>
         <div>
           <p className="text-sm text-gray-500">Strengths</p>
-          <p className="font-medium text-gray-800 mt-1">{data.strengths || data.lagna_strengths || 'N/A'}</p>
+          <p className="font-medium text-gray-800 mt-1">{data.strengths || 'N/A'}</p>
         </div>
         <div>
           <p className="text-sm text-gray-500">Weaknesses</p>
-          <p className="font-medium text-gray-800 mt-1">{data.weaknesses || data.lagna_weaknesses || 'N/A'}</p>
+          <p className="font-medium text-gray-800 mt-1">{data.weaknesses || 'N/A'}</p>
         </div>
         <div>
           <p className="text-sm text-gray-500">Lucky Color</p>
-          <p className="font-medium text-gray-800 mt-1">{data.lucky_color || data.color || 'N/A'}</p>
+          <p className="font-medium text-gray-800 mt-1">{data.lucky_color || 'N/A'}</p>
         </div>
       </div>
     </div>
   );
 };
 
-// Darakaraka Card Component
 const DarakarakaCard = ({ data }) => {
   if (!data) return null;
   return (
@@ -51,28 +49,15 @@ const DarakarakaCard = ({ data }) => {
         <h3 className="text-xl font-bold text-gray-800">{data.planet} Darakaraka</h3>
       </div>
       <div className="grid md:grid-cols-2 gap-4">
-        <div>
-          <p className="text-sm text-gray-500">Partner Nature</p>
-          <p className="font-medium text-gray-800">{data.partner_nature || 'N/A'}</p>
-        </div>
-        <div>
-          <p className="text-sm text-gray-500">Relationship Dynamics</p>
-          <p className="font-medium text-gray-800">{data.relationship_dynamics || 'N/A'}</p>
-        </div>
-        <div>
-          <p className="text-sm text-gray-500">Challenges</p>
-          <p className="font-medium text-gray-800">{data.challenges || 'N/A'}</p>
-        </div>
-        <div>
-          <p className="text-sm text-gray-500">Remedies</p>
-          <p className="font-medium text-gray-800">{data.remedies || 'N/A'}</p>
-        </div>
+        <div><p className="text-sm text-gray-500">Partner Nature</p><p className="font-medium text-gray-800">{data.partner_nature || 'N/A'}</p></div>
+        <div><p className="text-sm text-gray-500">Relationship Dynamics</p><p className="font-medium text-gray-800">{data.relationship_dynamics || 'N/A'}</p></div>
+        <div><p className="text-sm text-gray-500">Challenges</p><p className="font-medium text-gray-800">{data.challenges || 'N/A'}</p></div>
+        <div><p className="text-sm text-gray-500">Remedies</p><p className="font-medium text-gray-800">{data.remedies || 'N/A'}</p></div>
       </div>
     </div>
   );
 };
 
-// Drishti Card Component
 const DrishtiCard = ({ title, icon: Icon, data, isMoon }) => {
   if (!data) return null;
   return (
@@ -82,24 +67,14 @@ const DrishtiCard = ({ title, icon: Icon, data, isMoon }) => {
         <h3 className="font-bold text-gray-800">{title}</h3>
       </div>
       <div className="space-y-2">
-        <div className="flex justify-between">
-          <span className="text-sm text-gray-500">Aspects House</span>
-          <span className="font-semibold">{data.aspect_house || data.house || 'N/A'}</span>
-        </div>
-        <div className="flex justify-between">
-          <span className="text-sm text-gray-500">Influence</span>
-          <span className="font-semibold">{data.influence || data.description || 'N/A'}</span>
-        </div>
-        <div className="flex justify-between">
-          <span className="text-sm text-gray-500">Effect on Native</span>
-          <span className="font-semibold">{data.effect_on_native || data.effect || 'N/A'}</span>
-        </div>
+        <div className="flex justify-between"><span className="text-sm text-gray-500">Aspects House</span><span className="font-semibold">{data.aspect_house || 'N/A'}</span></div>
+        <div className="flex justify-between"><span className="text-sm text-gray-500">Influence</span><span className="font-semibold">{data.influence || 'N/A'}</span></div>
+        <div className="flex justify-between"><span className="text-sm text-gray-500">Effect</span><span className="font-semibold">{data.effect_on_native || 'N/A'}</span></div>
       </div>
     </div>
   );
 };
 
-// Compatibility Card Component - FIXED: basicInfo as parameter
 const CompatibilityCard = ({ compatibility, ascendantSign }) => {
   if (!compatibility) return null;
   const otherSign = compatibility.sign1 !== ascendantSign ? compatibility.sign1 : compatibility.sign2;
@@ -118,13 +93,16 @@ const CompatibilityCard = ({ compatibility, ascendantSign }) => {
 
 const KundliResult = () => {
   const navigate = useNavigate();
-  const location = useLocation();
   const { user } = useAuth();
 
   const [loading, setLoading] = useState(true);
   const [isDownloading, setIsDownloading] = useState(false);
   const [kundliData, setKundliData] = useState(null);
   const [error, setError] = useState(null);
+  const [aiInsights, setAiInsights] = useState('');
+  const [isAiLoading, setIsAiLoading] = useState(false);
+  
+  // Additional data states
   const [moonDrishti, setMoonDrishti] = useState(null);
   const [sunDrishti, setSunDrishti] = useState(null);
   const [darakaraka, setDarakaraka] = useState(null);
@@ -133,125 +111,9 @@ const KundliResult = () => {
   const [sadeSatiStatus, setSadeSatiStatus] = useState(null);
   const [lagnaData, setLagnaData] = useState(null);
   const [darakarakaHouses, setDarakarakaHouses] = useState([]);
-  const [loadingDrishti, setLoadingDrishti] = useState(false);
-  const [loadingHouses, setLoadingHouses] = useState(false);
+  const [loadingAdditional, setLoadingAdditional] = useState(false);
 
   const reportRef = useRef(null);
-
-  // client/src/pages/KundliResult.jsx - শুধু API ডেটার জন্য
-  // শুধুমাত্র useEffect অংশটি প্রতিস্থাপন করুন
-
-  useEffect(() => {
-    const loadData = async () => {
-      console.log("🟢 KundliResult page loaded");
-      console.log("🔍 Location path:", window.location.pathname);
-      console.log("🔍 Location state:", location.state);
-
-      // Try to get data from localStorage
-      let storedData = localStorage.getItem('kundliData');
-      console.log("💾 localStorage data exists:", !!storedData);
-
-      if (!storedData) {
-        storedData = sessionStorage.getItem('kundliData');
-        console.log("💾 sessionStorage data exists:", !!storedData);
-      }
-
-      if (storedData) {
-        try {
-          const parsedData = JSON.parse(storedData);
-          console.log("✅ Parsed data from storage:", parsedData);
-          console.log("📊 Planets count:", parsedData.planets?.length);
-
-          // Check if data has userDetails and basic info
-          if (parsedData.userDetails && parsedData.basic && parsedData.planets) {
-            console.log("✅ Valid data found - showing original API data");
-
-            // Transform planets if needed (from normDegree format)
-            let finalPlanets = parsedData.planets;
-            if (parsedData.planets.length > 0 && parsedData.planets[0].normDegree !== undefined) {
-              console.log("🔄 Transforming planet data from normDegree format...");
-              finalPlanets = transformPlanetData(parsedData.planets);
-            }
-
-            // Ensure basic info has correct fields
-            const finalBasic = {
-              ascendant: parsedData.basic?.ascendant || parsedData.basic?.lagna || 'N/A',
-              sign: parsedData.basic?.sign || parsedData.basic?.moon_sign || 'N/A',
-              Naksahtra: parsedData.basic?.Naksahtra || parsedData.basic?.nakshatra || 'N/A',
-              Varna: parsedData.basic?.Varna || parsedData.basic?.varna || 'N/A',
-              Gana: parsedData.basic?.Gana || parsedData.basic?.gana || 'N/A',
-              ...parsedData.basic
-            };
-
-            const finalData = {
-              ...parsedData,
-              basic: finalBasic,
-              planets: finalPlanets
-            };
-
-            setKundliData(finalData);
-
-            // Fetch additional data from Supabase
-            const ascendant = finalBasic.ascendant;
-            const moonSign = finalBasic.sign;
-
-            if (ascendant && ascendant !== 'N/A') {
-              await fetchDrishtiData(ascendant);
-              await fetchCompatibilityData(ascendant);
-              await fetchLagnaData(ascendant);
-            }
-
-            if (moonSign && moonSign !== 'N/A') {
-              await fetchSadeSatiData(moonSign);
-            }
-
-            if (finalPlanets && finalPlanets.length > 0) {
-              await calculateAndFetchDarakaraka(finalPlanets);
-            }
-
-            await fetchDarakarakaHouses();
-
-            setLoading(false);
-            return;
-          } else {
-            console.warn("⚠️ Data missing required fields:", {
-              hasUserDetails: !!parsedData.userDetails,
-              hasBasic: !!parsedData.basic,
-              hasPlanets: !!parsedData.planets
-            });
-            setError("कुंडली डेटा अधूरा है। कृपया फिर से जनरेट करें।");
-          }
-        } catch (err) {
-          console.error("❌ Error parsing data:", err);
-          setError("डेटा पढ़ने में त्रुटि हुई। कृपया पुनः प्रयास करें।");
-        }
-      } else {
-        setError("कोई कुंडली डेटा नहीं मिला। कृपया पहले कुंडली जनरेट करें।");
-      }
-
-      setLoading(false);
-    };
-
-    loadData();
-  }, [location, user]);
-
-  // Helper function to transform planet data from API format
-  const transformPlanetData = (planets) => {
-    if (!planets || !Array.isArray(planets)) return [];
-
-    return planets.map(planet => {
-      const degree = planet.normDegree || parseFloat(planet.degree) || 0;
-      return {
-        name: planet.name || planet.planet_name,
-        sign: planet.sign || getSignFromDegree(degree),
-        degree: planet.degree || `${degree}°`,
-        house: planet.house || calculateHouseFromDegree(degree),
-        nakshatra: planet.nakshatra || getNakshatraFromDegree(degree),
-        retrograde: planet.retrograde || false,
-        normDegree: degree
-      };
-    });
-  };
 
   // Helper: Get sign from degree
   const getSignFromDegree = (degree) => {
@@ -260,182 +122,149 @@ const KundliResult = () => {
     return signs[signIndex % 12] || 'Aries';
   };
 
-  // Helper: Calculate house from degree
-  const calculateHouseFromDegree = (degree) => {
-    if (!degree) return 1;
-    // Assuming ascendant is at house 1, this is simplified
-    return Math.floor((degree % 360) / 30) + 1;
-  };
-
-  // Helper: Get nakshatra from degree
-  const getNakshatraFromDegree = (degree) => {
-    const nakshatras = [
-      'Ashwini', 'Bharani', 'Krittika', 'Rohini', 'Mrigashira', 'Ardra',
-      'Punarvasu', 'Pushya', 'Ashlesha', 'Magha', 'Purva Phalguni', 'Uttara Phalguni',
-      'Hasta', 'Chitra', 'Swati', 'Vishakha', 'Anuradha', 'Jyeshtha',
-      'Moola', 'Purva Ashadha', 'Uttara Ashadha', 'Shravana', 'Dhanishtha', 'Shatabhisha',
-      'Purva Bhadrapada', 'Uttara Bhadrapada', 'Revati'
-    ];
-    if (!degree) return nakshatras[0];
-    const nakshatraIndex = Math.floor((degree % 360) / 13.333);
-    return nakshatras[nakshatraIndex % 27] || nakshatras[0];
-  };
-
-  // Fetch functions
-  const fetchDarakarakaHouses = async () => {
-    setLoadingHouses(true);
+  // Fetch additional data from Supabase
+  const fetchAdditionalData = async (ascendant, moonSign, planetsList) => {
+    setLoadingAdditional(true);
     try {
-      const { data, error } = await supabase
-        .from('darakaraka_houses')
-        .select('*')
-        .order('house_number', { ascending: true });
+      // Fetch Drishti data
+      const { data: moonData } = await supabase.from('planet_drishti').select('*').eq('planet', 'Moon').eq('base_sign', ascendant).single();
+      if (moonData) setMoonDrishti(moonData);
+      
+      const { data: sunData } = await supabase.from('planet_drishti').select('*').eq('planet', 'Sun').eq('base_sign', ascendant).single();
+      if (sunData) setSunDrishti(sunData);
 
-      if (error) throw error;
-      setDarakarakaHouses(data || []);
-    } catch (err) {
-      console.error('Error fetching Darakaraka houses:', err);
-    } finally {
-      setLoadingHouses(false);
-    }
-  };
+      // Fetch Compatibility
+      const { data: compatData } = await supabase.from('compatibility_scores').select('*').or(`sign1.eq.${ascendant},sign2.eq.${ascendant}`).order('score', { ascending: false });
+      if (compatData) setCompatibilityList(compatData);
 
-  const fetchLagnaData = async (lagnaName) => {
-    if (!lagnaName) return;
-    try {
-      const { data, error } = await supabase
-        .from('lagna_characteristics')
-        .select('*')
-        .eq('lagna_name', lagnaName)
-        .single();
+      // Fetch Lagna data
+      const { data: lagnaDataRes } = await supabase.from('lagna_characteristics').select('*').eq('lagna_name', ascendant).single();
+      if (lagnaDataRes) setLagnaData(lagnaDataRes);
 
-      if (data && !error) {
-        setLagnaData(data);
-      }
-    } catch (err) {
-      console.error('Error fetching lagna data:', err);
-    }
-  };
+      // Fetch Sade Sati
+      if (moonSign) {
+        const { data: currentSaturn } = await supabase.from('current_sade_sati').select('*').single();
+        const isAffected = currentSaturn?.affected_signs?.includes(moonSign);
+        let phase = null;
+        if (currentSaturn?.first_phase_signs?.includes(moonSign)) phase = 'First Phase';
+        else if (currentSaturn?.second_phase_signs?.includes(moonSign)) phase = 'Second Phase';
+        else if (currentSaturn?.third_phase_signs?.includes(moonSign)) phase = 'Third Phase';
 
-  const fetchSadeSatiData = async (moonSign) => {
-    if (!moonSign) return;
-    try {
-      const { data: currentSaturn } = await supabase
-        .from('current_sade_sati')
-        .select('*')
-        .single();
-
-      const isAffected = currentSaturn?.affected_signs?.includes(moonSign);
-      let phase = null;
-      if (currentSaturn?.first_phase_signs?.includes(moonSign)) phase = 'First Phase';
-      else if (currentSaturn?.second_phase_signs?.includes(moonSign)) phase = 'Second Phase';
-      else if (currentSaturn?.third_phase_signs?.includes(moonSign)) phase = 'Third Phase';
-
-      const { data: sadeSatiDetails } = await supabase
-        .from('sade_sati')
-        .select('*')
-        .eq('moon_sign', moonSign)
-        .order('phase_number', { ascending: true });
-
-      if (sadeSatiDetails) {
-        const currentPhaseData = sadeSatiDetails.find(d => d.phase === phase);
-        setSadeSatiData(currentPhaseData);
-        setSadeSatiStatus({
-          isActive: isAffected,
-          phase: phase,
-          moonSign: moonSign,
-          signs: currentSaturn?.affected_signs || []
-        });
-      }
-    } catch (err) {
-      console.error('Error fetching Sade Sati data:', err);
-    }
-  };
-
-  const fetchCompatibilityData = async (sign) => {
-    if (!sign) return;
-    try {
-      const { data, error } = await supabase
-        .from('compatibility_scores')
-        .select('*')
-        .or(`sign1.eq.${sign},sign2.eq.${sign}`)
-        .order('score', { ascending: false });
-
-      if (data && !error) {
-        setCompatibilityList(data);
-      }
-    } catch (err) {
-      console.error('Error fetching compatibility data:', err);
-    }
-  };
-
-  const calculateDarakarakaPlanet = (planetsList) => {
-    if (!planetsList || planetsList.length === 0) return null;
-    let lowestDegree = 360;
-    let darakarakaPlanet = null;
-    planetsList.forEach(planet => {
-      let degreeValue = 360;
-      if (planet.degree) {
-        const degreeMatch = planet.degree.match(/(\d+)°/);
-        if (degreeMatch) {
-          degreeValue = parseInt(degreeMatch[1]);
+        const { data: sadeSatiDetails } = await supabase.from('sade_sati').select('*').eq('moon_sign', moonSign).order('phase_number', { ascending: true });
+        if (sadeSatiDetails) {
+          const currentPhaseData = sadeSatiDetails.find(d => d.phase === phase);
+          setSadeSatiData(currentPhaseData);
+          setSadeSatiStatus({ isActive: isAffected, phase, moonSign, signs: currentSaturn?.affected_signs || [] });
         }
       }
-      if (degreeValue < lowestDegree) {
-        lowestDegree = degreeValue;
-        darakarakaPlanet = planet.name;
+
+      // Fetch Darakaraka from planets
+      if (planetsList && planetsList.length > 0) {
+        const eligiblePlanets = planetsList.filter(p => !['Rahu', 'Ketu'].includes(p.name));
+        let lowestDegree = 360;
+        let darakarakaPlanet = null;
+        eligiblePlanets.forEach(planet => {
+          let degreeInSign = 360;
+          if (planet.normDegree !== undefined) degreeInSign = planet.normDegree % 30;
+          else if (planet.degree) {
+            const match = planet.degree.match(/(\d+(?:\.\d+)?)/);
+            if (match) degreeInSign = parseFloat(match[1]) % 30;
+          }
+          if (degreeInSign < lowestDegree) {
+            lowestDegree = degreeInSign;
+            darakarakaPlanet = planet.name;
+          }
+        });
+        if (darakarakaPlanet) {
+          const { data: dkData } = await supabase.from('darakaraka_planets').select('*').eq('planet', darakarakaPlanet).single();
+          if (dkData) setDarakaraka(dkData);
+        }
       }
-    });
-    return darakarakaPlanet;
-  };
 
-  const fetchDarakarakaData = async (planetName) => {
-    if (!planetName) return;
-    try {
-      const { data, error } = await supabase
-        .from('darakaraka_planets')
-        .select('*')
-        .eq('planet', planetName)
-        .single();
+      // Fetch Darakaraka Houses
+      const { data: housesData } = await supabase.from('darakaraka_houses').select('*').order('house_number', { ascending: true });
+      if (housesData) setDarakarakaHouses(housesData);
 
-      if (data && !error) {
-        setDarakaraka(data);
-      }
     } catch (err) {
-      console.error('Error fetching darakaraka data:', err);
-    }
-  };
-
-  const calculateAndFetchDarakaraka = async (planetsList) => {
-    const darakarakaPlanet = calculateDarakarakaPlanet(planetsList);
-    if (darakarakaPlanet) {
-      await fetchDarakarakaData(darakarakaPlanet);
-    }
-  };
-
-  const fetchDrishtiData = async (ascendant) => {
-    setLoadingDrishti(true);
-    try {
-      const { data: moonData } = await supabase
-        .from('planet_drishti')
-        .select('*')
-        .eq('planet', 'Moon')
-        .eq('base_sign', ascendant)
-        .single();
-      if (moonData) setMoonDrishti(moonData);
-
-      const { data: sunData } = await supabase
-        .from('planet_drishti')
-        .select('*')
-        .eq('planet', 'Sun')
-        .eq('base_sign', ascendant)
-        .single();
-      if (sunData) setSunDrishti(sunData);
-    } catch (err) {
-      console.error('Error fetching drishti data:', err);
+      console.error('Error fetching additional data:', err);
     } finally {
-      setLoadingDrishti(false);
+      setLoadingAdditional(false);
     }
   };
+
+  // Load main data from localStorage
+  useEffect(() => {
+    const storedData = localStorage.getItem('kundliData');
+    console.log("💾 Raw Data from LocalStorage:", storedData);
+
+    if (storedData) {
+      const parsedData = JSON.parse(storedData);
+      setKundliData(parsedData);
+      
+      // Extract planets and basic info for additional data fetch
+      let planetsList = [];
+      if (Array.isArray(parsedData.planets)) planetsList = parsedData.planets;
+      else if (Array.isArray(parsedData.planets?.data)) planetsList = parsedData.planets.data;
+      
+      const basicInfo = parsedData.basic || {};
+      const ascendant = basicInfo.ascendant || basicInfo.lagna;
+      const moonSign = basicInfo.sign || basicInfo.moon_sign;
+      
+      if (ascendant && planetsList.length > 0) {
+        fetchAdditionalData(ascendant, moonSign, planetsList);
+      }
+    }
+    setLoading(false);
+  }, []);
+
+  // Fetch AI Insights
+  useEffect(() => {
+    const fetchAIAndSave = async () => {
+      if (!kundliData || !user?.phone) return;
+      if (kundliData.basic?.ai_insights) {
+        setAiInsights(kundliData.basic.ai_insights);
+        return;
+      }
+
+      setIsAiLoading(true);
+      try {
+        const aiResponse = await api.post('/ai/interpret', {
+          planets: kundliData.planets || [],
+          basic: kundliData.basic || {}
+        });
+
+        if (aiResponse.data.success) {
+          const cleanText = aiResponse.data.interpretation.replace(/\*/g, '');
+          setAiInsights(cleanText);
+
+          const saveResponse = await api.post('/reports/save', {
+            user_phone: user.phone,
+            name: user.name || "Seeker",
+            dob: kundliData.userDetails?.dob || "N/A",
+            basic_info: kundliData.basic,
+            planets_data: kundliData.planets,
+            ai_insights: cleanText
+          });
+
+          if (saveResponse.data.success) {
+            const updatedData = { ...kundliData };
+            updatedData.basic = updatedData.basic || {};
+            updatedData.basic.ai_insights = cleanText;
+            localStorage.setItem('kundliData', JSON.stringify(updatedData));
+          }
+        } else {
+          setAiInsights("Could not load AI insights at the moment.");
+        }
+      } catch (err) {
+        console.error("AI Error:", err);
+        setAiInsights("Failed to connect to the AI service.");
+      } finally {
+        setIsAiLoading(false);
+      }
+    };
+
+    fetchAIAndSave();
+  }, [kundliData, user]);
 
   const handleDownloadPdf = async () => {
     if (!reportRef.current) return;
@@ -446,9 +275,9 @@ const KundliResult = () => {
       const pdfWidth = pdf.internal.pageSize.getWidth();
       const pdfHeight = (reportRef.current.offsetHeight * pdfWidth) / reportRef.current.offsetWidth;
       pdf.addImage(dataUrl, 'PNG', 0, 0, pdfWidth, pdfHeight);
-      pdf.save('Kundli_Report.pdf');
+      pdf.save('Premium_Vedic_Report.pdf');
     } catch (err) {
-      console.error("PDF generation error:", err);
+      console.error("PDF error:", err);
       alert("Failed to download PDF.");
     } finally {
       setIsDownloading(false);
@@ -466,102 +295,81 @@ const KundliResult = () => {
     );
   }
 
-  if (error || !kundliData) {
+  // Extract planets with bulletproof logic
+  let planetsList = [];
+  if (kundliData) {
+    if (Array.isArray(kundliData.planets)) planetsList = kundliData.planets;
+    else if (Array.isArray(kundliData.planets?.data)) planetsList = kundliData.planets.data;
+    else if (Array.isArray(kundliData.data?.planets)) planetsList = kundliData.data.planets;
+  }
+
+  const userDetails = kundliData?.userDetails || {};
+  const basicInfo = kundliData?.basic || {};
+
+  // No data check
+  if (!planetsList || planetsList.length === 0) {
     return (
-      <div className="min-h-screen flex flex-col items-center justify-center bg-gradient-to-br from-gray-50 to-gray-100 p-4">
-        <div className="bg-white p-8 rounded-2xl shadow-xl max-w-md text-center">
-          <AlertTriangle className="text-red-500 mx-auto mb-4" size={48} />
-          <h2 className="text-2xl font-bold text-gray-800 mb-2">No Data Found</h2>
-          <p className="text-gray-600 mb-6">{error || "Could not load your Kundli report."}</p>
-          <button
-            onClick={() => navigate('/kundli')}
-            className="bg-gradient-to-r from-orange-500 to-amber-500 text-white px-6 py-2 rounded-lg hover:shadow-lg transition"
-          >
-            Generate New Kundli
+      <div className="min-h-screen flex flex-col items-center justify-center bg-[#e9e6df] p-4 text-center">
+        <div className="bg-white p-8 rounded-2xl shadow-xl max-w-md border-t-4 border-red-500">
+          <AlertTriangle className="mx-auto text-red-500 mb-4" size={48} />
+          <h2 className="text-2xl font-bold text-[#4a3727] mb-2">Cosmic Data Missing!</h2>
+          <p className="text-slate-600 mb-6 font-medium">We couldn't find your planetary data. Please generate your Kundli again.</p>
+          <button onClick={() => navigate('/kundli')} className="bg-[#b46f2c] text-white font-bold px-6 py-3 rounded-xl hover:bg-[#8f551e] transition-colors shadow-md w-full">
+            Go back to Kundli Form
           </button>
         </div>
       </div>
     );
   }
 
-  const userDetails = kundliData.userDetails || {};
-  const basicInfo = kundliData.basic || {};
-  const planetsList = kundliData.planets || [];
-
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 py-8 px-4">
+    <div className="min-h-screen bg-gradient-to-br from-[#e9e6df] to-[#dcd6cc] py-8 px-4 font-sans text-[#1e1b17]">
       <div className="max-w-6xl mx-auto">
-
+        
         {/* Navigation Bar */}
-        <div className="flex flex-wrap justify-between items-center gap-3 bg-white/80 backdrop-blur-md p-4 rounded-2xl mb-6 shadow-lg">
-          <button
-            onClick={() => navigate('/dashboard')}
-            className="flex items-center gap-2 text-gray-700 hover:text-orange-500 font-bold px-4 py-2 bg-white rounded-xl shadow-sm transition"
-          >
+        <div className="flex flex-wrap justify-between items-center gap-3 bg-white/80 backdrop-blur-sm p-4 rounded-2xl mb-6 shadow-sm border border-[#dcd6cc]">
+          <button onClick={() => navigate('/dashboard')} className="flex items-center gap-2 text-[#4a3727] hover:text-[#b46f2c] font-bold px-4 py-2 bg-white rounded-xl shadow-sm">
             <ArrowLeft size={18} /> Dashboard
           </button>
-          <button
-            onClick={handleDownloadPdf}
-            disabled={isDownloading}
-            className="flex items-center gap-2 text-white font-bold px-6 py-2 rounded-xl shadow-md hover:shadow-lg disabled:opacity-50 transition"
-            style={{ background: 'linear-gradient(to right, #f97316, #f59e0b)' }}
-          >
-            {isDownloading ? <Loader2 className="animate-spin" size={18} /> : <Download size={18} />}
-            Download PDF
+          <button onClick={handleDownloadPdf} disabled={isDownloading} className="flex items-center gap-2 bg-[#b46f2c] text-white font-bold px-6 py-3 rounded-xl hover:bg-[#8f551e] transition-colors disabled:opacity-70 shadow-md">
+            {isDownloading ? <Loader2 className="animate-spin" size={20} /> : <Download size={20} />} Download PDF
           </button>
         </div>
 
-        {/* Main Report Content */}
-        <div ref={reportRef} className="bg-white rounded-2xl shadow-2xl overflow-hidden">
-
+        {/* Main Report */}
+        <div ref={reportRef} className="bg-[#fefaf5] rounded-[2rem] shadow-2xl overflow-hidden pb-6">
+          
           {/* Header */}
-          <div className="p-8 text-white" style={{ background: 'linear-gradient(to right, #f97316, #f59e0b)' }}>
-            <h1 className="text-3xl font-bold flex items-center gap-2">
-              <Sparkles className="w-8 h-8" /> Comprehensive Astrological Report
+          <div className="bg-[#2c2a24] p-8 border-b-[5px] border-[#e6b34c]">
+            <h1 className="text-[#f7e9cd] font-semibold text-3xl flex items-center gap-3">
+              <Sparkles className="text-[#e6b34c]" /> Comprehensive Astrological Report
             </h1>
-            <p className="text-orange-100 mt-2">Vedic Astrology • Janam Kundali Analysis • AI Predictions</p>
+            <p className="text-[#cbc3ae] mt-2">Vedic Astrology • Janam Kundali Analysis • AI Predictions</p>
           </div>
 
-          {/* Birth Details Section */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 p-8">
-            <div className="bg-gray-50 rounded-xl p-5">
-              <h3 className="font-bold text-lg text-gray-800 mb-4 flex items-center gap-2">
-                <Calendar className="w-5 h-5 text-orange-500" /> Birth Details
-              </h3>
-              <div className="space-y-3">
-                <div className="flex items-start gap-2">
-                  <User className="w-4 h-4 text-gray-400 mt-0.5" />
-                  <div><p className="text-xs text-gray-400">Full Name</p><p className="font-semibold text-gray-800">{userDetails.name || user?.name || 'N/A'}</p></div>
-                </div>
-                <div className="flex items-start gap-2">
-                  <div className="w-4 h-4"></div>
-                  <div><p className="text-xs text-gray-400">Gender</p><p className="font-semibold text-gray-800 capitalize">{userDetails.gender || 'N/A'}</p></div>
-                </div>
-                <div className="flex items-start gap-2">
-                  <Calendar className="w-4 h-4 text-gray-400 mt-0.5" />
-                  <div><p className="text-xs text-gray-400">Date of Birth</p><p className="font-semibold text-gray-800">{userDetails.dob || 'N/A'} {userDetails.time && `(${userDetails.time})`}</p></div>
-                </div>
-                <div className="flex items-start gap-2">
-                  <MapPin className="w-4 h-4 text-gray-400 mt-0.5" />
-                  <div><p className="text-xs text-gray-400">Place of Birth</p><p className="font-semibold text-gray-800">{userDetails.place || 'N/A'}</p></div>
-                </div>
+          {/* Birth & Astrological Details */}
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 p-8">
+            <div className="bg-white rounded-3xl border border-[#f0e7db] overflow-hidden">
+              <div className="bg-[#fffbf5] border-l-[5px] border-[#e6b34c] text-[#4a3727] font-semibold text-lg py-3 px-6 border-b">📅 Birth Details</div>
+              <div className="p-6 grid grid-cols-2 gap-x-4 gap-y-2 text-sm">
+                <p><strong className="text-[#c28135]">Name:</strong> {userDetails.name || user?.name || "Seeker"}</p>
+                <p><strong className="text-[#c28135]">Gender:</strong> {userDetails.gender || "Male"}</p>
+                <p><strong className="text-[#c28135]">Date:</strong> {userDetails.dob || "N/A"}</p>
+                <p><strong className="text-[#c28135]">Place:</strong> {userDetails.place || "N/A"}</p>
               </div>
             </div>
-
-            <div className="bg-gray-50 rounded-xl p-5">
-              <h3 className="font-bold text-lg text-gray-800 mb-4 flex items-center gap-2">
-                <Star className="w-5 h-5 text-orange-500" /> Astrological Details
-              </h3>
-              <div className="space-y-3">
-                <div><p className="text-xs text-gray-400">Ascendant (Lagna)</p><p className="font-bold text-xl text-orange-600">{basicInfo.ascendant || basicInfo.lagna || 'N/A'}</p></div>
-                <div><p className="text-xs text-gray-400">Moon Sign (Rasi)</p><p className="font-semibold text-lg text-blue-600">{basicInfo.sign || basicInfo.moon_sign || 'N/A'}</p></div>
-                <div><p className="text-xs text-gray-400">Nakshatra</p><p className="font-semibold text-purple-600">{basicInfo.Naksahtra || basicInfo.nakshatra || 'N/A'}</p></div>
-                <div><p className="text-xs text-gray-400">Varna / Gana</p><p className="font-semibold">{basicInfo.Varna || basicInfo.varna || 'N/A'} / {basicInfo.Gana || basicInfo.gana || 'N/A'}</p></div>
+            <div className="bg-white rounded-3xl border border-[#f0e7db] overflow-hidden">
+              <div className="bg-[#fffbf5] border-l-[5px] border-[#e6b34c] text-[#4a3727] font-semibold text-lg py-3 px-6 border-b">🌀 Astrological Details</div>
+              <div className="p-6 grid grid-cols-2 gap-x-4 gap-y-2 text-sm">
+                <p><strong className="text-[#c28135]">Ascendant:</strong> {basicInfo.ascendant || basicInfo.lagna || 'N/A'}</p>
+                <p><strong className="text-[#c28135]">Moon Sign:</strong> {basicInfo.sign || basicInfo.moon_sign || 'N/A'}</p>
+                <p><strong className="text-[#c28135]">Nakshatra:</strong> {basicInfo.Naksahtra || basicInfo.nakshatra || 'N/A'}</p>
+                <p><strong className="text-[#c28135]">Varna:</strong> {basicInfo.Varna || basicInfo.varna || 'N/A'}</p>
               </div>
             </div>
           </div>
 
-          {/* Lagna Characteristics Section */}
+          {/* Lagna Characteristics */}
           {lagnaData && (
             <div className="px-8 pb-8">
               <div className="text-center mb-4">
@@ -575,10 +383,10 @@ const KundliResult = () => {
             </div>
           )}
 
-          {/* Sade Sati Section */}
+          {/* Sade Sati */}
           <SadeSatiCard sadeSatiData={sadeSatiData} sadeSatiStatus={sadeSatiStatus} />
 
-          {/* Darakaraka Section */}
+          {/* Darakaraka */}
           {darakaraka && (
             <div className="px-8 pb-6">
               <div className="text-center mb-4">
@@ -592,74 +400,63 @@ const KundliResult = () => {
             </div>
           )}
 
-          {/* Darakaraka Houses Section */}
+          {/* Darakaraka Houses */}
           {darakarakaHouses.length > 0 && (
             <div className="px-8 pb-8">
               <div className="text-center mb-6">
                 <h2 className="text-2xl font-bold text-gray-800 mb-2 flex items-center justify-center gap-2">
-                  <Shield className="w-6 h-6 text-purple-500" /> Darakaraka Houses (Relationship Karma)
+                  <Shield className="w-6 h-6 text-purple-500" /> Darakaraka Houses
                 </h2>
                 <div className="w-20 h-px bg-gradient-to-r from-transparent via-purple-500 to-transparent mx-auto"></div>
-                <p className="text-gray-500 text-sm mt-2">The house placement of your Darakaraka reveals where relationship lessons manifest</p>
               </div>
-              {loadingHouses ? (
-                <div className="flex justify-center py-8"><Loader2 className="w-6 h-6 text-purple-500 animate-spin" /></div>
-              ) : (
-                <DarakarakaHouses />
-              )}
+              <DarakarakaHouses />
             </div>
           )}
 
-          {/* Compatibility Section - FIXED: passing ascendantSign */}
-          {compatibilityList.length > 0 && basicInfo.ascendant && (
+          {/* Compatibility */}
+          {compatibilityList.length > 0 && (
             <div className="px-8 pb-8">
               <div className="text-center mb-4">
                 <h2 className="text-2xl font-bold text-gray-800 mb-2 flex items-center justify-center gap-2">
                   <HeartHandshake className="w-6 h-6 text-orange-500" /> Zodiac Compatibility
                 </h2>
                 <div className="w-20 h-px bg-gradient-to-r from-transparent via-orange-500 to-transparent mx-auto"></div>
-                <p className="text-gray-500 text-sm mt-2">How your ascendant sign ({basicInfo.ascendant}) connects with other zodiac signs</p>
               </div>
               <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3">
                 {compatibilityList.map((comp, idx) => (
-                  <CompatibilityCard
-                    key={idx}
-                    compatibility={comp}
-                    ascendantSign={basicInfo.ascendant}
-                  />
+                  <CompatibilityCard key={idx} compatibility={comp} ascendantSign={basicInfo.ascendant || basicInfo.lagna} />
                 ))}
               </div>
             </div>
           )}
 
-          {/* Lagna Chart Section */}
+          {/* Charts */}
           <div className="px-8 pb-8">
-            <div className="bg-gray-50 rounded-xl p-6">
-              <h3 className="font-bold text-lg text-gray-800 mb-4 text-center">Lagna Chart (D-1)</h3>
-              {planetsList.length > 0 ? (
-                <KundliChart planets={planetsList} chartData={basicInfo} />
-              ) : (
-                <p className="text-center text-gray-500 py-8">Chart data not available</p>
-              )}
+            <div className="bg-white rounded-3xl border border-[#f0e7db] overflow-hidden">
+              <div className="bg-[#fffbf5] border-l-[5px] border-[#e6b34c] text-[#4a3727] font-semibold text-lg py-3 px-6 border-b text-center">
+                🕉️ Astrological Charts
+              </div>
+              <div className="p-8 flex flex-col md:flex-row gap-12 justify-center items-start">
+                <div className="w-full max-w-[400px] mx-auto">
+                  <h3 className="text-center font-bold text-[#4a3727] mb-4">Lagna Chart (D-1)</h3>
+                  <div className="p-2 border border-orange-100 rounded-xl bg-[#fffdfa] shadow-inner">
+                    <KundliChart planets={planetsList} ascendant={basicInfo.ascendant || basicInfo.lagna} />
+                  </div>
+                </div>
+                <div className="w-full max-w-[600px] mx-auto">
+                  <PlanetTable planets={planetsList} />
+                </div>
+              </div>
             </div>
           </div>
 
-          {/* Planet Table Section */}
-          {planetsList.length > 0 && (
-            <div className="px-8 pb-8">
-              <PlanetTable planets={planetsList} />
-            </div>
-          )}
-
-          {/* Planetary Aspects Section */}
+          {/* Planetary Aspects */}
           {(moonDrishti || sunDrishti) && (
             <div className="px-8 pb-8">
               <div className="text-center mb-6">
                 <h2 className="text-2xl font-bold text-gray-800 mb-2 flex items-center justify-center gap-2">
                   <Eye className="w-6 h-6 text-purple-500" /> Planetary Aspects (Drishti)
                 </h2>
-                <div className="w-20 h-px bg-gradient-to-r from-transparent via-purple-500 to-transparent mx-auto"></div>
-                <p className="text-gray-500 text-sm mt-2">How planets influence your life through their special aspects</p>
               </div>
               <div className="grid md:grid-cols-2 gap-6">
                 <DrishtiCard title="🌙 Chandra (Moon)" icon={Moon} data={moonDrishti} isMoon={true} />
@@ -668,19 +465,30 @@ const KundliResult = () => {
             </div>
           )}
 
-          {/* AI Predictions Section */}
+          {/* AI Insights */}
           <div className="px-8 pb-8">
-            <PredictionSection
-              birthDetails={userDetails}
-              kundliData={kundliData}
-              planetsList={planetsList}
-              basicInfo={basicInfo}
-            />
+            <div className="bg-white rounded-3xl border border-[#f0e7db] overflow-hidden shadow-sm">
+              <div className="bg-[#fffbf5] border-l-[5px] border-[#e6b34c] text-[#4a3727] font-semibold text-lg py-3 px-6 border-b flex items-center gap-2">
+                <Sparkles size={20} className="text-[#e6b34c]"/> AI Cosmic Insights & Predictions
+              </div>
+              <div className="p-8">
+                {isAiLoading ? (
+                  <div className="flex flex-col items-center py-10">
+                    <Loader2 className="animate-spin text-[#c28135] mb-3" size={36} />
+                    <p className="text-[#8b765c] font-medium animate-pulse">AI is reading the stars...</p>
+                  </div>
+                ) : (
+                  <div className="text-[#2e2a24] text-sm md:text-base leading-relaxed whitespace-pre-line font-medium bg-[#fefaf2] p-6 rounded-2xl border border-[#f0e2d2]">
+                    {aiInsights || "Your personalized AI insights could not be loaded."}
+                  </div>
+                )}
+              </div>
+            </div>
           </div>
 
           {/* Footer */}
-          <div className="text-center p-6 border-t border-gray-100 text-gray-400 text-xs flex items-center justify-center gap-2">
-            <Sparkles size={12} /> © 2026 Kaal Chakra | Vedic Sidereal Calculations <Sparkles size={12} />
+          <div className="text-center p-6 mt-4 text-[#a08c74] border-t border-[#ede3d7] bg-[#fefaf5] text-xs">
+            © 2026 Kaal Chakra | Vedic Sidereal Calculations
           </div>
         </div>
       </div>

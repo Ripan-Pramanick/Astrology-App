@@ -32,7 +32,7 @@ const Login = () => {
       const idToken = await user.getIdToken();
 
       // Send token to your backend
-      const response = await fetch('http://localhost:5000/api/auth/verify-phone', {
+      const response = await fetch('/api/auth/verify-phone', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ token: idToken })

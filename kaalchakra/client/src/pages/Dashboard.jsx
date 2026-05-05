@@ -12,7 +12,7 @@ import {
 } from 'lucide-react';
 
 const Dashboard = () => {
-    const { user, logout } = useAuth();
+    const { user, logout, updateUser } = useAuth();
     const navigate = useNavigate();
 
     // API States
@@ -183,10 +183,7 @@ const Dashboard = () => {
             });
             if (response.data.success) {
                 // Update local user object
-                const updatedUser = { ...user, name: editForm.name, email: editForm.email };
-                localStorage.setItem('user', JSON.stringify(updatedUser));
-                // Update auth context if possible
-                if (window.updateAuthUser) window.updateAuthUser(updatedUser);
+                updateUser({ name: editForm.name, email: editForm.email });
                 setEditMode(false);
                 alert('Profile updated successfully!');
             }

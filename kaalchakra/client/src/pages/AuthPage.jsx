@@ -1,15 +1,11 @@
 // client/src/pages/AuthPage.jsx
 import React, { useState, useEffect, useRef } from 'react';
-import { initializeApp } from 'firebase/app';
-import { getAuth, signInWithEmailAndPassword, createUserWithEmailAndPassword, updateProfile } from 'firebase/auth';
 import { Eye, EyeOff, Mail, Lock, User, Star, Sparkles } from 'lucide-react';
-
-const firebaseConfig = typeof __firebase_config !== 'undefined' && __firebase_config ? JSON.parse(__firebase_config) : { apiKey: "demo-key" };
-const app = initializeApp(firebaseConfig);
-const auth = getAuth(app);
+import { useNavigate } from 'react-router-dom';
+import { auth, signInWithEmailAndPassword, createUserWithEmailAndPassword, updateProfile } from '../firebase.js';
 
 const AuthPage = () => {
-  // Removed useNavigate since it's unused and causes context errors outside a Router
+  const navigate = useNavigate();
   const [isSignupMode, setIsSignupMode] = useState(false);
   const [isBusy, setIsBusy] = useState(false);
 
@@ -93,7 +89,7 @@ const AuthPage = () => {
         console.log("6. User data saved:", userData);
         
         // Redirect to dashboard
-        window.location.href = '/dashboard';
+        navigate('/dashboard');
       } else {
         throw new Error(data.message || 'Login failed');
       }
@@ -149,7 +145,7 @@ const AuthPage = () => {
         console.log("6. Registration successful, user data saved:", userData);
         
         // Redirect to dashboard
-        window.location.href = '/dashboard';
+        navigate('/dashboard');
       } else {
         throw new Error(data.message || 'Registration failed');
       }
@@ -447,6 +443,4 @@ const AuthPage = () => {
   );
 };
 
-export default function App() {
-  return <AuthPage />;
-}
+export default AuthPage;

@@ -6,7 +6,7 @@ export const callAstrologyAPI = async (req, res) => {
 
   // ১. নিশ্চিত করুন .env ফাইলের নামের সাথে এই নামগুলো মিলছে
   const userId = String(process.env.ASTROLOGY_USER_ID || '').trim();
-  const apiKey = String(process.env.ASTROLOGY_API_KEY || '').trim();
+  const apiKey = String(process.env.ASTROLOGY_WALLET_TOKEN || '').trim();
 
   // ২. যদি আইডি বা কি না থাকে তবে এরর দেবে
   if (!userId || !apiKey) {
