@@ -75,7 +75,7 @@ if (!admin.apps.length) {
 const app = express();
 
 // ============================================
-// CORS CONFIGURATION (একবারই রাখুন, ডুপ্লিকেট নয়)
+// CORS CONFIGURATION
 // ============================================
 const allowedOrigins = [
     'https://astrology-app-teal.vercel.app',
@@ -139,7 +139,7 @@ const getGeoLocationFree = async (place) => {
 };
 
 // ============================================
-// MOCK DATA (API fail করলে ব্যবহার হবে)
+// MOCK DATA
 // ============================================
 const getMockGeoData = () => ({
     geonames: [{
@@ -171,7 +171,7 @@ const getMockPlanets = () => [
 ];
 
 // ============================================
-// ASTROLOGY API CALL (রিয়েল ডেটার জন্য)
+// ASTROLOGY API CALL
 // ============================================
 const callAstrologyAPI = async (endpoint, payload) => {
     const userId = process.env.ASTROLOGY_USER_ID?.trim();
@@ -263,10 +263,9 @@ app.post('/api/astrology/geo_details', async (req, res) => {
 });
 
 // ============================================
-// HOME PAGE / FRONTEND API ENDPOINTS (ডাটাবেজ থেকে রিয়েল ডেটা)
+// HOME PAGE / FRONTEND API ENDPOINTS
 // ============================================
 
-// Articles endpoint - DATABASE থেকে
 app.get('/api/articles', async (req, res) => {
     try {
         const { data, error } = await supabase
@@ -283,7 +282,6 @@ app.get('/api/articles', async (req, res) => {
     }
 });
 
-// Single article endpoint
 app.get('/api/articles/:id', async (req, res) => {
     try {
         const { id } = req.params;
@@ -300,7 +298,6 @@ app.get('/api/articles/:id', async (req, res) => {
     }
 });
 
-// Hero section endpoint - DATABASE থেকে
 app.get('/api/hero', async (req, res) => {
     try {
         const { data, error } = await supabase
@@ -322,10 +319,8 @@ app.get('/api/hero', async (req, res) => {
     }
 });
 
-// Hero stats endpoint - DATABASE থেকে
 app.get('/api/hero/stats', async (req, res) => {
     try {
-        // Get counts from database
         const [usersCount, reportsCount] = await Promise.all([
             supabase.from('users').select('*', { count: 'exact', head: true }),
             supabase.from('saved_reports').select('*', { count: 'exact', head: true })
@@ -348,7 +343,6 @@ app.get('/api/hero/stats', async (req, res) => {
     }
 });
 
-// Testimonials endpoint - DATABASE থেকে (সরাসরি Supabase থেকে)
 app.get('/api/testimonials', async (req, res) => {
     try {
         const { is_approved, limit } = req.query;
@@ -372,7 +366,6 @@ app.get('/api/testimonials', async (req, res) => {
         res.json({ success: true, testimonials: data || [], count: data?.length || 0 });
     } catch (error) {
         console.error("Testimonials fetch error:", error);
-        // Fallback mock data
         res.json({ success: true, testimonials: [
             { id: 1, name: "Rahul Sharma", location: "Mumbai", rating: 5, text: "Amazing accuracy!", is_approved: true },
             { id: 2, name: "Priya Patel", location: "Delhi", rating: 5, text: "Life-changing insights!", is_approved: true }
@@ -380,7 +373,6 @@ app.get('/api/testimonials', async (req, res) => {
     }
 });
 
-// Testimonials stats endpoint - DATABASE থেকে
 app.get('/api/testimonials/stats', async (req, res) => {
     try {
         const [total, fiveStar, fourStar, threeStar] = await Promise.all([
@@ -508,8 +500,12 @@ app.get('/api/reports/:phone', async (req, res) => {
 });
 
 // ============================================
-// TEST ENDPOINTS
+// TEST & ROOT ENDPOINTS
 // ============================================
+
+// 👉 Render 404 (HEAD /) এরর ফিক্স করার জন্য এই লাইনটি যোগ করা হয়েছে
+app.get('/', (req, res) => res.status(200).send('Kaalchakra API is running successfully!'));
+
 app.get('/health', (req, res) => res.json({ status: 'ok', timestamp: new Date().toISOString() }));
 
 app.get('/api/test', (req, res) => {
@@ -661,20 +657,11 @@ app.get('/api/reports/by-email/:email', async (req, res) => {
     }
 });
 
-// ============================================
-// 404 HANDLER - This must be LAST
-// ============================================
-app.use((req, res) => {
-    console.log(`❌ 404 Not Found: ${req.method} ${req.url}`);
-    res.status(404).json({ message: 'Route not found' });
-});
-
 
 // ============================================
 // DIRECT ENDPOINTS (without /api prefix) 
 // ============================================
 
-// Hero section - direct endpoint
 app.get('/hero', async (req, res) => {
     try {
         const { data, error } = await supabase
@@ -696,7 +683,6 @@ app.get('/hero', async (req, res) => {
     }
 });
 
-// Articles - direct endpoint
 app.get('/articles', async (req, res) => {
     try {
         const { data, error } = await supabase
@@ -713,7 +699,6 @@ app.get('/articles', async (req, res) => {
     }
 });
 
-// Testimonials - direct endpoint
 app.get('/testimonials', async (req, res) => {
     try {
         const { is_approved, limit } = req.query;
@@ -738,7 +723,6 @@ app.get('/testimonials', async (req, res) => {
     }
 });
 
-// Hero stats - direct endpoint
 app.get('/hero/stats', async (req, res) => {
     try {
         const [usersCount, reportsCount] = await Promise.all([
@@ -762,7 +746,6 @@ app.get('/hero/stats', async (req, res) => {
     }
 });
 
-// Testimonials stats - direct endpoint
 app.get('/testimonials/stats', async (req, res) => {
     try {
         const [total, fiveStar, fourStar, threeStar] = await Promise.all([
@@ -788,7 +771,6 @@ app.get('/testimonials/stats', async (req, res) => {
     }
 });
 
-// Astrology endpoints - direct
 app.post('/astrology/birth_details', async (req, res) => {
     try {
         const data = await callAstrologyAPI('birth_details', req.body);
@@ -806,6 +788,15 @@ app.post('/astrology/planets', async (req, res) => {
     } catch (error) {
         res.json({ success: true, data: getMockPlanets() });
     }
+});
+
+
+// ============================================
+// 404 HANDLER - 👉 This must be LAST (Moved from top to here)
+// ============================================
+app.use((req, res) => {
+    console.log(`❌ 404 Not Found: ${req.method} ${req.url}`);
+    res.status(404).json({ message: 'Route not found' });
 });
 
 // Global error handler
