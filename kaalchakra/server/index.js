@@ -5,8 +5,8 @@ import cors from 'cors';
 import helmet from 'helmet';
 import compression from 'compression';
 import morgan from 'morgan';
-import axios from 'axios'; 
-import Razorpay from 'razorpay'; 
+import axios from 'axios';
+import Razorpay from 'razorpay';
 import admin from 'firebase-admin';
 import { GoogleGenerativeAI } from "@google/generative-ai";
 
@@ -37,26 +37,26 @@ import panchangRoutes from './routes/panchang.js';
 if (!admin.apps.length) {
     try {
         let privateKey = firebaseConfig.firebase?.privateKey;
-        
+
         if (!privateKey) {
             console.error('❌ Firebase private key is missing in environment variables');
             throw new Error('Firebase private key is missing');
         }
-        
+
         if (privateKey && privateKey.includes('\\n')) {
             privateKey = privateKey.replace(/\\n/g, '\n');
         }
-        
+
         if (!privateKey.includes('-----BEGIN PRIVATE KEY-----')) {
             console.error('❌ Invalid private key format - missing BEGIN marker');
             throw new Error('Private key format is invalid');
         }
-        
+
         if (!privateKey.includes('-----END PRIVATE KEY-----')) {
             console.error('❌ Invalid private key format - missing END marker');
             throw new Error('Private key format is invalid');
         }
-        
+
         admin.initializeApp({
             projectId: firebaseConfig.firebase.projectId,
             credential: admin.credential.cert({
@@ -93,9 +93,9 @@ app.use(cors({
 app.options('*', cors());
 
 // --- Middlewares ---
-app.use(helmet({ contentSecurityPolicy: false })); 
+app.use(helmet({ contentSecurityPolicy: false }));
 app.use(compression());
-app.use(express.json({ limit: '10mb' })); 
+app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ extended: true }));
 app.use(morgan('combined', { stream: { write: (msg) => logger.info(msg.trim()) } }));
 
@@ -116,7 +116,7 @@ const getGeoLocationFree = async (place) => {
             },
             timeout: 5000
         });
-        
+
         if (response.data && response.data.length > 0) {
             return response.data.map(loc => ({
                 place_name: loc.display_name,
@@ -136,12 +136,28 @@ const getGeoLocationFree = async (place) => {
 // ASTROLOGY API WITH FALLBACK
 // ============================================
 const getMockGeoData = () => ({
-    geonames: [{ 
-        place_name: "Kolkata, West Bengal, India", 
-        latitude: "22.5726", 
-        longitude: "88.3639", 
-        timezone: "5.5" 
+    geonames: [{
+        place_name: "Kolkata, West Bengal, India",
+        latitude: "22.5726",
+        longitude: "88.3639",
+        timezone: "5.5"
     }]
+});
+
+app.get('/articles', (req, res) => {
+    res.json({ articles: [] });
+});
+
+app.get('/hero', (req, res) => {
+    res.json({ hero: {} });
+});
+
+app.get('/testimonials', (req, res) => {
+    res.json({ testimonials: [] });
+});
+
+app.get('/testimonials/stats', (req, res) => {
+    res.json({ stats: {} });
 });
 
 const getMockBirthDetails = () => ({
@@ -196,7 +212,7 @@ const callAstrologyAPI = async (endpoint, payload) => {
 };
 
 const getMockResponse = (endpoint) => {
-    switch(endpoint) {
+    switch (endpoint) {
         case 'geo_details':
             return getMockGeoData();
         case 'birth_details':
@@ -210,25 +226,25 @@ const getMockResponse = (endpoint) => {
 
 
 const allowedOrigins = [
-  'https://astrology-app-teal.vercel.app',
-  'https://kaalchakra-two.vercel.app',
-  'http://localhost:5173',
-  'http://localhost:5174'
+    'https://astrology-app-teal.vercel.app',
+    'https://kaalchakra-two.vercel.app',
+    'http://localhost:5173',
+    'http://localhost:5174'
 ];
 
 app.use(cors({
-  origin: function (origin, callback) {
-    // Allow requests with no origin (like mobile apps or curl)
-    if (!origin) return callback(null, true);
-    if (allowedOrigins.indexOf(origin) === -1) {
-      const msg = 'The CORS policy for this site does not allow access from the specified Origin.';
-      return callback(new Error(msg), false);
-    }
-    return callback(null, true);
-  },
-  credentials: true,
-  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
-  allowedHeaders: ['Content-Type', 'Authorization']
+    origin: function (origin, callback) {
+        // Allow requests with no origin (like mobile apps or curl)
+        if (!origin) return callback(null, true);
+        if (allowedOrigins.indexOf(origin) === -1) {
+            const msg = 'The CORS policy for this site does not allow access from the specified Origin.';
+            return callback(new Error(msg), false);
+        }
+        return callback(null, true);
+    },
+    credentials: true,
+    methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+    allowedHeaders: ['Content-Type', 'Authorization']
 }));
 
 // ============================================
@@ -240,10 +256,10 @@ app.post('/api/astrology/birth_details', async (req, res) => {
         const data = await callAstrologyAPI('birth_details', req.body);
         res.json({ success: true, data });
     } catch (error) {
-        res.status(500).json({ 
-            success: false, 
+        res.status(500).json({
+            success: false,
             message: error.message,
-            error: error.response?.data || error.message 
+            error: error.response?.data || error.message
         });
     }
 });
@@ -253,9 +269,9 @@ app.post('/api/astrology/planets', async (req, res) => {
         const data = await callAstrologyAPI('planets/extended', req.body);
         res.json({ success: true, data });
     } catch (error) {
-        res.status(500).json({ 
-            success: false, 
-            message: error.message 
+        res.status(500).json({
+            success: false,
+            message: error.message
         });
     }
 });
@@ -265,9 +281,9 @@ app.post('/api/astrology/geo_details', async (req, res) => {
     try {
         console.log("📍 Location search request:", req.body);
         const { place } = req.body;
-        
+
         let data = await getGeoLocationFree(place);
-        
+
         if (data && data.length > 0) {
             const formattedData = data.map(loc => ({
                 place_name: loc.place_name,
@@ -316,12 +332,12 @@ try {
 app.post('/api/ai/interpret', async (req, res) => {
     try {
         const { planets, basic } = req.body;
-        
+
         if (!genAI) {
             const fallbackText = "Due to cosmic alignment issues, a general reading is generated: Focus on your strengths, career growth is likely in the coming months, and maintain mental peace through meditation.";
             return res.json({ success: true, interpretation: fallbackText });
         }
-        
+
         const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
         const prompt = `You are an expert Vedic Astrologer. Analyze Lagna: ${basic?.ascendant || 'Unknown'}, Moon Sign: ${basic?.sign || 'Unknown'}, Nakshatra: ${basic?.Naksahtra || 'Unknown'}. Positions: ${JSON.stringify(planets)}. Give a professional reading in 4 short paragraphs.`;
 
@@ -338,7 +354,7 @@ app.post('/api/ai/interpret', async (req, res) => {
 app.post('/api/ai/quick-insight', async (req, res) => {
     try {
         const { zodiac } = req.body;
-        
+
         const insights = {
             'Aries': "Mars energizes your career sector. Leadership opportunities arise this week.",
             'Taurus': "Venus brings harmony to relationships. Financial decisions yield long-term benefits.",
@@ -353,7 +369,7 @@ app.post('/api/ai/quick-insight', async (req, res) => {
             'Aquarius': "Uranus brings unexpected opportunities. Stay flexible.",
             'Pisces': "Neptune enhances creativity. Artistic pursuits are highly favored."
         };
-        
+
         res.json({ success: true, insight: insights[zodiac] || "Embrace spiritual practices this week." });
     } catch (error) {
         res.status(500).json({ success: false, message: error.message });
@@ -501,16 +517,16 @@ app.get('/api/reports/by-email/:email', async (req, res) => {
             .select('phone')
             .eq('email', email)
             .maybeSingle();
-        
+
         let query = supabase.from('saved_reports').select('*').order('created_at', { ascending: false });
-        
+
         if (user?.phone) {
             query = query.eq('user_phone', user.phone);
         } else {
             // Search by email in basic_info or return empty
             return res.status(200).json({ success: true, reports: [] });
         }
-        
+
         const { data, error } = await query;
         if (error) throw error;
         res.status(200).json({ success: true, reports: data });
@@ -523,18 +539,18 @@ app.get('/api/reports/by-email/:email', async (req, res) => {
 app.get('/api/user/:identifier/status', async (req, res) => {
     try {
         const { identifier } = req.params;
-        
+
         // Check if user exists by phone or email
         let { data: user, error } = await supabase
             .from('users')
             .select('*')
             .or(`phone.eq.${identifier},email.eq.${identifier}`)
             .maybeSingle();
-        
+
         if (error) throw error;
-        
-        res.json({ 
-            success: true, 
+
+        res.json({
+            success: true,
             isPremium: user?.subscription === 'premium' || user?.is_premium === true,
             user: user
         });
@@ -549,16 +565,16 @@ app.put('/api/user/profile/:identifier', async (req, res) => {
     try {
         const { identifier } = req.params;
         const { name, email, phone } = req.body;
-        
+
         const { data: user, error } = await supabase
             .from('users')
             .update({ name, email, updated_at: new Date().toISOString() })
             .or(`phone.eq.${identifier},email.eq.${identifier}`)
             .select()
             .single();
-        
+
         if (error) throw error;
-        
+
         res.json({ success: true, user });
     } catch (error) {
         console.error("Profile update error:", error);
