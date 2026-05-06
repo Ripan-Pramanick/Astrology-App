@@ -257,6 +257,7 @@ const AuthPage = () => {
                   value={loginPassword}
                   onChange={(e) => setLoginPassword(e.target.value)}
                   placeholder="Password"
+                  autocomplete="current-password"
                   className="w-full bg-white/88 border border-[#d4af37]/30 rounded-[10px] p-[clamp(9px,1.8vh,13px)] px-4 text-[#2a3054] outline-none transition-all focus:border-[#d4af37] focus:bg-white"
                   required
                 />
@@ -335,6 +336,7 @@ const AuthPage = () => {
                   value={regPassword}
                   onChange={(e) => setRegPassword(e.target.value)}
                   placeholder="Password"
+                  autocomplete="current-password"
                   className="w-full bg-white/88 border border-[#d4af37]/30 rounded-[10px] p-[clamp(9px,1.8vh,13px)] px-4 text-[#2a3054] outline-none transition-all focus:border-[#d4af37] focus:bg-white"
                   required
                 />

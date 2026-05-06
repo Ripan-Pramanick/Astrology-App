@@ -799,6 +799,26 @@ app.use((req, res) => {
     res.status(404).json({ message: 'Route not found' });
 });
 
+// Email verification endpoint
+router.post('/verify-email', async (req, res) => {
+    try {
+        const { email, code } = req.body;
+        
+        // আপনার ভেরিফিকেশন লজিক এখানে
+        // উদাহরণ: Supabase থেকে ইউজার চেক করা, OTP ভেরিফাই করা ইত্যাদি
+        
+        res.json({ 
+            success: true, 
+            message: "Email verified successfully" 
+        });
+    } catch (error) {
+        res.status(500).json({ 
+            success: false, 
+            message: error.message 
+        });
+    }
+});
+
 // Global error handler
 app.use(errorHandler);
 
