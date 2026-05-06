@@ -247,6 +247,7 @@ const AuthPage = () => {
                   value={loginEmail}
                   onChange={(e) => setLoginEmail(e.target.value)}
                   placeholder="Email Address"
+                   autoComplete="username"
                   className="w-full bg-white/88 border border-[#d4af37]/30 rounded-[10px] p-[clamp(9px,1.8vh,13px)] px-4 text-[#2a3054] outline-none transition-all focus:border-[#d4af37] focus:bg-white focus:shadow-[0_0_0_3px_rgba(212,175,55,0.1)]"
                   required
                 />
@@ -316,6 +317,7 @@ const AuthPage = () => {
                   value={regName}
                   onChange={(e) => setRegName(e.target.value)}
                   placeholder="Full Name"
+                  autoComplete="name"
                   className="w-full bg-white/88 border border-[#d4af37]/30 rounded-[10px] p-[clamp(9px,1.8vh,13px)] px-4 text-[#2a3054] outline-none transition-all focus:border-[#d4af37] focus:bg-white"
                   required
                 />
@@ -326,6 +328,7 @@ const AuthPage = () => {
                   value={regEmail}
                   onChange={(e) => setRegEmail(e.target.value)}
                   placeholder="Email Address"
+                  autoComplete="username"
                   className="w-full bg-white/88 border border-[#d4af37]/30 rounded-[10px] p-[clamp(9px,1.8vh,13px)] px-4 text-[#2a3054] outline-none transition-all focus:border-[#d4af37] focus:bg-white"
                   required
                 />
