@@ -101,7 +101,9 @@ const Footer = () => {
                 </div>
                 <div>
                   <p className="text-[#b8860b] font-semibold text-sm mb-1 uppercase tracking-wider">Phone</p>
-                  <p className="font-bold text-lg text-slate-700">000 - 123456789</p>
+                  <a href="tel:+919123858544" className="font-bold text-lg text-slate-700 hover:text-[#b8860b] transition-colors">
+                    +91 - 9123858544
+                  </a>
                 </div>
               </div>
               
@@ -112,7 +114,9 @@ const Footer = () => {
                 </div>
                 <div>
                   <p className="text-[#b8860b] font-semibold text-sm mb-1 uppercase tracking-wider">Email Id</p>
-                  <p className="font-bold text-lg text-slate-700">info@kaalchakra.com</p>
+                  <a href="mailto:[EMAIL_ADDRESS]" className="font-bold text-lg text-slate-700 hover:text-[#b8860b] transition-colors">
+                    [EMAIL_ADDRESS]
+                  </a>
                 </div>
               </div>
             </div>
