@@ -238,11 +238,11 @@ const HeroSection = () => {
             {heroData?.title || "ॐ गन् गणपत् र नमो नमः"}
           </h1>
           <div className="flex items-center justify-center gap-3">
-            <div className="w-8 h-px bg-gradient-to-r from-transparent to-orange-200"></div>
-            <span className="text-orange-300 text-sm">
+            <div className="w-12 h-px bg-gradient-to-r from-transparent to-orange-200"></div>
+            <span className="text-orange-300 text-2xl md:text-3xl font-medium tracking-wide">
               {heroData?.subtitle || "॥ श्री सिद्धि विनायक नमो नमः ॥"}
             </span>
-            <div className="w-8 h-px bg-gradient-to-l from-transparent to-orange-200"></div>
+            <div className="w-12 h-px bg-gradient-to-l from-transparent to-orange-200"></div>
           </div>
         </div>
 
