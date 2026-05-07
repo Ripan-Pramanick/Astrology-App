@@ -1,6 +1,38 @@
+// client/src/pages/About.jsx
 import React, { useState, useEffect } from 'react';
 import { Star, Quote, Sparkles, Compass, Heart, Users, Award, Clock, MapPin, ChevronRight, Loader2, AlertCircle } from 'lucide-react';
-import api from '../services/api.js';
+
+// Mock API for standalone compilation
+const api = {
+  get: async (url) => {
+    await new Promise(resolve => setTimeout(resolve, 800));
+    if (url.includes('/about/stats')) {
+      return { data: { success: true, stats: { happyClients: '50K+', expertAstrologers: '15+', yearsOfService: '25+', satisfactionRate: '100%' } } };
+    }
+    if (url.includes('/testimonials')) {
+      return { data: { success: true, testimonials: [
+        { id: 1, content: "Incredible reading, very accurate!", name: "Sarah J.", role: "Entrepreneur", rating: 5, location: "New York", zodiac: "Aries", avatar: "S" },
+        { id: 2, content: "Helped me find clarity in my career.", name: "Michael T.", role: "Engineer", rating: 5, location: "London", zodiac: "Taurus", avatar: "M" }
+      ] } };
+    }
+    return { data: { success: true, data: null } };
+  }
+};
+
+// Normal CSS gradients to replace Tailwind gradient classes
+const gradientStyles = `
+  .grad-main-bg { background: linear-gradient(to bottom right, #f9fafb, #f3f4f6); }
+  .grad-icon-primary { background: linear-gradient(to bottom right, #f97316, #f59e0b); }
+  .grad-icon-secondary { background: linear-gradient(to bottom right, #fb923c, #ea580c); }
+  .grad-line-right { background: linear-gradient(to right, transparent, #fdba74); }
+  .grad-line-left { background: linear-gradient(to left, transparent, #fdba74); }
+  .grad-box-light { background: linear-gradient(to bottom right, #fff7ed, #fffbeb); }
+  .grad-card-orange { background: linear-gradient(to bottom right, #f97316, #f59e0b); }
+  .grad-card-purple { background: linear-gradient(to bottom right, #a855f7, #ec4899); }
+  .grad-card-blue { background: linear-gradient(to bottom right, #3b82f6, #06b6d4); }
+  .grad-card-green { background: linear-gradient(to bottom right, #10b981, #22c55e); }
+  .grad-cta { background: linear-gradient(to right, #f97316, #f59e0b); }
+`;
 
 // Stat Card Component
 const StatCard = ({ icon: Icon, value, label, color }) => (
@@ -35,7 +67,7 @@ const TestimonialCard = ({ testimonial, index }) => (
     
     <div className="border-t border-gray-100 pt-4 mt-2">
       <div className="flex items-center gap-3 mb-2">
-        <div className="w-10 h-10 rounded-full bg-gradient-to-br from-orange-500 to-amber-500 flex items-center justify-center text-white font-semibold text-sm shadow-sm">
+        <div className="w-10 h-10 rounded-full grad-card-orange flex items-center justify-center text-white font-semibold text-sm shadow-sm">
           {testimonial.avatar || testimonial.name?.charAt(0) || 'C'}
         </div>
         <div>
@@ -150,308 +182,317 @@ const About = () => {
 
   if (loading && !aboutData) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 py-12 px-4 sm:px-6 flex items-center justify-center">
-        <div className="text-center">
-          <Loader2 className="w-12 h-12 text-orange-500 animate-spin mx-auto mb-4" />
-          <p className="text-gray-500">Loading cosmic wisdom...</p>
+      <>
+        <style>{gradientStyles}</style>
+        <div className="min-h-screen grad-main-bg py-12 px-4 sm:px-6 flex items-center justify-center">
+          <div className="text-center">
+            <Loader2 className="w-12 h-12 text-orange-500 animate-spin mx-auto mb-4" />
+            <p className="text-gray-500">Loading cosmic wisdom...</p>
+          </div>
         </div>
-      </div>
+      </>
     );
   }
 
   if (error && !aboutData) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 py-12 px-4 sm:px-6">
-        <div className="max-w-7xl mx-auto text-center">
-          <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-red-100 mb-4">
-            <AlertCircle className="w-8 h-8 text-red-500" />
+      <>
+        <style>{gradientStyles}</style>
+        <div className="min-h-screen grad-main-bg py-12 px-4 sm:px-6">
+          <div className="max-w-7xl mx-auto text-center">
+            <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-red-100 mb-4">
+              <AlertCircle className="w-8 h-8 text-red-500" />
+            </div>
+            <p className="text-red-500 mb-4">{error}</p>
+            <button 
+              onClick={() => window.location.reload()} 
+              className="bg-orange-500 hover:bg-orange-600 text-white font-semibold px-6 py-2 rounded-full"
+            >
+              Try Again
+            </button>
           </div>
-          <p className="text-red-500 mb-4">{error}</p>
-          <button 
-            onClick={() => window.location.reload()} 
-            className="bg-orange-500 hover:bg-orange-600 text-white font-semibold px-6 py-2 rounded-full"
-          >
-            Try Again
-          </button>
         </div>
-      </div>
+      </>
     );
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 py-12 px-4 sm:px-6">
-      <div className="max-w-7xl mx-auto">
-        
-        {/* Hero Section */}
-        <div className="text-center mb-16">
-          <div className="inline-flex items-center justify-center gap-2 mb-6">
-            <div className="w-12 h-12 rounded-full bg-gradient-to-br from-orange-500 to-amber-500 flex items-center justify-center shadow-md">
-              <Sparkles className="w-6 h-6 text-white" />
-            </div>
-            <div className="w-12 h-12 rounded-full bg-gradient-to-br from-orange-400 to-orange-600 flex items-center justify-center shadow-md">
-              <Compass className="w-6 h-6 text-white" />
-            </div>
-          </div>
-          <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold text-gray-800 mb-4 tracking-tight">
-            {aboutData?.title || "About Vedic Astrology"}
-          </h1>
-          <div className="flex items-center justify-center gap-2 mb-6">
-            <div className="w-16 h-px bg-gradient-to-r from-transparent to-orange-300"></div>
-            <span className="text-orange-400 text-xl">✨</span>
-            <div className="w-16 h-px bg-gradient-to-l from-transparent to-orange-300"></div>
-          </div>
-          <p className="text-gray-600 text-lg max-w-3xl mx-auto leading-relaxed">
-            {aboutData?.description || "Vedic astrology, also known as Jyotish Shastra, is a traditional system of astrology that originated in ancient India. Based on the Vedas, the oldest sacred texts of Hinduism, it has been guiding humanity for thousands of years."}
-          </p>
-        </div>
-
-        {/* Stats Section - Now from Database */}
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-16">
-          <StatCard icon={Users} value={stats.happyClients} label="Happy Clients" color="bg-gradient-to-br from-orange-500 to-amber-500" />
-          <StatCard icon={Star} value={stats.expertAstrologers} label="Expert Astrologers" color="bg-gradient-to-br from-purple-500 to-pink-500" />
-          <StatCard icon={Clock} value={stats.yearsOfService} label="Years of Service" color="bg-gradient-to-br from-blue-500 to-cyan-500" />
-          <StatCard icon={Award} value={stats.satisfactionRate} label="Satisfaction Rate" color="bg-gradient-to-br from-emerald-500 to-green-500" />
-        </div>
-
-        {/* Main Content Grid */}
-        <div className="grid lg:grid-cols-2 gap-10 mb-16">
-          {/* Left Column - About Text */}
-          <div className="space-y-6">
-            <div className="bg-white rounded-2xl shadow-md border border-gray-100 p-6 md:p-8">
-              <div className="flex items-center gap-2 mb-4">
-                <div className="w-8 h-8 rounded-lg bg-orange-100 flex items-center justify-center">
-                  <Sparkles className="w-4 h-4 text-orange-500" />
-                </div>
-                <h2 className="text-xl font-bold text-gray-800">{aboutData?.scienceTitle || "The Science of Light"}</h2>
-              </div>
-              <p className="text-gray-700 leading-relaxed mb-4">
-                {aboutData?.scienceDescription1 || "Astrology or Jyotisha connects human life with cosmic order and karmic patterns. It is not just about making predictions or analyzing personality traits, but about understanding the cosmic play of karma, the soul's journey, and the individual's role in the greater scheme of the universe."}
-              </p>
-              <p className="text-gray-700 leading-relaxed mb-4">
-                {aboutData?.scienceDescription2 || "Vedic astrology offers guidance, self-awareness, and a deeper understanding of life's purpose and challenges. Rooted in ancient wisdom, it provides insights into the karmic forces at play and helps us live more fulfilling and purposeful lives, making informed choices leading to material and spiritual success."}
-              </p>
-              <p className="text-gray-700 leading-relaxed">
-                {aboutData?.brandStatement || "At Kaal-Chakra, we combine traditional Jyotish knowledge with modern technology to provide accurate and personalized astrological services. Our team of experienced astrologers is dedicated to helping you navigate life's complexities."}
-              </p>
-            </div>
-
-            {/* Tabs Section */}
-            <div className="bg-white rounded-2xl shadow-md border border-gray-100 overflow-hidden">
-              <div className="flex border-b border-gray-100">
-                <button
-                  onClick={() => setActiveTab('mission')}
-                  className={`flex-1 py-4 text-center font-semibold transition-all duration-200 ${
-                    activeTab === 'mission'
-                      ? 'text-orange-500 border-b-2 border-orange-500 bg-orange-50/30'
-                      : 'text-gray-500 hover:text-gray-700 hover:bg-gray-50'
-                  }`}
-                >
-                  Our Mission
-                </button>
-                <button
-                  onClick={() => setActiveTab('vision')}
-                  className={`flex-1 py-4 text-center font-semibold transition-all duration-200 ${
-                    activeTab === 'vision'
-                      ? 'text-orange-500 border-b-2 border-orange-500 bg-orange-50/30'
-                      : 'text-gray-500 hover:text-gray-700 hover:bg-gray-50'
-                  }`}
-                >
-                  Our Vision
-                </button>
-                <button
-                  onClick={() => setActiveTab('values')}
-                  className={`flex-1 py-4 text-center font-semibold transition-all duration-200 ${
-                    activeTab === 'values'
-                      ? 'text-orange-500 border-b-2 border-orange-500 bg-orange-50/30'
-                      : 'text-gray-500 hover:text-gray-700 hover:bg-gray-50'
-                  }`}
-                >
-                  Core Values
-                </button>
-              </div>
-              
-              <div className="p-6">
-                {activeTab === 'mission' && (
-                  <div className="space-y-3">
-                    <p className="text-gray-700 leading-relaxed">
-                      {aboutData?.mission || "To empower individuals with the wisdom of the stars, helping them make informed decisions and live in harmony with cosmic rhythms."}
-                    </p>
-                    <div className="flex items-start gap-3 mt-4 pt-3 border-t border-gray-100">
-                      <Heart className="w-5 h-5 text-orange-400 mt-0.5" />
-                      <p className="text-gray-600 text-sm">
-                        {aboutData?.missionSubtext || "We believe everyone deserves access to authentic astrological guidance that respects both ancient wisdom and modern needs."}
-                      </p>
-                    </div>
-                  </div>
-                )}
-                {activeTab === 'vision' && (
-                  <div className="space-y-3">
-                    <p className="text-gray-700 leading-relaxed">
-                      {aboutData?.vision || "To be a trusted bridge between ancient Vedic wisdom and modern seekers, offering clarity and direction in all aspects of life."}
-                    </p>
-                    <div className="flex items-start gap-3 mt-4 pt-3 border-t border-gray-100">
-                      <Compass className="w-5 h-5 text-orange-400 mt-0.5" />
-                      <p className="text-gray-600 text-sm">
-                        {aboutData?.visionSubtext || "Creating a global community where astrological knowledge is accessible, accurate, and applied for positive transformation."}
-                      </p>
-                    </div>
-                  </div>
-                )}
-                {activeTab === 'values' && (
-                  <div className="space-y-3">
-                    {aboutData?.values ? (
-                      aboutData.values.split(',').map((value, idx) => (
-                        <div key={idx} className="flex items-start gap-3">
-                          <div className="w-5 h-5 rounded-full bg-green-100 flex items-center justify-center mt-0.5">
-                            <span className="text-green-500 text-xs">✓</span>
-                          </div>
-                          <p className="text-gray-700">{value.trim()}</p>
-                        </div>
-                      ))
-                    ) : (
-                      <>
-                        <div className="flex items-start gap-3">
-                          <div className="w-5 h-5 rounded-full bg-green-100 flex items-center justify-center mt-0.5">
-                            <span className="text-green-500 text-xs">✓</span>
-                          </div>
-                          <p className="text-gray-700">Authenticity in Vedic traditions</p>
-                        </div>
-                        <div className="flex items-start gap-3">
-                          <div className="w-5 h-5 rounded-full bg-green-100 flex items-center justify-center mt-0.5">
-                            <span className="text-green-500 text-xs">✓</span>
-                          </div>
-                          <p className="text-gray-700">Compassion and confidentiality</p>
-                        </div>
-                        <div className="flex items-start gap-3">
-                          <div className="w-5 h-5 rounded-full bg-green-100 flex items-center justify-center mt-0.5">
-                            <span className="text-green-500 text-xs">✓</span>
-                          </div>
-                          <p className="text-gray-700">Continuous learning and accuracy</p>
-                        </div>
-                        <div className="flex items-start gap-3">
-                          <div className="w-5 h-5 rounded-full bg-green-100 flex items-center justify-center mt-0.5">
-                            <span className="text-green-500 text-xs">✓</span>
-                          </div>
-                          <p className="text-gray-700">Empowerment through knowledge</p>
-                        </div>
-                      </>
-                    )}
-                  </div>
-                )}
-              </div>
-            </div>
-          </div>
-
-          {/* Right Column - Team & Expertise */}
-          <div className="space-y-6">
-            {/* Meet Our Experts */}
-            <div className="bg-white rounded-2xl shadow-md border border-gray-100 p-6">
-              <div className="flex items-center gap-2 mb-6">
-                <div className="w-8 h-8 rounded-lg bg-orange-100 flex items-center justify-center">
-                  <Users className="w-4 h-4 text-orange-500" />
-                </div>
-                <h2 className="text-xl font-bold text-gray-800">Meet Our Experts</h2>
-              </div>
-              <div className="grid grid-cols-2 md:grid-cols-3 gap-6">
-                {aboutData?.teamMembers ? (
-                  JSON.parse(aboutData.teamMembers).map((member, idx) => (
-                    <TeamMember key={idx} {...member} />
-                  ))
-                ) : (
-                  <>
-                    <TeamMember name="Dr. Suresh Rao" role="Chief Astrologer" expertise="Vedic & KP" avatar="SR" color="bg-gradient-to-br from-orange-500 to-amber-500" />
-                    <TeamMember name="Pt. Rajesh Sharma" role="Senior Astrologer" expertise="Marriage & Career" avatar="RS" color="bg-gradient-to-br from-purple-500 to-pink-500" />
-                    <TeamMember name="Ms. Geeta M" role="Vedic Counselor" expertise="Remedies & Mantras" avatar="GM" color="bg-gradient-to-br from-blue-500 to-cyan-500" />
-                  </>
-                )}
-              </div>
-            </div>
-
-            {/* Why Choose Us */}
-            <div className="bg-gradient-to-br from-orange-50 to-amber-50 rounded-2xl p-6 border border-orange-100">
-              <h3 className="font-bold text-gray-800 mb-4 flex items-center gap-2">
-                <Sparkles className="w-5 h-5 text-orange-500" />
-                Why Choose Kaal-Chakra?
-              </h3>
-              <div className="space-y-3">
-                {aboutData?.whyChooseUs ? (
-                  aboutData.whyChooseUs.split(',').map((reason, idx) => (
-                    <div key={idx} className="flex items-center gap-2 text-sm text-gray-700">
-                      <ChevronRight className="w-4 h-4 text-orange-500" />
-                      <span>{reason.trim()}</span>
-                    </div>
-                  ))
-                ) : (
-                  <>
-                    <div className="flex items-center gap-2 text-sm text-gray-700">
-                      <ChevronRight className="w-4 h-4 text-orange-500" />
-                      <span>Authentic Vedic traditions & calculations</span>
-                    </div>
-                    <div className="flex items-center gap-2 text-sm text-gray-700">
-                      <ChevronRight className="w-4 h-4 text-orange-500" />
-                      <span>Experienced & certified astrologers</span>
-                    </div>
-                    <div className="flex items-center gap-2 text-sm text-gray-700">
-                      <ChevronRight className="w-4 h-4 text-orange-500" />
-                      <span>Personalized guidance & remedies</span>
-                    </div>
-                    <div className="flex items-center gap-2 text-sm text-gray-700">
-                      <ChevronRight className="w-4 h-4 text-orange-500" />
-                      <span>Confidential & compassionate service</span>
-                    </div>
-                    <div className="flex items-center gap-2 text-sm text-gray-700">
-                      <ChevronRight className="w-4 h-4 text-orange-500" />
-                      <span>Follow-up support & detailed reports</span>
-                    </div>
-                  </>
-                )}
-              </div>
-            </div>
-          </div>
-        </div>
-
-        {/* Testimonials Section - Now from Database */}
-        <div className="mt-8">
-          <div className="text-center mb-10">
-            <h2 className="text-2xl md:text-3xl font-bold text-gray-800 mb-3">
-              What Our Clients Say
-            </h2>
-            <div className="flex items-center justify-center gap-2">
-              <div className="w-12 h-px bg-gradient-to-r from-transparent to-orange-300"></div>
-              <Star className="w-4 h-4 text-orange-400 fill-orange-400" />
-              <div className="w-12 h-px bg-gradient-to-l from-transparent to-orange-300"></div>
-            </div>
-            <p className="text-gray-500 mt-3">Trusted by thousands for authentic astrological guidance</p>
-          </div>
+    <>
+      <style>{gradientStyles}</style>
+      <div className="min-h-screen grad-main-bg py-12 px-4 sm:px-6">
+        <div className="max-w-7xl mx-auto">
           
-          {testimonials.length > 0 ? (
-            <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {testimonials.map((testimonial, index) => (
-                <TestimonialCard key={testimonial.id} testimonial={testimonial} index={index} />
-              ))}
+          {/* Hero Section */}
+          <div className="text-center mb-16">
+            <div className="inline-flex items-center justify-center gap-2 mb-6">
+              <div className="w-12 h-12 rounded-full grad-icon-primary flex items-center justify-center shadow-md">
+                <Sparkles className="w-6 h-6 text-white" />
+              </div>
+              <div className="w-12 h-12 rounded-full grad-icon-secondary flex items-center justify-center shadow-md">
+                <Compass className="w-6 h-6 text-white" />
+              </div>
             </div>
-          ) : (
-            <div className="text-center py-12">
-              <p className="text-gray-500">Testimonials coming soon...</p>
+            <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold text-gray-800 mb-4 tracking-tight">
+              {aboutData?.title || "About Vedic Astrology"}
+            </h1>
+            <div className="flex items-center justify-center gap-2 mb-6">
+              <div className="w-16 h-px grad-line-right"></div>
+              <span className="text-orange-400 text-xl">✨</span>
+              <div className="w-16 h-px grad-line-left"></div>
             </div>
-          )}
-        </div>
+            <p className="text-gray-600 text-lg max-w-3xl mx-auto leading-relaxed">
+              {aboutData?.description || "Vedic astrology, also known as Jyotish Shastra, is a traditional system of astrology that originated in ancient India. Based on the Vedas, the oldest sacred texts of Hinduism, it has been guiding humanity for thousands of years."}
+            </p>
+          </div>
 
-        {/* Call to Action */}
-        <div className="mt-16 text-center">
-          <div className="bg-gradient-to-r from-orange-500 to-amber-500 rounded-2xl p-8 shadow-lg">
-            <h3 className="text-2xl font-bold text-white mb-2">Ready to Begin Your Journey?</h3>
-            <p className="text-orange-100 mb-6">Let the stars guide you toward clarity and purpose</p>
-            <button 
-              onClick={() => window.location.href = '/contact'}
-              className="bg-white text-orange-500 font-semibold px-8 py-3 rounded-xl shadow-md hover:shadow-lg transition-all duration-300 hover:scale-105"
-            >
-              Consult an Astrologer
-            </button>
+          {/* Stats Section - Now from Database */}
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-16">
+            <StatCard icon={Users} value={stats.happyClients} label="Happy Clients" color="grad-card-orange" />
+            <StatCard icon={Star} value={stats.expertAstrologers} label="Expert Astrologers" color="grad-card-purple" />
+            <StatCard icon={Clock} value={stats.yearsOfService} label="Years of Service" color="grad-card-blue" />
+            <StatCard icon={Award} value={stats.satisfactionRate} label="Satisfaction Rate" color="grad-card-green" />
+          </div>
+
+          {/* Main Content Grid */}
+          <div className="grid lg:grid-cols-2 gap-10 mb-16">
+            {/* Left Column - About Text */}
+            <div className="space-y-6">
+              <div className="bg-white rounded-2xl shadow-md border border-gray-100 p-6 md:p-8">
+                <div className="flex items-center gap-2 mb-4">
+                  <div className="w-8 h-8 rounded-lg bg-orange-100 flex items-center justify-center">
+                    <Sparkles className="w-4 h-4 text-orange-500" />
+                  </div>
+                  <h2 className="text-xl font-bold text-gray-800">{aboutData?.scienceTitle || "The Science of Light"}</h2>
+                </div>
+                <p className="text-gray-700 leading-relaxed mb-4">
+                  {aboutData?.scienceDescription1 || "Astrology or Jyotisha connects human life with cosmic order and karmic patterns. It is not just about making predictions or analyzing personality traits, but about understanding the cosmic play of karma, the soul's journey, and the individual's role in the greater scheme of the universe."}
+                </p>
+                <p className="text-gray-700 leading-relaxed mb-4">
+                  {aboutData?.scienceDescription2 || "Vedic astrology offers guidance, self-awareness, and a deeper understanding of life's purpose and challenges. Rooted in ancient wisdom, it provides insights into the karmic forces at play and helps us live more fulfilling and purposeful lives, making informed choices leading to material and spiritual success."}
+                </p>
+                <p className="text-gray-700 leading-relaxed">
+                  {aboutData?.brandStatement || "At Kaal-Chakra, we combine traditional Jyotish knowledge with modern technology to provide accurate and personalized astrological services. Our team of experienced astrologers is dedicated to helping you navigate life's complexities."}
+                </p>
+              </div>
+
+              {/* Tabs Section */}
+              <div className="bg-white rounded-2xl shadow-md border border-gray-100 overflow-hidden">
+                <div className="flex border-b border-gray-100">
+                  <button
+                    onClick={() => setActiveTab('mission')}
+                    className={`flex-1 py-4 text-center font-semibold transition-all duration-200 ${
+                      activeTab === 'mission'
+                        ? 'text-orange-500 border-b-2 border-orange-500 bg-orange-50/30'
+                        : 'text-gray-500 hover:text-gray-700 hover:bg-gray-50'
+                    }`}
+                  >
+                    Our Mission
+                  </button>
+                  <button
+                    onClick={() => setActiveTab('vision')}
+                    className={`flex-1 py-4 text-center font-semibold transition-all duration-200 ${
+                      activeTab === 'vision'
+                        ? 'text-orange-500 border-b-2 border-orange-500 bg-orange-50/30'
+                        : 'text-gray-500 hover:text-gray-700 hover:bg-gray-50'
+                    }`}
+                  >
+                    Our Vision
+                  </button>
+                  <button
+                    onClick={() => setActiveTab('values')}
+                    className={`flex-1 py-4 text-center font-semibold transition-all duration-200 ${
+                      activeTab === 'values'
+                        ? 'text-orange-500 border-b-2 border-orange-500 bg-orange-50/30'
+                        : 'text-gray-500 hover:text-gray-700 hover:bg-gray-50'
+                    }`}
+                  >
+                    Core Values
+                  </button>
+                </div>
+                
+                <div className="p-6">
+                  {activeTab === 'mission' && (
+                    <div className="space-y-3">
+                      <p className="text-gray-700 leading-relaxed">
+                        {aboutData?.mission || "To empower individuals with the wisdom of the stars, helping them make informed decisions and live in harmony with cosmic rhythms."}
+                      </p>
+                      <div className="flex items-start gap-3 mt-4 pt-3 border-t border-gray-100">
+                        <Heart className="w-5 h-5 text-orange-400 mt-0.5" />
+                        <p className="text-gray-600 text-sm">
+                          {aboutData?.missionSubtext || "We believe everyone deserves access to authentic astrological guidance that respects both ancient wisdom and modern needs."}
+                        </p>
+                      </div>
+                    </div>
+                  )}
+                  {activeTab === 'vision' && (
+                    <div className="space-y-3">
+                      <p className="text-gray-700 leading-relaxed">
+                        {aboutData?.vision || "To be a trusted bridge between ancient Vedic wisdom and modern seekers, offering clarity and direction in all aspects of life."}
+                      </p>
+                      <div className="flex items-start gap-3 mt-4 pt-3 border-t border-gray-100">
+                        <Compass className="w-5 h-5 text-orange-400 mt-0.5" />
+                        <p className="text-gray-600 text-sm">
+                          {aboutData?.visionSubtext || "Creating a global community where astrological knowledge is accessible, accurate, and applied for positive transformation."}
+                        </p>
+                      </div>
+                    </div>
+                  )}
+                  {activeTab === 'values' && (
+                    <div className="space-y-3">
+                      {aboutData?.values ? (
+                        aboutData.values.split(',').map((value, idx) => (
+                          <div key={idx} className="flex items-start gap-3">
+                            <div className="w-5 h-5 rounded-full bg-green-100 flex items-center justify-center mt-0.5">
+                              <span className="text-green-500 text-xs">✓</span>
+                            </div>
+                            <p className="text-gray-700">{value.trim()}</p>
+                          </div>
+                        ))
+                      ) : (
+                        <>
+                          <div className="flex items-start gap-3">
+                            <div className="w-5 h-5 rounded-full bg-green-100 flex items-center justify-center mt-0.5">
+                              <span className="text-green-500 text-xs">✓</span>
+                            </div>
+                            <p className="text-gray-700">Authenticity in Vedic traditions</p>
+                          </div>
+                          <div className="flex items-start gap-3">
+                            <div className="w-5 h-5 rounded-full bg-green-100 flex items-center justify-center mt-0.5">
+                              <span className="text-green-500 text-xs">✓</span>
+                            </div>
+                            <p className="text-gray-700">Compassion and confidentiality</p>
+                          </div>
+                          <div className="flex items-start gap-3">
+                            <div className="w-5 h-5 rounded-full bg-green-100 flex items-center justify-center mt-0.5">
+                              <span className="text-green-500 text-xs">✓</span>
+                            </div>
+                            <p className="text-gray-700">Continuous learning and accuracy</p>
+                          </div>
+                          <div className="flex items-start gap-3">
+                            <div className="w-5 h-5 rounded-full bg-green-100 flex items-center justify-center mt-0.5">
+                              <span className="text-green-500 text-xs">✓</span>
+                            </div>
+                            <p className="text-gray-700">Empowerment through knowledge</p>
+                          </div>
+                        </>
+                      )}
+                    </div>
+                  )}
+                </div>
+              </div>
+            </div>
+
+            {/* Right Column - Team & Expertise */}
+            <div className="space-y-6">
+              {/* Meet Our Experts */}
+              <div className="bg-white rounded-2xl shadow-md border border-gray-100 p-6">
+                <div className="flex items-center gap-2 mb-6">
+                  <div className="w-8 h-8 rounded-lg bg-orange-100 flex items-center justify-center">
+                    <Users className="w-4 h-4 text-orange-500" />
+                  </div>
+                  <h2 className="text-xl font-bold text-gray-800">Meet Our Experts</h2>
+                </div>
+                <div className="grid grid-cols-2 md:grid-cols-3 gap-6">
+                  {aboutData?.teamMembers ? (
+                    JSON.parse(aboutData.teamMembers).map((member, idx) => (
+                      <TeamMember key={idx} {...member} />
+                    ))
+                  ) : (
+                    <>
+                      <TeamMember name="Mr. Bidhu Biswas" role="Chief Astrologer" expertise="Vedic & KP" avatar="BB" color="grad-card-orange" />
+                      {/* <TeamMember name="Pt. Rajesh Sharma" role="Senior Astrologer" expertise="Marriage & Career" avatar="RS" color="grad-card-purple" />
+                      <TeamMember name="Ms. Geeta M" role="Vedic Counselor" expertise="Remedies & Mantras" avatar="GM" color="grad-card-blue" /> */}
+                    </>
+                  )}
+                </div>
+              </div>
+
+              {/* Why Choose Us */}
+              <div className="grad-box-light rounded-2xl p-6 border border-orange-100">
+                <h3 className="font-bold text-gray-800 mb-4 flex items-center gap-2">
+                  <Sparkles className="w-5 h-5 text-orange-500" />
+                  Why Choose Kaal-Chakra?
+                </h3>
+                <div className="space-y-3">
+                  {aboutData?.whyChooseUs ? (
+                    aboutData.whyChooseUs.split(',').map((reason, idx) => (
+                      <div key={idx} className="flex items-center gap-2 text-sm text-gray-700">
+                        <ChevronRight className="w-4 h-4 text-orange-500" />
+                        <span>{reason.trim()}</span>
+                      </div>
+                    ))
+                  ) : (
+                    <>
+                      <div className="flex items-center gap-2 text-sm text-gray-700">
+                        <ChevronRight className="w-4 h-4 text-orange-500" />
+                        <span>Authentic Vedic traditions & calculations</span>
+                      </div>
+                      <div className="flex items-center gap-2 text-sm text-gray-700">
+                        <ChevronRight className="w-4 h-4 text-orange-500" />
+                        <span>Experienced & certified astrologers</span>
+                      </div>
+                      <div className="flex items-center gap-2 text-sm text-gray-700">
+                        <ChevronRight className="w-4 h-4 text-orange-500" />
+                        <span>Personalized guidance & remedies</span>
+                      </div>
+                      <div className="flex items-center gap-2 text-sm text-gray-700">
+                        <ChevronRight className="w-4 h-4 text-orange-500" />
+                        <span>Confidential & compassionate service</span>
+                      </div>
+                      <div className="flex items-center gap-2 text-sm text-gray-700">
+                        <ChevronRight className="w-4 h-4 text-orange-500" />
+                        <span>Follow-up support & detailed reports</span>
+                      </div>
+                    </>
+                  )}
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* Testimonials Section - Now from Database */}
+          <div className="mt-8">
+            <div className="text-center mb-10">
+              <h2 className="text-2xl md:text-3xl font-bold text-gray-800 mb-3">
+                What Our Clients Say
+              </h2>
+              <div className="flex items-center justify-center gap-2">
+                <div className="w-12 h-px grad-line-right"></div>
+                <Star className="w-4 h-4 text-orange-400 fill-orange-400" />
+                <div className="w-12 h-px grad-line-left"></div>
+              </div>
+              <p className="text-gray-500 mt-3">Trusted by thousands for authentic astrological guidance</p>
+            </div>
+            
+            {testimonials.length > 0 ? (
+              <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+                {testimonials.map((testimonial, index) => (
+                  <TestimonialCard key={testimonial.id} testimonial={testimonial} index={index} />
+                ))}
+              </div>
+            ) : (
+              <div className="text-center py-12">
+                <p className="text-gray-500">Testimonials coming soon...</p>
+              </div>
+            )}
+          </div>
+
+          {/* Call to Action */}
+          <div className="mt-16 text-center">
+            <div className="grad-cta rounded-2xl p-8 shadow-lg">
+              <h3 className="text-2xl font-bold text-white mb-2">Ready to Begin Your Journey?</h3>
+              <p className="text-orange-100 mb-6">Let the stars guide you toward clarity and purpose</p>
+              <button 
+                onClick={() => window.location.href = '/contact'}
+                className="bg-white text-orange-500 font-semibold px-8 py-3 rounded-xl shadow-md hover:shadow-lg transition-all duration-300 hover:scale-105"
+              >
+                Consult an Astrologer
+              </button>
+            </div>
           </div>
         </div>
       </div>
-    </div>
+    </>
   );
 };
 
