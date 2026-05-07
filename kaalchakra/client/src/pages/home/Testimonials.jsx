@@ -1,6 +1,28 @@
 import React, { useState, useEffect } from 'react';
 import { Star, Quote, ChevronLeft, ChevronRight, Sparkles, User, MapPin, Loader2, AlertCircle } from 'lucide-react';
-import api from '../../services/api.js';
+
+// আপনার মূল প্রজেক্টে নিচের ইম্পোর্টটি ব্যবহার করবেন। 
+// যেহেতু এখানে প্রিভিউ দেখানোর জন্য ফাইলটি নেই, তাই আমি নিচে একটি ডামি api তৈরি করে দিয়েছি।
+// import api from '../../services/api.js';
+
+const api = {
+  get: async (url) => {
+    // API থেকে ডেটা আসার একটু সময় নিচ্ছে বোঝানোর জন্য ১ সেকেন্ড ডিলে
+    await new Promise(resolve => setTimeout(resolve, 1000));
+    
+    if (url.includes('/testimonials/stats')) {
+      return { 
+        data: { 
+          success: true, 
+          stats: { happyClients: '50K+', averageRating: 4.9, expertAstrologers: '15+', yearsOfService: '25+' } 
+        } 
+      };
+    }
+    
+    // আপনার রিকোয়েস্ট অনুযায়ী "Coming Soon" ডিজাইনটি দেখানোর জন্য আমি এখানে ইচ্ছাকৃতভাবে ফাঁকা ডেটা (empty array) পাঠাচ্ছি।
+    return { data: { success: true, testimonials: [] } };
+  }
+};
 
 // Star Rating Component
 const StarRating = ({ rating }) => {
@@ -131,14 +153,6 @@ const CarouselTestimonials = ({ testimonials: items, loading }) => {
     );
   }
 
-  if (items.length === 0) {
-    return (
-      <div className="text-center py-12">
-        <p className="text-gray-500">No testimonials available yet.</p>
-      </div>
-    );
-  }
-
   return (
     <div className="relative px-4">
       <div className="overflow-hidden">
@@ -184,7 +198,7 @@ const CarouselTestimonials = ({ testimonials: items, loading }) => {
   );
 };
 
-const Testimonials = () => {
+export default function Testimonials() {
   const [testimonials, setTestimonials] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
@@ -311,12 +325,25 @@ const Testimonials = () => {
           </div>
         )}
 
-        {/* Testimonials Display */}
+        {/* Testimonials Display OR Empty State */}
         {loading ? (
           <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
             {[...Array(6)].map((_, i) => (
               <TestimonialCardSkeleton key={i} />
             ))}
+          </div>
+        ) : testimonials.length === 0 ? (
+          /* Empty State / Coming Soon */
+          <div className="text-center py-20 px-4 bg-orange-50/40 rounded-3xl border border-orange-100 shadow-sm mt-8 animate-in fade-in zoom-in duration-500">
+            <div className="inline-flex items-center justify-center w-20 h-20 rounded-full bg-orange-100 mb-6 shadow-inner">
+              <Quote className="w-10 h-10 text-orange-500 animate-pulse" />
+            </div>
+            <h3 className="text-2xl md:text-4xl font-bold text-gray-800 mb-4">
+              Client Stories Coming Soon! ⭐
+            </h3>
+            <p className="text-gray-600 max-w-lg mx-auto text-lg leading-relaxed">
+              We are currently collecting wonderful experiences from our happy clients. Check back soon to read their cosmic journeys!
+            </p>
           </div>
         ) : displayMode === 'grid' ? (
           <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -361,6 +388,4 @@ const Testimonials = () => {
       </div>
     </div>
   );
-};
-
-export default Testimonials;
+}

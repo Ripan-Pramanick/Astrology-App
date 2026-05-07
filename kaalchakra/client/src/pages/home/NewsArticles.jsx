@@ -1,6 +1,22 @@
 import React, { useState, useEffect } from 'react';
 import { Calendar, User, Clock, ChevronRight, BookOpen, TrendingUp, Sparkles, Tag, Loader2, AlertCircle } from 'lucide-react';
-import api from '../../services/api.js';
+
+// আপনার মূল প্রজেক্টে নিচের ইম্পোর্টটি ব্যবহার করবেন। 
+// যেহেতু এখানে প্রিভিউ দেখানোর জন্য ফাইলটি নেই, তাই আমি নিচে একটি ডামি api তৈরি করে দিয়েছি।
+// import api from '../../services/api.js';
+
+const api = {
+  get: async (url, options) => {
+    // API থেকে ডেটা আসার একটু সময় নিচ্ছে বোঝানোর জন্য ১ সেকেন্ড ডিলে
+    await new Promise(resolve => setTimeout(resolve, 1000));
+    // আপনার রিকোয়েস্ট অনুযায়ী "Coming Soon" ডিজাইনটি দেখানোর জন্য আমি এখানে ইচ্ছাকৃতভাবে ফাঁকা ডেটা (empty array) পাঠাচ্ছি।
+    return { data: { success: true, articles: [] } };
+  },
+  post: async (url, data) => {
+    await new Promise(resolve => setTimeout(resolve, 1000));
+    return { data: { success: true } };
+  }
+};
 
 // Category colors mapping
 const categoryColors = {
@@ -164,7 +180,7 @@ const FeaturedArticle = ({ article, onReadMore }) => {
   );
 };
 
-const NewsArticles = () => {
+export default function NewsArticles() {
   const [articles, setArticles] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
@@ -231,7 +247,7 @@ const NewsArticles = () => {
   
   if (loading) {
     return (
-      <div className="bg-gradient-to-b from-gray-50 to-white py-16 px-4 sm:px-6">
+      <div className="bg-gradient-to-b from-gray-50 to-white py-16 px-4 sm:px-6 min-h-screen">
         <div className="max-w-7xl mx-auto">
           <div className="text-center mb-12">
             <div className="inline-flex items-center justify-center gap-2 mb-4">
@@ -250,10 +266,6 @@ const NewsArticles = () => {
             {[...Array(5)].map((_, i) => (
               <div key={i} className="h-8 w-20 bg-gray-200 rounded-full animate-pulse"></div>
             ))}
-          </div>
-          
-          <div className="mb-12">
-            <div className="h-[300px] bg-gray-200 rounded-2xl animate-pulse"></div>
           </div>
           
           <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
@@ -286,7 +298,7 @@ const NewsArticles = () => {
   }
 
   return (
-    <div className="bg-gradient-to-b from-gray-50 to-white py-16 px-4 sm:px-6">
+    <div className="bg-gradient-to-b from-gray-50 to-white py-16 px-4 sm:px-6 min-h-screen">
       <div className="max-w-7xl mx-auto">
         
         {/* Header Section */}
@@ -309,32 +321,51 @@ const NewsArticles = () => {
           </p>
         </div>
 
-        {/* Category Filters */}
-        <div className="flex flex-wrap items-center justify-center gap-3 mb-10">
-          {categories.map((category) => (
-            <button
-              key={category}
-              onClick={() => setActiveFilter(category)}
-              className={`px-4 py-2 rounded-full text-sm font-medium transition-all duration-300 ${
-                activeFilter === category
-                  ? 'bg-orange-500 text-white shadow-md'
-                  : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
-              }`}
-            >
-              {category === 'all' ? 'All Articles' : category}
-            </button>
-          ))}
-        </div>
+        {/* Category Filters - Hide if there are completely no articles in DB */}
+        {articles.length > 0 && (
+          <div className="flex flex-wrap items-center justify-center gap-3 mb-10">
+            {categories.map((category) => (
+              <button
+                key={category}
+                onClick={() => setActiveFilter(category)}
+                className={`px-4 py-2 rounded-full text-sm font-medium transition-all duration-300 ${
+                  activeFilter === category
+                    ? 'bg-orange-500 text-white shadow-md'
+                    : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+                }`}
+              >
+                {category === 'all' ? 'All Articles' : category}
+              </button>
+            ))}
+          </div>
+        )}
 
-        {/* Featured Article (only show on 'all' filter and if there are articles) */}
-        {activeFilter === 'all' && featuredArticle && (
+        {/* Featured Article */}
+        {activeFilter === 'all' && featuredArticle && articles.length > 0 && (
           <div className="mb-12">
             <FeaturedArticle article={featuredArticle} onReadMore={handleReadMore} />
           </div>
         )}
 
-        {/* Articles Grid */}
-        {regularArticles.length > 0 ? (
+        {/* ================================================= */}
+        {/* Articles Grid or Coming Soon / Empty State Check  */}
+        {/* ================================================= */}
+        
+        {articles.length === 0 && activeFilter === 'all' ? (
+          /* Condition 1: When database has completely NO articles */
+          <div className="text-center py-20 px-4 bg-orange-50/40 rounded-3xl border border-orange-100 shadow-sm mt-8 animate-in fade-in zoom-in duration-500">
+            <div className="inline-flex items-center justify-center w-20 h-20 rounded-full bg-orange-100 mb-6 shadow-inner">
+              <Sparkles className="w-10 h-10 text-orange-500 animate-pulse" />
+            </div>
+            <h3 className="text-2xl md:text-4xl font-bold text-gray-800 mb-4">
+              New Articles Coming Soon! 🚀
+            </h3>
+            <p className="text-gray-600 max-w-lg mx-auto text-lg leading-relaxed">
+              Our expert astrologers are currently crafting deep cosmic insights, weekly horoscopes, and daily guidance. Stay tuned!
+            </p>
+          </div>
+        ) : regularArticles.length > 0 ? (
+          /* Condition 2: When there are articles available */
           <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
             {regularArticles.map((article, index) => (
               <ArticleCard 
@@ -346,8 +377,13 @@ const NewsArticles = () => {
             ))}
           </div>
         ) : (
-          <div className="text-center py-12">
-            <p className="text-gray-500">No articles found in this category.</p>
+          /* Condition 3: When a specific category filter is empty */
+          <div className="text-center py-16">
+            <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-gray-100 mb-4">
+              <Tag className="w-8 h-8 text-gray-400" />
+            </div>
+            <h3 className="text-xl font-semibold text-gray-700 mb-2">No Articles Found</h3>
+            <p className="text-gray-500 text-lg">No articles are currently available in the "{activeFilter}" category.</p>
           </div>
         )}
 
@@ -396,6 +432,4 @@ const NewsArticles = () => {
       </div>
     </div>
   );
-};
-
-export default NewsArticles;
+}
