@@ -1,28 +1,40 @@
-// client/src/i18n.js
 import i18n from 'i18next';
 import { initReactI18next } from 'react-i18next';
-import LanguageDetector from 'i18next-browser-languagedetector';
-import HttpBackend from 'i18next-http-backend';
 
 i18n
-  .use(HttpBackend)
-  .use(LanguageDetector)
   .use(initReactI18next)
   .init({
-    fallbackLng: 'en',
-    supportedLngs: ['en', 'bn', 'hi', 'mr', 'ta', 'te'],
-    backend: {
-      loadPath: '/locales/{{lng}}/{{ns}}.json',
+    resources: {
+      en: {
+        translation: {
+          welcome: "Welcome",
+          home: "Home",
+          about: "About",
+          services: "Services",
+          kundli: "Kundli",
+          contact: "Contact",
+          login: "Login",
+          signup: "Sign Up"
+        }
+      },
+      bn: {
+        translation: {
+          welcome: "স্বাগতম",
+          home: "হোম",
+          about: "সম্পর্কে",
+          services: "সেবাসমূহ",
+          kundli: "কুণ্ডলী",
+          contact: "যোগাযোগ",
+          login: "লগইন",
+          signup: "সাইন আপ"
+        }
+      }
     },
-    ns: ['common', 'hero', 'kundli', 'navigation'],
-    defaultNS: 'common',
-    detection: {
-      order: ['localStorage', 'navigator'],
-      caches: ['localStorage'],
-    },
+    lng: "en",
+    fallbackLng: "en",
     interpolation: {
-      escapeValue: false,
-    },
+      escapeValue: false
+    }
   });
 
 export default i18n;

@@ -68,6 +68,7 @@ const HomeServices = () => {
     try {
       const currentLang = i18n.language || 'en';
       
+      // ✅ .maybeSingle() এর পরিবর্তে .select() ব্যবহার করুন
       const { data, error: supabaseError } = await supabase
         .from('services')
         .select('*')
@@ -104,23 +105,29 @@ const HomeServices = () => {
     try {
       const currentLang = i18n.language || 'en';
       
+      // ✅ .maybeSingle() ব্যবহার করুন (404 error এড়াতে)
       const { data, error } = await supabase
         .from('services_banner')
         .select('*')
         .eq('is_active', true)
-        .single();
+        .maybeSingle();  // ← এটা খালি থাকলে error দেয় না
       
-      if (error) throw error;
+      if (error) {
+        console.error('Banner fetch error:', error);
+        // ডিফল্ট ব্যানার ব্যবহার করুন
+        return;
+      }
       
       if (data) {
         setKundaliBanner({
-          title: data[`title_${currentLang}`] || data.title_en,
-          price: data.price,
-          link: data.link
+          title: data[`title_${currentLang}`] || data.title || kundaliBanner.title,
+          price: data.price || kundaliBanner.price,
+          link: data.link || kundaliBanner.link
         });
       }
     } catch (err) {
       console.error('Error fetching banner:', err);
+      // ব্যানার না থাকলে ডিফল্ট থাকে, কোনো error দেখাবেন না
     }
   };
 
@@ -319,52 +326,52 @@ const HomeServices = () => {
     <div className="bg-[#f5f5f5] py-20 px-4">
       <div className="max-w-6xl mx-auto">
         <div className="text-center mb-12">
-          {/* Title - "Our Services" fixed */}
-          <style>{`
-        @import url('https://fonts.googleapis.com/css2?family=Stoke&display=swap');
-      `}</style>
+          <style>
+            {`@import url('https://fonts.googleapis.com/css2?family=Stoke&display=swap');`}
+          </style>
           <h2 className="text-5xl md:text-6xl font-bold text-gray-800 mb-4 tracking-tight" style={{ fontFamily: "'Stoke', serif", color: "#b87333" }}>Our Services</h2>
           <div className="flex items-center justify-center gap-2 text-gray-600">
             <span className="text-xl">🙏</span>
-            {/* Subtitle - "May All The Worlds Be Happy" fixed */}
             <p className="text-lg md:text-xl font-medium">May All The Worlds Be Happy</p>
             <span className="text-xl">🙏</span>
           </div>
         </div>
 
         {/* Kundali Banner */}
-        <div className="mb-20">
-          <div className="bg-gradient-to-r from-[#f3e0c7] to-[#f7931e] rounded-2xl shadow-xl overflow-hidden transition-transform hover:scale-[1.01] duration-300 text-orange-500">
-            <div className="flex flex-col md:flex-row items-center justify-between p-6 md:p-8 gap-6">
-              <div className="flex-shrink-0">
-                <div className="w-16 h-16 md:w-20 md:h-20 bg-white/20 rounded-2xl flex items-center justify-center backdrop-blur-sm">
-                  <svg className="w-10 h-10 md:w-12 md:h-12 text-orange-500" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                    <path d="M4 4H20C21.1 4 22 4.9 22 6V18C22 19.1 21.1 20 20 20H4C2.9 20 2 19.1 2 18V6C2 4.9 2.9 4 4 4Z" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
-                    <path d="M8 7H16" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
-                    <path d="M8 11H14" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
-                    <path d="M8 15H12" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
-                    <path d="M17 15L19 17L17 19" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
-                    <path d="M19 17H15" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
-                  </svg>
+        {kundaliBanner && (
+          <div className="mb-20">
+            <div className="bg-gradient-to-r from-[#f3e0c7] to-[#f7931e] rounded-2xl shadow-xl overflow-hidden transition-transform hover:scale-[1.01] duration-300">
+              <div className="flex flex-col md:flex-row items-center justify-between p-6 md:p-8 gap-6">
+                <div className="flex-shrink-0">
+                  <div className="w-16 h-16 md:w-20 md:h-20 bg-white/20 rounded-2xl flex items-center justify-center backdrop-blur-sm">
+                    <svg className="w-10 h-10 md:w-12 md:h-12 text-orange-500" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                      <path d="M4 4H20C21.1 4 22 4.9 22 6V18C22 19.1 21.1 20 20 20H4C2.9 20 2 19.1 2 18V6C2 4.9 2.9 4 4 4Z" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
+                      <path d="M8 7H16" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
+                      <path d="M8 11H14" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
+                      <path d="M8 15H12" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
+                      <path d="M17 15L19 17L17 19" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+                      <path d="M19 17H15" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
+                    </svg>
+                  </div>
                 </div>
-              </div>
-              <div className="flex-1 text-center md:text-left">
-                <p className="text-gray-800 font-semibold text-base md:text-lg leading-relaxed">
-                  {kundaliBanner.title}
-                </p>
-              </div>
-              <Link to={kundaliBanner.link} className="flex-shrink-0">
-                <div className="w-12 h-12 bg-white/20 rounded-full flex items-center justify-center backdrop-blur-sm hover:bg-white/30 transition-all cursor-pointer">
-                  <svg className="w-6 h-6 text-orange-500" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                    <path d="M5 12H19" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
-                    <path d="M12 5L19 12L12 19" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
-                  </svg>
+                <div className="flex-1 text-center md:text-left">
+                  <p className="text-gray-800 font-semibold text-base md:text-lg leading-relaxed">
+                    {kundaliBanner.title}
+                  </p>
                 </div>
-                <p className="text-orange-500 font-bold text-xl md:text-2xl text-center mt-2">₹{kundaliBanner.price}</p>
-              </Link>
+                <Link to={kundaliBanner.link} className="flex-shrink-0">
+                  <div className="w-12 h-12 bg-white/20 rounded-full flex items-center justify-center backdrop-blur-sm hover:bg-white/30 transition-all cursor-pointer">
+                    <svg className="w-6 h-6 text-orange-500" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                      <path d="M5 12H19" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
+                      <path d="M12 5L19 12L12 19" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+                    </svg>
+                  </div>
+                  <p className="text-white font-bold text-xl md:text-2xl text-center mt-2">₹{kundaliBanner.price}</p>
+                </Link>
+              </div>
             </div>
           </div>
-        </div>
+        )}
 
         <div className="relative">
           <div className="absolute inset-0 pointer-events-none opacity-5">

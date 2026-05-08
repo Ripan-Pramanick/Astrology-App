@@ -3,20 +3,9 @@ import { Calendar, User, Clock, ChevronRight, BookOpen, TrendingUp, Sparkles, Ta
 
 // আপনার মূল প্রজেক্টে নিচের ইম্পোর্টটি ব্যবহার করবেন। 
 // যেহেতু এখানে প্রিভিউ দেখানোর জন্য ফাইলটি নেই, তাই আমি নিচে একটি ডামি api তৈরি করে দিয়েছি।
-// import api from '../../services/api.js';
+import api from '../../services/api.js';
 
-const api = {
-  get: async (url, options) => {
-    // API থেকে ডেটা আসার একটু সময় নিচ্ছে বোঝানোর জন্য ১ সেকেন্ড ডিলে
-    await new Promise(resolve => setTimeout(resolve, 1000));
-    // আপনার রিকোয়েস্ট অনুযায়ী "Coming Soon" ডিজাইনটি দেখানোর জন্য আমি এখানে ইচ্ছাকৃতভাবে ফাঁকা ডেটা (empty array) পাঠাচ্ছি।
-    return { data: { success: true, articles: [] } };
-  },
-  post: async (url, data) => {
-    await new Promise(resolve => setTimeout(resolve, 1000));
-    return { data: { success: true } };
-  }
-};
+
 
 // Category colors mapping
 const categoryColors = {
@@ -33,9 +22,9 @@ const categoryColors = {
 // Article Card Component
 const ArticleCard = ({ article, index, onReadMore }) => {
   const [isHovered, setIsHovered] = useState(false);
-  
+
   return (
-    <div 
+    <div
       className="group bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden hover:shadow-xl transition-all duration-500 hover:-translate-y-2 cursor-pointer"
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}
@@ -43,8 +32,8 @@ const ArticleCard = ({ article, index, onReadMore }) => {
     >
       {/* Image Container */}
       <div className="relative h-52 overflow-hidden">
-        <img 
-          src={article.image_url || article.image} 
+        <img
+          src={article.image_url || article.image}
           alt={article.title}
           className={`w-full h-full object-cover transition-transform duration-700 ${isHovered ? 'scale-110' : 'scale-100'}`}
           onError={(e) => {
@@ -69,7 +58,7 @@ const ArticleCard = ({ article, index, onReadMore }) => {
         {/* Overlay Gradient */}
         <div className="absolute inset-0 bg-gradient-to-t from-black/20 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
       </div>
-      
+
       {/* Content */}
       <div className="p-6">
         {/* Meta Info */}
@@ -87,17 +76,17 @@ const ArticleCard = ({ article, index, onReadMore }) => {
             <span>{article.author_name || article.author}</span>
           </div>
         </div>
-        
+
         {/* Title */}
         <h3 className="text-xl font-bold text-gray-800 mb-3 leading-tight line-clamp-2 group-hover:text-orange-600 transition-colors">
           {article.title}
         </h3>
-        
+
         {/* Excerpt */}
         <p className="text-gray-600 text-sm leading-relaxed mb-4 line-clamp-3">
           {article.excerpt}
         </p>
-        
+
         {/* Read More Link */}
         <button className="group/btn inline-flex items-center gap-2 text-orange-500 font-medium text-sm hover:text-orange-600 transition-colors">
           <span>Read Article</span>
@@ -129,9 +118,9 @@ const ArticleCardSkeleton = () => (
 // Featured Article Component
 const FeaturedArticle = ({ article, onReadMore }) => {
   const [isHovered, setIsHovered] = useState(false);
-  
+
   return (
-    <div 
+    <div
       className="group relative bg-gradient-to-r from-orange-500 to-amber-500 rounded-2xl overflow-hidden shadow-lg hover:shadow-xl transition-all duration-500 cursor-pointer"
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}
@@ -166,8 +155,8 @@ const FeaturedArticle = ({ article, onReadMore }) => {
       </div>
       {/* Background Image with Overlay */}
       <div className="absolute inset-0 z-0">
-        <img 
-          src={article.image_url || article.image} 
+        <img
+          src={article.image_url || article.image}
           alt={article.title}
           className={`w-full h-full object-cover transition-transform duration-700 ${isHovered ? 'scale-110' : 'scale-100'}`}
           onError={(e) => {
@@ -188,44 +177,55 @@ export default function NewsArticles() {
   const [subscribing, setSubscribing] = useState(false);
   const [subscribeEmail, setSubscribeEmail] = useState('');
   const [subscribeSuccess, setSubscribeSuccess] = useState(false);
-  
+
   const categories = ['all', 'Astrology', 'Festivals', 'Remedies', 'Muhurata', 'Spirituality', 'Career', 'Relationships'];
-  
+
   useEffect(() => {
     fetchArticles();
   }, [activeFilter]);
-  
+
   const fetchArticles = async () => {
-    setLoading(true);
-    setError('');
-    try {
-      const params = activeFilter !== 'all' ? { category: activeFilter } : {};
-      const response = await api.get('/articles', { params });
-      
-      if (response.data.success) {
-        setArticles(response.data.articles);
-      } else {
-        setError('Failed to load articles');
-      }
-    } catch (err) {
-      console.error('Error fetching articles:', err);
-      setError('Unable to connect to server. Please try again later.');
-    } finally {
-      setLoading(false);
+  setLoading(true);
+  setError('');
+  try {
+    console.log('🟢 Fetching from:', api.defaults.baseURL + '/articles');
+    
+    const response = await api.get('/articles');
+    
+    console.log('📦 Full response:', response);
+    console.log('📊 Response data:', response.data);
+    console.log('📰 Articles array:', response.data?.articles);
+    console.log('✅ Success:', response.data?.success);
+    
+    if (response.data?.success && Array.isArray(response.data.articles)) {
+      setArticles(response.data.articles);
+      console.log(`✅ Loaded ${response.data.articles.length} articles`);
+    } else if (Array.isArray(response.data)) {
+      setArticles(response.data);
+      console.log(`✅ Loaded ${response.data.length} articles (direct array)`);
+    } else {
+      console.warn('⚠️ No articles in expected format');
+      setArticles([]);
     }
-  };
-  
+  } catch (err) {
+    console.error('❌ Error fetching articles:', err);
+    setError('Unable to connect to server.');
+  } finally {
+    setLoading(false);
+  }
+};
+
   const handleReadMore = (articleId) => {
     window.location.href = `/blog/${articleId}`;
   };
-  
+
   const handleSubscribe = async (e) => {
     e.preventDefault();
     if (!subscribeEmail || !subscribeEmail.includes('@')) {
       alert('Please enter a valid email address');
       return;
     }
-    
+
     setSubscribing(true);
     try {
       const response = await api.post('/newsletter/subscribe', { email: subscribeEmail });
@@ -241,10 +241,10 @@ export default function NewsArticles() {
       setSubscribing(false);
     }
   };
-  
+
   const featuredArticle = articles.find(a => a.is_featured) || articles[0];
   const regularArticles = articles.filter(a => a.id !== featuredArticle?.id);
-  
+
   if (loading) {
     return (
       <div className="bg-gradient-to-b from-gray-50 to-white py-16 px-4 sm:px-6 min-h-screen">
@@ -261,13 +261,13 @@ export default function NewsArticles() {
             </div>
             <div className="h-5 bg-gray-200 rounded w-96 mx-auto animate-pulse"></div>
           </div>
-          
+
           <div className="flex flex-wrap items-center justify-center gap-3 mb-10">
             {[...Array(5)].map((_, i) => (
               <div key={i} className="h-8 w-20 bg-gray-200 rounded-full animate-pulse"></div>
             ))}
           </div>
-          
+
           <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
             {[...Array(3)].map((_, i) => (
               <ArticleCardSkeleton key={i} />
@@ -277,7 +277,7 @@ export default function NewsArticles() {
       </div>
     );
   }
-  
+
   if (error) {
     return (
       <div className="bg-gradient-to-b from-gray-50 to-white py-16 px-4 sm:px-6">
@@ -286,8 +286,8 @@ export default function NewsArticles() {
             <AlertCircle className="w-8 h-8 text-red-500" />
           </div>
           <p className="text-red-500 mb-4">{error}</p>
-          <button 
-            onClick={fetchArticles} 
+          <button
+            onClick={fetchArticles}
             className="bg-orange-500 hover:bg-orange-600 text-white font-semibold px-6 py-2 rounded-xl"
           >
             Try Again
@@ -300,7 +300,7 @@ export default function NewsArticles() {
   return (
     <div className="bg-gradient-to-b from-gray-50 to-white py-16 px-4 sm:px-6 min-h-screen">
       <div className="max-w-7xl mx-auto">
-        
+
         {/* Header Section */}
         <div className="text-center mb-12">
           <div className="inline-flex items-center justify-center gap-2 mb-4">
@@ -328,11 +328,10 @@ export default function NewsArticles() {
               <button
                 key={category}
                 onClick={() => setActiveFilter(category)}
-                className={`px-4 py-2 rounded-full text-sm font-medium transition-all duration-300 ${
-                  activeFilter === category
+                className={`px-4 py-2 rounded-full text-sm font-medium transition-all duration-300 ${activeFilter === category
                     ? 'bg-orange-500 text-white shadow-md'
                     : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
-                }`}
+                  }`}
               >
                 {category === 'all' ? 'All Articles' : category}
               </button>
@@ -350,7 +349,7 @@ export default function NewsArticles() {
         {/* ================================================= */}
         {/* Articles Grid or Coming Soon / Empty State Check  */}
         {/* ================================================= */}
-        
+
         {articles.length === 0 && activeFilter === 'all' ? (
           /* Condition 1: When database has completely NO articles */
           <div className="text-center py-20 px-4 bg-orange-50/40 rounded-3xl border border-orange-100 shadow-sm mt-8 animate-in fade-in zoom-in duration-500">
@@ -368,10 +367,10 @@ export default function NewsArticles() {
           /* Condition 2: When there are articles available */
           <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
             {regularArticles.map((article, index) => (
-              <ArticleCard 
-                key={article.id} 
-                article={article} 
-                index={index} 
+              <ArticleCard
+                key={article.id}
+                article={article}
+                index={index}
                 onReadMore={handleReadMore}
               />
             ))}
@@ -390,7 +389,7 @@ export default function NewsArticles() {
         {/* View All Button */}
         {activeFilter !== 'all' && articles.length > 0 && (
           <div className="text-center mt-12">
-            <button 
+            <button
               onClick={() => setActiveFilter('all')}
               className="inline-flex items-center gap-2 bg-gradient-to-r from-orange-500 to-amber-500 text-white font-semibold px-8 py-3 rounded-xl shadow-md hover:shadow-lg transition-all duration-300 hover:scale-105"
             >
@@ -404,22 +403,22 @@ export default function NewsArticles() {
         <div className="mt-16 bg-gradient-to-r from-orange-50 to-amber-50 rounded-2xl p-8 text-center border border-orange-100">
           <h3 className="text-2xl font-bold text-gray-800 mb-2">Stay Updated with Cosmic Wisdom</h3>
           <p className="text-gray-600 mb-6">Subscribe to our newsletter for monthly astrological insights and articles</p>
-          
+
           {subscribeSuccess ? (
             <div className="bg-green-100 text-green-700 p-4 rounded-xl max-w-md mx-auto">
               ✅ Thanks for subscribing! Check your email for confirmation.
             </div>
           ) : (
             <form onSubmit={handleSubscribe} className="flex flex-col sm:flex-row items-center justify-center gap-4 max-w-md mx-auto">
-              <input 
-                type="email" 
+              <input
+                type="email"
                 value={subscribeEmail}
                 onChange={(e) => setSubscribeEmail(e.target.value)}
                 placeholder="Enter your email"
                 className="flex-1 px-4 py-3 rounded-xl border border-gray-200 focus:border-orange-400 focus:ring-2 focus:ring-orange-200 outline-none transition-all"
                 required
               />
-              <button 
+              <button
                 type="submit"
                 disabled={subscribing}
                 className="bg-orange-500 hover:bg-orange-600 text-white font-semibold px-6 py-3 rounded-xl transition-all duration-300 whitespace-nowrap disabled:opacity-50"

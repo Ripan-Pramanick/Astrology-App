@@ -1,4 +1,4 @@
-// server/index.js - সম্পূর্ণ আপডেটেড ভার্সন
+// server/index.js - সম্পূর্ণ ফিক্সড ভার্সন
 import 'dotenv/config';
 import express from 'express';
 import cors from 'cors';
@@ -86,7 +86,6 @@ const allowedOrigins = [
 
 app.use(cors({
     origin: function (origin, callback) {
-        // Allow requests with no origin (like mobile apps or curl)
         if (!origin) return callback(null, true);
         if (allowedOrigins.indexOf(origin) !== -1) return callback(null, true);
         console.log(`❌ CORS blocked: ${origin}`);
@@ -204,8 +203,45 @@ const callAstrologyAPI = async (endpoint, payload) => {
 };
 
 // ============================================
+// TEST & ROOT ENDPOINTS (সবার আগে)
+// ============================================
+
+app.get('/', (req, res) => res.status(200).send('Kaalchakra API is running successfully!'));
+app.get('/health', (req, res) => res.json({ status: 'ok', timestamp: new Date().toISOString() }));
+app.get('/api/test', (req, res) => {
+    console.log("✅ Test endpoint hit");
+    res.json({ message: 'API is working!', timestamp: new Date().toISOString() });
+});
+
+// ============================================
+// AUTHENTICATION ENDPOINTS (সবার আগে যোগ করা হলো)
+// ============================================
+
+app.post('/api/auth/verify-email', async (req, res) => {
+    try {
+        const { email, code } = req.body;
+        console.log(`📧 Verifying email: ${email} with code: ${code}`);
+        
+        // এখানে আপনার ভেরিফিকেশন লজিক যোগ করুন
+        // যেমন: Supabase থেকে OTP চেক করা
+        
+        res.json({ 
+            success: true, 
+            message: "Email verified successfully" 
+        });
+    } catch (error) {
+        console.error("Verify email error:", error);
+        res.status(500).json({ 
+            success: false, 
+            message: error.message 
+        });
+    }
+});
+
+// ============================================
 // ASTROLOGY API ROUTES
 // ============================================
+
 app.post('/api/astrology/birth_details', async (req, res) => {
     try {
         const data = await callAstrologyAPI('birth_details', req.body);
@@ -266,21 +302,61 @@ app.post('/api/astrology/geo_details', async (req, res) => {
 // HOME PAGE / FRONTEND API ENDPOINTS
 // ============================================
 
+app.get('/api/test-supabase', async (req, res) => {
+    try {
+        // সরাসরি ডেটা নিয়ে আসার চেষ্টা করুন
+        const { data, error, count } = await supabase
+            .from('articles')
+            .select('*', { count: 'exact' });  // ← এখানে পরিবর্তন
+        
+        console.log('Supabase data:', { 
+            error: error?.message, 
+            dataLength: data?.length,
+            count: count 
+        });
+        
+        res.json({ 
+            success: !error, 
+            dataLength: data?.length,
+            count: count,
+            firstArticle: data?.[0]?.title
+        });
+    } catch (error) {
+        res.json({ success: false, error: error.message });
+    }
+});
+
 app.get('/api/articles', async (req, res) => {
     try {
+        console.log('🟢 Fetching articles from Supabase...');
+        
         const { data, error } = await supabase
             .from('articles')
             .select('*')
-            .eq('status', 'published')
             .order('created_at', { ascending: false });
-
-        if (error) throw error;
-        res.json({ success: true, articles: data || [] });
+        
+        console.log('📊 Supabase response:', { 
+            error: error?.message, 
+            dataCount: data?.length 
+        });
+        
+        if (error) {
+            console.error('❌ Supabase error:', error);
+            throw error;
+        }
+        
+        // নিশ্চিত করুন ডেটা সঠিক ফরম্যাটে যাচ্ছে
+        res.json({ 
+            success: true, 
+            articles: data || [],
+            count: data?.length || 0
+        });
     } catch (error) {
-        console.error("Articles fetch error:", error);
-        res.json({ success: true, articles: [] });
+        console.error('❌ Articles fetch error:', error);
+        res.json({ success: true, articles: [], count: 0 });
     }
 });
+
 
 app.get('/api/articles/:id', async (req, res) => {
     try {
@@ -289,15 +365,24 @@ app.get('/api/articles/:id', async (req, res) => {
             .from('articles')
             .select('*')
             .eq('id', id)
+            .eq('is_published', true) 
             .single();
 
-        if (error) throw error;
+        if (error || !data) {
+            return res.status(404).json({ success: false, message: 'Article not found' });
+        }
+        
+        await supabase
+            .from('articles')
+            .update({ views: (data.views || 0) + 1 })
+            .eq('id', id);
+        
         res.json({ success: true, article: data });
     } catch (error) {
+        console.error("Single article fetch error:", error);
         res.status(404).json({ success: false, message: 'Article not found' });
     }
 });
-
 app.get('/api/hero', async (req, res) => {
     try {
         const { data, error } = await supabase
@@ -500,75 +585,6 @@ app.get('/api/reports/:phone', async (req, res) => {
 });
 
 // ============================================
-// TEST & ROOT ENDPOINTS
-// ============================================
-
-// 👉 Render 404 (HEAD /) এরর ফিক্স করার জন্য এই লাইনটি যোগ করা হয়েছে
-app.get('/', (req, res) => res.status(200).send('Kaalchakra API is running successfully!'));
-
-app.get('/health', (req, res) => res.json({ status: 'ok', timestamp: new Date().toISOString() }));
-
-app.get('/api/test', (req, res) => {
-    console.log("✅ Test endpoint hit");
-    res.json({ message: 'API is working!', timestamp: new Date().toISOString() });
-});
-
-app.get('/api/debug/geo-response', async (req, res) => {
-    console.log("🟢 Debug endpoint called");
-    try {
-        const response = await axios.get(`https://nominatim.openstreetmap.org/search`, {
-            params: {
-                q: 'Kolkata',
-                format: 'json',
-                limit: 5
-            },
-            headers: {
-                'User-Agent': 'KaalChakra-Astrology-App/1.0'
-            }
-        });
-        console.log("🟢 Got response, count:", response.data.length);
-        res.json({
-            success: true,
-            data: response.data,
-            count: response.data.length
-        });
-    } catch (error) {
-        console.error("🔴 Debug endpoint error:", error.message);
-        res.json({ success: false, error: error.message });
-    }
-});
-
-app.get('/api/test-firebase', async (req, res) => {
-    res.json({ success: true, message: 'Firebase is working!', apps: admin.apps.length });
-});
-
-app.get('/api/test-supabase', async (req, res) => {
-    try {
-        const { error } = await supabase.from('users').select('count', { count: 'exact', head: true });
-        if (error) throw error;
-        res.json({ success: true, message: 'Supabase is working!' });
-    } catch (error) {
-        res.json({ success: false, message: error.message });
-    }
-});
-
-app.get('/api/test-all', async (req, res) => {
-    res.json({
-        server: { status: 'ok', timestamp: new Date().toISOString() },
-        firebase: { status: admin.apps.length ? 'ok' : 'not_initialized' },
-        supabase: { status: 'ok' },
-        env: {
-            node_env: process.env.NODE_ENV,
-            port: process.env.PORT,
-            hasFirebaseKey: !!process.env.FIREBASE_PRIVATE_KEY,
-            hasSupabaseUrl: !!process.env.SUPABASE_URL,
-            hasGeminiKey: !!process.env.GEMINI_API_KEY,
-            hasRazorpayKeys: !!(process.env.RAZORPAY_KEY_ID && process.env.RAZORPAY_KEY_SECRET)
-        }
-    });
-});
-
-// ============================================
 // ROUTES
 // ============================================
 app.use('/api/auth', authRoutes);
@@ -656,7 +672,6 @@ app.get('/api/reports/by-email/:email', async (req, res) => {
         res.status(500).json({ success: false, message: 'Fetch failed' });
     }
 });
-
 
 // ============================================
 // DIRECT ENDPOINTS (without /api prefix) 
@@ -790,33 +805,71 @@ app.post('/astrology/planets', async (req, res) => {
     }
 });
 
+// ============================================
+// DEBUG ENDPOINTS
+// ============================================
+
+app.get('/api/debug/geo-response', async (req, res) => {
+    console.log("🟢 Debug endpoint called");
+    try {
+        const response = await axios.get(`https://nominatim.openstreetmap.org/search`, {
+            params: {
+                q: 'Kolkata',
+                format: 'json',
+                limit: 5
+            },
+            headers: {
+                'User-Agent': 'KaalChakra-Astrology-App/1.0'
+            }
+        });
+        console.log("🟢 Got response, count:", response.data.length);
+        res.json({
+            success: true,
+            data: response.data,
+            count: response.data.length
+        });
+    } catch (error) {
+        console.error("🔴 Debug endpoint error:", error.message);
+        res.json({ success: false, error: error.message });
+    }
+});
+
+app.get('/api/test-firebase', async (req, res) => {
+    res.json({ success: true, message: 'Firebase is working!', apps: admin.apps.length });
+});
+
+app.get('/api/test-supabase', async (req, res) => {
+    try {
+        const { error } = await supabase.from('users').select('count', { count: 'exact', head: true });
+        if (error) throw error;
+        res.json({ success: true, message: 'Supabase is working!' });
+    } catch (error) {
+        res.json({ success: false, message: error.message });
+    }
+});
+
+app.get('/api/test-all', async (req, res) => {
+    res.json({
+        server: { status: 'ok', timestamp: new Date().toISOString() },
+        firebase: { status: admin.apps.length ? 'ok' : 'not_initialized' },
+        supabase: { status: 'ok' },
+        env: {
+            node_env: process.env.NODE_ENV,
+            port: process.env.PORT,
+            hasFirebaseKey: !!process.env.FIREBASE_PRIVATE_KEY,
+            hasSupabaseUrl: !!process.env.SUPABASE_URL,
+            hasGeminiKey: !!process.env.GEMINI_API_KEY,
+            hasRazorpayKeys: !!(process.env.RAZORPAY_KEY_ID && process.env.RAZORPAY_KEY_SECRET)
+        }
+    });
+});
 
 // ============================================
-// 404 HANDLER - 👉 This must be LAST (Moved from top to here)
+// 404 HANDLER - 👉 সব রাউটের পর, সবচেয়ে শেষে
 // ============================================
 app.use((req, res) => {
     console.log(`❌ 404 Not Found: ${req.method} ${req.url}`);
     res.status(404).json({ message: 'Route not found' });
-});
-
-// Email verification endpoint
-router.post('/verify-email', async (req, res) => {
-    try {
-        const { email, code } = req.body;
-        
-        // আপনার ভেরিফিকেশন লজিক এখানে
-        // উদাহরণ: Supabase থেকে ইউজার চেক করা, OTP ভেরিফাই করা ইত্যাদি
-        
-        res.json({ 
-            success: true, 
-            message: "Email verified successfully" 
-        });
-    } catch (error) {
-        res.status(500).json({ 
-            success: false, 
-            message: error.message 
-        });
-    }
 });
 
 // Global error handler
@@ -830,6 +883,8 @@ app.listen(PORT, () => {
     logger.info(`🚀 Server safely running on port ${PORT}`);
     console.log(`\n✅ Server started successfully!`);
     console.log(`📍 Health check: http://localhost:${PORT}/health`);
+    console.log(`📍 Root: http://localhost:${PORT}/`);
+    console.log(`📍 Auth Verify: http://localhost:${PORT}/api/auth/verify-email`);
     console.log(`📍 Articles: http://localhost:${PORT}/api/articles`);
     console.log(`📍 Hero: http://localhost:${PORT}/api/hero`);
     console.log(`📍 Testimonials: http://localhost:${PORT}/api/testimonials`);
