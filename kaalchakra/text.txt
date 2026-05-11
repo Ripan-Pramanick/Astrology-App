@@ -1,0 +1,1447 @@
+1) const axios = require('axios'); // Using axios library
+
+// Your Access Token
+const apiKey = '<YOUR_ACCESS_TOKEN>';
+
+// API endpoint URL
+const apiUrl = 'https://json.astrologyapi.com/v1/puja_suggestion';
+
+// Request data
+const data = {
+  "day": 10,
+  "month": 5,
+  "year": 1990,
+  "hour": 19,
+  "min": 55,
+  "lat": 19.2056,
+  "lon": 25.2056,
+  "tzone": 5.5
+};
+
+const config = {
+  method: 'post',
+  url: apiUrl,
+  headers: {
+    'x-astrologyapi-key': apiKey,
+    'Content-Type': 'application/json'
+    // Add 'Accept-Language': '<language_code>' if needed
+  },
+  data: data // Axios automatically stringifies JSON data
+};
+
+axios(config)
+  .then(function (response) {
+    console.log(JSON.stringify(response.data, null, 2));
+  })
+  .catch(function (error) {
+    if (error.response) {
+      // The request was made and the server responded with a status code
+      // that falls out of the range of 2xx
+      console.error('Error Status:', error.response.status);
+      console.error('Error Data:', JSON.stringify(error.response.data, null, 2));
+    } else if (error.request) {
+      // The request was made but no response was received
+      console.error('Error Request:', error.request);
+    } else {
+      // Something happened in setting up the request that triggered an Error
+      console.error('Error Message:', error.message);
+    }
+  }); 2) const axios = require('axios'); // Using axios library
+
+// Your Access Token
+const apiKey = '<YOUR_ACCESS_TOKEN>';
+
+// API endpoint URL
+const apiUrl = 'https://json.astrologyapi.com/v1/basic_gem_suggestion';
+
+// Request data
+const data = {
+  "day": 10,
+  "month": 5,
+  "year": 1990,
+  "hour": 19,
+  "min": 55,
+  "lat": 19.2056,
+  "lon": 25.2056,
+  "tzone": 5.5
+};
+
+const config = {
+  method: 'post',
+  url: apiUrl,
+  headers: {
+    'x-astrologyapi-key': apiKey,
+    'Content-Type': 'application/json'
+    // Add 'Accept-Language': '<language_code>' if needed
+  },
+  data: data // Axios automatically stringifies JSON data
+};
+
+axios(config)
+  .then(function (response) {
+    console.log(JSON.stringify(response.data, null, 2));
+  })
+  .catch(function (error) {
+    if (error.response) {
+      // The request was made and the server responded with a status code
+      // that falls out of the range of 2xx
+      console.error('Error Status:', error.response.status);
+      console.error('Error Data:', JSON.stringify(error.response.data, null, 2));
+    } else if (error.request) {
+      // The request was made but no response was received
+      console.error('Error Request:', error.request);
+    } else {
+      // Something happened in setting up the request that triggered an Error
+      console.error('Error Message:', error.message);
+    }
+  }); 3) const axios = require('axios'); // Using axios library
+
+// Your Access Token
+const apiKey = '<YOUR_ACCESS_TOKEN>';
+
+// API endpoint URL
+const apiUrl = 'https://json.astrologyapi.com/v1/rudraksha_suggestion';
+
+// Request data
+const data = {
+  "day": 10,
+  "month": 5,
+  "year": 1990,
+  "hour": 19,
+  "min": 55,
+  "lat": 19.2056,
+  "lon": 25.2056,
+  "tzone": 5.5
+};
+
+const config = {
+  method: 'post',
+  url: apiUrl,
+  headers: {
+    'x-astrologyapi-key': apiKey,
+    'Content-Type': 'application/json'
+    // Add 'Accept-Language': '<language_code>' if needed
+  },
+  data: data // Axios automatically stringifies JSON data
+};
+
+axios(config)
+  .then(function (response) {
+    console.log(JSON.stringify(response.data, null, 2));
+  })
+  .catch(function (error) {
+    if (error.response) {
+      // The request was made and the server responded with a status code
+      // that falls out of the range of 2xx
+      console.error('Error Status:', error.response.status);
+      console.error('Error Data:', JSON.stringify(error.response.data, null, 2));
+    } else if (error.request) {
+      // The request was made but no response was received
+      console.error('Error Request:', error.request);
+    } else {
+      // Something happened in setting up the request that triggered an Error
+      console.error('Error Message:', error.message);
+    }
+  }); 4) const axios = require('axios'); // Using axios library
+
+// Your Access Token
+const apiKey = '<YOUR_ACCESS_TOKEN>';
+
+// API endpoint URL
+const apiUrl = 'https://json.astrologyapi.com/v1/sadhesati_remedies';
+
+// Request data
+const data = {
+  "day": 10,
+  "month": 5,
+  "year": 1990,
+  "hour": 19,
+  "min": 55,
+  "lat": 19.2056,
+  "lon": 25.2056,
+  "tzone": 5.5
+};
+
+const config = {
+  method: 'post',
+  url: apiUrl,
+  headers: {
+    'x-astrologyapi-key': apiKey,
+    'Content-Type': 'application/json'
+    // Add 'Accept-Language': '<language_code>' if needed
+  },
+  data: data // Axios automatically stringifies JSON data
+};
+
+axios(config)
+  .then(function (response) {
+    console.log(JSON.stringify(response.data, null, 2));
+  })
+  .catch(function (error) {
+    if (error.response) {
+      // The request was made and the server responded with a status code
+      // that falls out of the range of 2xx
+      console.error('Error Status:', error.response.status);
+      console.error('Error Data:', JSON.stringify(error.response.data, null, 2));
+    } else if (error.request) {
+      // The request was made but no response was received
+      console.error('Error Request:', error.request);
+    } else {
+      // Something happened in setting up the request that triggered an Error
+      console.error('Error Message:', error.message);
+    }
+  }); 5) const axios = require('axios'); // Using axios library
+
+// Your Access Token
+const apiKey = '<YOUR_ACCESS_TOKEN>';
+
+// API endpoint URL
+const apiUrl = 'https://json.astrologyapi.com/v1/varshaphal_year_chart';
+
+// Request data
+const data = {
+  "day": 10,
+  "month": 5,
+  "year": 1990,
+  "hour": 19,
+  "min": 55,
+  "lat": 19.2056,
+  "lon": 25.2056,
+  "tzone": 5.5,
+  "varshphal_year": 1990
+};
+
+const config = {
+  method: 'post',
+  url: apiUrl,
+  headers: {
+    'x-astrologyapi-key': apiKey,
+    'Content-Type': 'application/json'
+    // Add 'Accept-Language': '<language_code>' if needed
+  },
+  data: data // Axios automatically stringifies JSON data
+};
+
+axios(config)
+  .then(function (response) {
+    console.log(JSON.stringify(response.data, null, 2));
+  })
+  .catch(function (error) {
+    if (error.response) {
+      // The request was made and the server responded with a status code
+      // that falls out of the range of 2xx
+      console.error('Error Status:', error.response.status);
+      console.error('Error Data:', JSON.stringify(error.response.data, null, 2));
+    } else if (error.request) {
+      // The request was made but no response was received
+      console.error('Error Request:', error.request);
+    } else {
+      // Something happened in setting up the request that triggered an Error
+      console.error('Error Message:', error.message);
+    }
+  }); 6) const axios = require('axios'); // Using axios library
+
+// Your Access Token
+const apiKey = '<YOUR_ACCESS_TOKEN>';
+
+// API endpoint URL
+const apiUrl = 'https://json.astrologyapi.com/v1/varshaphal_month_chart';
+
+// Request data
+const data = {
+  "day": 10,
+  "month": 5,
+  "year": 1990,
+  "hour": 19,
+  "min": 55,
+  "lat": 19.2056,
+  "lon": 25.2056,
+  "tzone": 5.5,
+  "varshphal_year": 1990
+};
+
+const config = {
+  method: 'post',
+  url: apiUrl,
+  headers: {
+    'x-astrologyapi-key': apiKey,
+    'Content-Type': 'application/json'
+    // Add 'Accept-Language': '<language_code>' if needed
+  },
+  data: data // Axios automatically stringifies JSON data
+};
+
+axios(config)
+  .then(function (response) {
+    console.log(JSON.stringify(response.data, null, 2));
+  })
+  .catch(function (error) {
+    if (error.response) {
+      // The request was made and the server responded with a status code
+      // that falls out of the range of 2xx
+      console.error('Error Status:', error.response.status);
+      console.error('Error Data:', JSON.stringify(error.response.data, null, 2));
+    } else if (error.request) {
+      // The request was made but no response was received
+      console.error('Error Request:', error.request);
+    } else {
+      // Something happened in setting up the request that triggered an Error
+      console.error('Error Message:', error.message);
+    }
+  }); 7) const axios = require('axios'); // Using axios library
+
+// Your Access Token
+const apiKey = '<YOUR_ACCESS_TOKEN>';
+
+// API endpoint URL
+const apiUrl = 'https://json.astrologyapi.com/v1/varshaphal_details';
+
+// Request data
+const data = {
+  "day": 10,
+  "month": 5,
+  "year": 1990,
+  "hour": 19,
+  "min": 55,
+  "lat": 19.2056,
+  "lon": 25.2056,
+  "tzone": 5.5,
+  "varshphal_year": 1990
+};
+
+const config = {
+  method: 'post',
+  url: apiUrl,
+  headers: {
+    'x-astrologyapi-key': apiKey,
+    'Content-Type': 'application/json'
+    // Add 'Accept-Language': '<language_code>' if needed
+  },
+  data: data // Axios automatically stringifies JSON data
+};
+
+axios(config)
+  .then(function (response) {
+    console.log(JSON.stringify(response.data, null, 2));
+  })
+  .catch(function (error) {
+    if (error.response) {
+      // The request was made and the server responded with a status code
+      // that falls out of the range of 2xx
+      console.error('Error Status:', error.response.status);
+      console.error('Error Data:', JSON.stringify(error.response.data, null, 2));
+    } else if (error.request) {
+      // The request was made but no response was received
+      console.error('Error Request:', error.request);
+    } else {
+      // Something happened in setting up the request that triggered an Error
+      console.error('Error Message:', error.message);
+    }
+  }); 8) const axios = require('axios'); // Using axios library
+
+// Your Access Token
+const apiKey = '<YOUR_ACCESS_TOKEN>';
+
+// API endpoint URL
+const apiUrl = 'https://json.astrologyapi.com/v1/varshaphal_planets';
+
+// Request data
+const data = {
+  "day": 10,
+  "month": 5,
+  "year": 1990,
+  "hour": 19,
+  "min": 55,
+  "lat": 19.2056,
+  "lon": 25.2056,
+  "tzone": 5.5,
+  "varshphal_year": 1990
+};
+
+const config = {
+  method: 'post',
+  url: apiUrl,
+  headers: {
+    'x-astrologyapi-key': apiKey,
+    'Content-Type': 'application/json'
+    // Add 'Accept-Language': '<language_code>' if needed
+  },
+  data: data // Axios automatically stringifies JSON data
+};
+
+axios(config)
+  .then(function (response) {
+    console.log(JSON.stringify(response.data, null, 2));
+  })
+  .catch(function (error) {
+    if (error.response) {
+      // The request was made and the server responded with a status code
+      // that falls out of the range of 2xx
+      console.error('Error Status:', error.response.status);
+      console.error('Error Data:', JSON.stringify(error.response.data, null, 2));
+    } else if (error.request) {
+      // The request was made but no response was received
+      console.error('Error Request:', error.request);
+    } else {
+      // Something happened in setting up the request that triggered an Error
+      console.error('Error Message:', error.message);
+    }
+  }); 9) const axios = require('axios'); // Using axios library
+
+// Your Access Token
+const apiKey = '<YOUR_ACCESS_TOKEN>';
+
+// API endpoint URL
+const apiUrl = 'https://json.astrologyapi.com/v1/varshaphal_muntha';
+
+// Request data
+const data = {
+  "day": 10,
+  "month": 5,
+  "year": 1990,
+  "hour": 19,
+  "min": 55,
+  "lat": 19.2056,
+  "lon": 25.2056,
+  "tzone": 5.5,
+  "varshphal_year": 1990
+};
+
+const config = {
+  method: 'post',
+  url: apiUrl,
+  headers: {
+    'x-astrologyapi-key': apiKey,
+    'Content-Type': 'application/json'
+    // Add 'Accept-Language': '<language_code>' if needed
+  },
+  data: data // Axios automatically stringifies JSON data
+};
+
+axios(config)
+  .then(function (response) {
+    console.log(JSON.stringify(response.data, null, 2));
+  })
+  .catch(function (error) {
+    if (error.response) {
+      // The request was made and the server responded with a status code
+      // that falls out of the range of 2xx
+      console.error('Error Status:', error.response.status);
+      console.error('Error Data:', JSON.stringify(error.response.data, null, 2));
+    } else if (error.request) {
+      // The request was made but no response was received
+      console.error('Error Request:', error.request);
+    } else {
+      // Something happened in setting up the request that triggered an Error
+      console.error('Error Message:', error.message);
+    }
+  }); 10) const axios = require('axios'); // Using axios library
+
+// Your Access Token
+const apiKey = '<YOUR_ACCESS_TOKEN>';
+
+// API endpoint URL
+const apiUrl = 'https://json.astrologyapi.com/v1/varshaphal_mudda_dasha';
+
+// Request data
+const data = {
+  "day": 10,
+  "month": 5,
+  "year": 1990,
+  "hour": 19,
+  "min": 55,
+  "lat": 19.2056,
+  "lon": 25.2056,
+  "tzone": 5.5,
+  "varshphal_year": 1990
+};
+
+const config = {
+  method: 'post',
+  url: apiUrl,
+  headers: {
+    'x-astrologyapi-key': apiKey,
+    'Content-Type': 'application/json'
+    // Add 'Accept-Language': '<language_code>' if needed
+  },
+  data: data // Axios automatically stringifies JSON data
+};
+
+axios(config)
+  .then(function (response) {
+    console.log(JSON.stringify(response.data, null, 2));
+  })
+  .catch(function (error) {
+    if (error.response) {
+      // The request was made and the server responded with a status code
+      // that falls out of the range of 2xx
+      console.error('Error Status:', error.response.status);
+      console.error('Error Data:', JSON.stringify(error.response.data, null, 2));
+    } else if (error.request) {
+      // The request was made but no response was received
+      console.error('Error Request:', error.request);
+    } else {
+      // Something happened in setting up the request that triggered an Error
+      console.error('Error Message:', error.message);
+    }
+  }); 11) const axios = require('axios'); // Using axios library
+
+// Your Access Token
+const apiKey = '<YOUR_ACCESS_TOKEN>';
+
+// API endpoint URL
+const apiUrl = 'https://json.astrologyapi.com/v1/varshaphal_panchavargeeya_bala';
+
+// Request data
+const data = {
+  "day": 10,
+  "month": 5,
+  "year": 1990,
+  "hour": 19,
+  "min": 55,
+  "lat": 19.2056,
+  "lon": 25.2056,
+  "tzone": 5.5,
+  "varshphal_year": 1990
+};
+
+const config = {
+  method: 'post',
+  url: apiUrl,
+  headers: {
+    'x-astrologyapi-key': apiKey,
+    'Content-Type': 'application/json'
+    // Add 'Accept-Language': '<language_code>' if needed
+  },
+  data: data // Axios automatically stringifies JSON data
+};
+
+axios(config)
+  .then(function (response) {
+    console.log(JSON.stringify(response.data, null, 2));
+  })
+  .catch(function (error) {
+    if (error.response) {
+      // The request was made and the server responded with a status code
+      // that falls out of the range of 2xx
+      console.error('Error Status:', error.response.status);
+      console.error('Error Data:', JSON.stringify(error.response.data, null, 2));
+    } else if (error.request) {
+      // The request was made but no response was received
+      console.error('Error Request:', error.request);
+    } else {
+      // Something happened in setting up the request that triggered an Error
+      console.error('Error Message:', error.message);
+    }
+  }); 12) const axios = require('axios'); // Using axios library
+
+// Your Access Token
+const apiKey = '<YOUR_ACCESS_TOKEN>';
+
+// API endpoint URL
+const apiUrl = 'https://json.astrologyapi.com/v1/varshaphal_saham_points';
+
+// Request data
+const data = {
+  "day": 10,
+  "month": 5,
+  "year": 1990,
+  "hour": 19,
+  "min": 55,
+  "lat": 19.2056,
+  "lon": 25.2056,
+  "tzone": 5.5,
+  "varshphal_year": 1990
+};
+
+const config = {
+  method: 'post',
+  url: apiUrl,
+  headers: {
+    'x-astrologyapi-key': apiKey,
+    'Content-Type': 'application/json'
+    // Add 'Accept-Language': '<language_code>' if needed
+  },
+  data: data // Axios automatically stringifies JSON data
+};
+
+axios(config)
+  .then(function (response) {
+    console.log(JSON.stringify(response.data, null, 2));
+  })
+  .catch(function (error) {
+    if (error.response) {
+      // The request was made and the server responded with a status code
+      // that falls out of the range of 2xx
+      console.error('Error Status:', error.response.status);
+      console.error('Error Data:', JSON.stringify(error.response.data, null, 2));
+    } else if (error.request) {
+      // The request was made but no response was received
+      console.error('Error Request:', error.request);
+    } else {
+      // Something happened in setting up the request that triggered an Error
+      console.error('Error Message:', error.message);
+    }
+  }); 13) const axios = require('axios'); // Using axios library
+
+// Your Access Token
+const apiKey = '<YOUR_ACCESS_TOKEN>';
+
+// API endpoint URL
+const apiUrl = 'https://json.astrologyapi.com/v1/varshaphal_saham_points';
+
+// Request data
+const data = {
+  "day": 10,
+  "month": 5,
+  "year": 1990,
+  "hour": 19,
+  "min": 55,
+  "lat": 19.2056,
+  "lon": 25.2056,
+  "tzone": 5.5,
+  "varshphal_year": 1990
+};
+
+const config = {
+  method: 'post',
+  url: apiUrl,
+  headers: {
+    'x-astrologyapi-key': apiKey,
+    'Content-Type': 'application/json'
+    // Add 'Accept-Language': '<language_code>' if needed
+  },
+  data: data // Axios automatically stringifies JSON data
+};
+
+axios(config)
+  .then(function (response) {
+    console.log(JSON.stringify(response.data, null, 2));
+  })
+  .catch(function (error) {
+    if (error.response) {
+      // The request was made and the server responded with a status code
+      // that falls out of the range of 2xx
+      console.error('Error Status:', error.response.status);
+      console.error('Error Data:', JSON.stringify(error.response.data, null, 2));
+    } else if (error.request) {
+      // The request was made but no response was received
+      console.error('Error Request:', error.request);
+    } else {
+      // Something happened in setting up the request that triggered an Error
+      console.error('Error Message:', error.message);
+    }
+  }); 14) const axios = require('axios'); // Using axios library
+
+// Your Access Token
+const apiKey = '<YOUR_ACCESS_TOKEN>';
+
+// API endpoint URL
+const apiUrl = 'https://json.astrologyapi.com/v1/varshaphal_yoga';
+
+// Request data
+const data = {
+  "day": 10,
+  "month": 5,
+  "year": 1990,
+  "hour": 19,
+  "min": 55,
+  "lat": 19.2056,
+  "lon": 25.2056,
+  "tzone": 5.5,
+  "varshphal_year": 1990
+};
+
+const config = {
+  method: 'post',
+  url: apiUrl,
+  headers: {
+    'x-astrologyapi-key': apiKey,
+    'Content-Type': 'application/json'
+    // Add 'Accept-Language': '<language_code>' if needed
+  },
+  data: data // Axios automatically stringifies JSON data
+};
+
+axios(config)
+  .then(function (response) {
+    console.log(JSON.stringify(response.data, null, 2));
+  })
+  .catch(function (error) {
+    if (error.response) {
+      // The request was made and the server responded with a status code
+      // that falls out of the range of 2xx
+      console.error('Error Status:', error.response.status);
+      console.error('Error Data:', JSON.stringify(error.response.data, null, 2));
+    } else if (error.request) {
+      // The request was made but no response was received
+      console.error('Error Request:', error.request);
+    } else {
+      // Something happened in setting up the request that triggered an Error
+      console.error('Error Message:', error.message);
+    }
+  }); 15) const axios = require('axios'); // Using axios library
+
+// Your Access Token
+const apiKey = '<YOUR_ACCESS_TOKEN>';
+
+// API endpoint URL
+const apiUrl = 'https://json.astrologyapi.com/v1/kp_planets';
+
+// Request data
+const data = {
+  "day": 10,
+  "month": 5,
+  "year": 1990,
+  "hour": 19,
+  "min": 55,
+  "lat": 19.2056,
+  "lon": 25.2056,
+  "tzone": 5.5
+};
+
+const config = {
+  method: 'post',
+  url: apiUrl,
+  headers: {
+    'x-astrologyapi-key': apiKey,
+    'Content-Type': 'application/json'
+    // Add 'Accept-Language': '<language_code>' if needed
+  },
+  data: data // Axios automatically stringifies JSON data
+};
+
+axios(config)
+  .then(function (response) {
+    console.log(JSON.stringify(response.data, null, 2));
+  })
+  .catch(function (error) {
+    if (error.response) {
+      // The request was made and the server responded with a status code
+      // that falls out of the range of 2xx
+      console.error('Error Status:', error.response.status);
+      console.error('Error Data:', JSON.stringify(error.response.data, null, 2));
+    } else if (error.request) {
+      // The request was made but no response was received
+      console.error('Error Request:', error.request);
+    } else {
+      // Something happened in setting up the request that triggered an Error
+      console.error('Error Message:', error.message);
+    }
+  }); 16) const axios = require('axios'); // Using axios library
+
+// Your Access Token
+const apiKey = '<YOUR_ACCESS_TOKEN>';
+
+// API endpoint URL
+const apiUrl = 'https://json.astrologyapi.com/v1/kp_house_cusps';
+
+// Request data
+const data = {
+  "day": 10,
+  "month": 5,
+  "year": 1990,
+  "hour": 19,
+  "min": 55,
+  "lat": 19.2056,
+  "lon": 25.2056,
+  "tzone": 5.5
+};
+
+const config = {
+  method: 'post',
+  url: apiUrl,
+  headers: {
+    'x-astrologyapi-key': apiKey,
+    'Content-Type': 'application/json'
+    // Add 'Accept-Language': '<language_code>' if needed
+  },
+  data: data // Axios automatically stringifies JSON data
+};
+
+axios(config)
+  .then(function (response) {
+    console.log(JSON.stringify(response.data, null, 2));
+  })
+  .catch(function (error) {
+    if (error.response) {
+      // The request was made and the server responded with a status code
+      // that falls out of the range of 2xx
+      console.error('Error Status:', error.response.status);
+      console.error('Error Data:', JSON.stringify(error.response.data, null, 2));
+    } else if (error.request) {
+      // The request was made but no response was received
+      console.error('Error Request:', error.request);
+    } else {
+      // Something happened in setting up the request that triggered an Error
+      console.error('Error Message:', error.message);
+    }
+  });17) const axios = require('axios'); // Using axios library
+
+// Your Access Token
+const apiKey = '<YOUR_ACCESS_TOKEN>';
+
+// API endpoint URL
+const apiUrl = 'https://json.astrologyapi.com/v1/kp_birth_chart';
+
+// Request data
+const data = {
+  "day": 10,
+  "month": 5,
+  "year": 1990,
+  "hour": 19,
+  "min": 55,
+  "lat": 19.2056,
+  "lon": 25.2056,
+  "tzone": 5.5
+};
+
+const config = {
+  method: 'post',
+  url: apiUrl,
+  headers: {
+    'x-astrologyapi-key': apiKey,
+    'Content-Type': 'application/json'
+    // Add 'Accept-Language': '<language_code>' if needed
+  },
+  data: data // Axios automatically stringifies JSON data
+};
+
+axios(config)
+  .then(function (response) {
+    console.log(JSON.stringify(response.data, null, 2));
+  })
+  .catch(function (error) {
+    if (error.response) {
+      // The request was made and the server responded with a status code
+      // that falls out of the range of 2xx
+      console.error('Error Status:', error.response.status);
+      console.error('Error Data:', JSON.stringify(error.response.data, null, 2));
+    } else if (error.request) {
+      // The request was made but no response was received
+      console.error('Error Request:', error.request);
+    } else {
+      // Something happened in setting up the request that triggered an Error
+      console.error('Error Message:', error.message);
+    }
+  }); 17) const axios = require('axios'); // Using axios library
+
+// Your Access Token
+const apiKey = '<YOUR_ACCESS_TOKEN>';
+
+// API endpoint URL
+const apiUrl = 'https://json.astrologyapi.com/v1/kp_house_significator';
+
+// Request data
+const data = {
+  "day": 10,
+  "month": 5,
+  "year": 1990,
+  "hour": 19,
+  "min": 55,
+  "lat": 19.2056,
+  "lon": 25.2056,
+  "tzone": 5.5
+};
+
+const config = {
+  method: 'post',
+  url: apiUrl,
+  headers: {
+    'x-astrologyapi-key': apiKey,
+    'Content-Type': 'application/json'
+    // Add 'Accept-Language': '<language_code>' if needed
+  },
+  data: data // Axios automatically stringifies JSON data
+};
+
+axios(config)
+  .then(function (response) {
+    console.log(JSON.stringify(response.data, null, 2));
+  })
+  .catch(function (error) {
+    if (error.response) {
+      // The request was made and the server responded with a status code
+      // that falls out of the range of 2xx
+      console.error('Error Status:', error.response.status);
+      console.error('Error Data:', JSON.stringify(error.response.data, null, 2));
+    } else if (error.request) {
+      // The request was made but no response was received
+      console.error('Error Request:', error.request);
+    } else {
+      // Something happened in setting up the request that triggered an Error
+      console.error('Error Message:', error.message);
+    }
+  }); 18) curl --location 'https://json.astrologyapi.com/v1/kp_planet_significator' \
+  --header 'Content-Type: application/json' \
+  --header 'x-astrologyapi-key: <YOUR_ACCESS_TOKEN>' \
+  --data '{
+    "day": 10,
+    "month": 5,
+    "year": 1990,
+    "hour": 19,
+    "min": 55,
+    "lat": 19.2056,
+    "lon": 25.2056,
+    "tzone": 5.5
+}' 20) const axios = require('axios'); // Using axios library
+
+// Your Access Token
+const apiKey = '<YOUR_ACCESS_TOKEN>';
+
+// API endpoint URL
+const apiUrl = 'https://json.astrologyapi.com/v1/match_birth_details';
+
+// Request data
+const data = {
+  "m_day": 10,
+  "m_month": 5,
+  "m_year": 1990,
+  "m_hour": 11,
+  "m_min": 55,
+  "m_lat": 19.2056,
+  "m_lon": 25.2056,
+  "m_tzone": 5.5,
+  "f_day": 10,
+  "f_month": 5,
+  "f_year": 1990,
+  "f_hour": 11,
+  "f_min": 55,
+  "f_lat": 19.2056,
+  "f_lon": 25.2056,
+  "f_tzone": 5.5
+};
+
+const config = {
+  method: 'post',
+  url: apiUrl,
+  headers: {
+    'x-astrologyapi-key': apiKey,
+    'Content-Type': 'application/json'
+    // Add 'Accept-Language': '<language_code>' if needed
+  },
+  data: data // Axios automatically stringifies JSON data
+};
+
+axios(config)
+  .then(function (response) {
+    console.log(JSON.stringify(response.data, null, 2));
+  })
+  .catch(function (error) {
+    if (error.response) {
+      // The request was made and the server responded with a status code
+      // that falls out of the range of 2xx
+      console.error('Error Status:', error.response.status);
+      console.error('Error Data:', JSON.stringify(error.response.data, null, 2));
+    } else if (error.request) {
+      // The request was made but no response was received
+      console.error('Error Request:', error.request);
+    } else {
+      // Something happened in setting up the request that triggered an Error
+      console.error('Error Message:', error.message);
+    }
+  }); 21) const axios = require('axios'); // Using axios library
+
+// Your Access Token
+const apiKey = '<YOUR_ACCESS_TOKEN>';
+
+// API endpoint URL
+const apiUrl = 'https://json.astrologyapi.com/v1/match_ashtakoot_points';
+
+// Request data
+const data = {
+  "m_day": 10,
+  "m_month": 5,
+  "m_year": 1990,
+  "m_hour": 11,
+  "m_min": 55,
+  "m_lat": 19.2056,
+  "m_lon": 25.2056,
+  "m_tzone": 5.5,
+  "f_day": 10,
+  "f_month": 5,
+  "f_year": 1990,
+  "f_hour": 11,
+  "f_min": 55,
+  "f_lat": 19.2056,
+  "f_lon": 25.2056,
+  "f_tzone": 5.5
+};
+
+const config = {
+  method: 'post',
+  url: apiUrl,
+  headers: {
+    'x-astrologyapi-key': apiKey,
+    'Content-Type': 'application/json'
+    // Add 'Accept-Language': '<language_code>' if needed
+  },
+  data: data // Axios automatically stringifies JSON data
+};
+
+axios(config)
+  .then(function (response) {
+    console.log(JSON.stringify(response.data, null, 2));
+  })
+  .catch(function (error) {
+    if (error.response) {
+      // The request was made and the server responded with a status code
+      // that falls out of the range of 2xx
+      console.error('Error Status:', error.response.status);
+      console.error('Error Data:', JSON.stringify(error.response.data, null, 2));
+    } else if (error.request) {
+      // The request was made but no response was received
+      console.error('Error Request:', error.request);
+    } else {
+      // Something happened in setting up the request that triggered an Error
+      console.error('Error Message:', error.message);
+    }
+  }); 22) const axios = require('axios'); // Using axios library
+
+// Your Access Token
+const apiKey = '<YOUR_ACCESS_TOKEN>';
+
+// API endpoint URL
+const apiUrl = 'https://json.astrologyapi.com/v1/match_obstructions';
+
+// Request data
+const data = {
+  "m_day": 10,
+  "m_month": 5,
+  "m_year": 1990,
+  "m_hour": 11,
+  "m_min": 55,
+  "m_lat": 19.2056,
+  "m_lon": 25.2056,
+  "m_tzone": 5.5,
+  "f_day": 10,
+  "f_month": 5,
+  "f_year": 1990,
+  "f_hour": 11,
+  "f_min": 55,
+  "f_lat": 19.2056,
+  "f_lon": 25.2056,
+  "f_tzone": 5.5
+};
+
+const config = {
+  method: 'post',
+  url: apiUrl,
+  headers: {
+    'x-astrologyapi-key': apiKey,
+    'Content-Type': 'application/json'
+    // Add 'Accept-Language': '<language_code>' if needed
+  },
+  data: data // Axios automatically stringifies JSON data
+};
+
+axios(config)
+  .then(function (response) {
+    console.log(JSON.stringify(response.data, null, 2));
+  })
+  .catch(function (error) {
+    if (error.response) {
+      // The request was made and the server responded with a status code
+      // that falls out of the range of 2xx
+      console.error('Error Status:', error.response.status);
+      console.error('Error Data:', JSON.stringify(error.response.data, null, 2));
+    } else if (error.request) {
+      // The request was made but no response was received
+      console.error('Error Request:', error.request);
+    } else {
+      // Something happened in setting up the request that triggered an Error
+      console.error('Error Message:', error.message);
+    }
+  }); 23) const axios = require('axios'); // Using axios library
+
+// Your Access Token
+const apiKey = '<YOUR_ACCESS_TOKEN>';
+
+// API endpoint URL
+const apiUrl = 'https://json.astrologyapi.com/v1/match_astro_details';
+
+// Request data
+const data = {
+  "m_day": 10,
+  "m_month": 5,
+  "m_year": 1990,
+  "m_hour": 11,
+  "m_min": 55,
+  "m_lat": 19.2056,
+  "m_lon": 25.2056,
+  "m_tzone": 5.5,
+  "f_day": 10,
+  "f_month": 5,
+  "f_year": 1990,
+  "f_hour": 11,
+  "f_min": 55,
+  "f_lat": 19.2056,
+  "f_lon": 25.2056,
+  "f_tzone": 5.5
+};
+
+const config = {
+  method: 'post',
+  url: apiUrl,
+  headers: {
+    'x-astrologyapi-key': apiKey,
+    'Content-Type': 'application/json'
+    // Add 'Accept-Language': '<language_code>' if needed
+  },
+  data: data // Axios automatically stringifies JSON data
+};
+
+axios(config)
+  .then(function (response) {
+    console.log(JSON.stringify(response.data, null, 2));
+  })
+  .catch(function (error) {
+    if (error.response) {
+      // The request was made and the server responded with a status code
+      // that falls out of the range of 2xx
+      console.error('Error Status:', error.response.status);
+      console.error('Error Data:', JSON.stringify(error.response.data, null, 2));
+    } else if (error.request) {
+      // The request was made but no response was received
+      console.error('Error Request:', error.request);
+    } else {
+      // Something happened in setting up the request that triggered an Error
+      console.error('Error Message:', error.message);
+    }
+  }); 24) const axios = require('axios'); // Using axios library
+
+// Your Access Token
+const apiKey = '<YOUR_ACCESS_TOKEN>';
+
+// API endpoint URL
+const apiUrl = 'https://json.astrologyapi.com/v1/match_planet_details';
+
+// Request data
+const data = {
+  "m_day": 10,
+  "m_month": 5,
+  "m_year": 1990,
+  "m_hour": 11,
+  "m_min": 55,
+  "m_lat": 19.2056,
+  "m_lon": 25.2056,
+  "m_tzone": 5.5,
+  "f_day": 10,
+  "f_month": 5,
+  "f_year": 1990,
+  "f_hour": 11,
+  "f_min": 55,
+  "f_lat": 19.2056,
+  "f_lon": 25.2056,
+  "f_tzone": 5.5
+};
+
+const config = {
+  method: 'post',
+  url: apiUrl,
+  headers: {
+    'x-astrologyapi-key': apiKey,
+    'Content-Type': 'application/json'
+    // Add 'Accept-Language': '<language_code>' if needed
+  },
+  data: data // Axios automatically stringifies JSON data
+};
+
+axios(config)
+  .then(function (response) {
+    console.log(JSON.stringify(response.data, null, 2));
+  })
+  .catch(function (error) {
+    if (error.response) {
+      // The request was made and the server responded with a status code
+      // that falls out of the range of 2xx
+      console.error('Error Status:', error.response.status);
+      console.error('Error Data:', JSON.stringify(error.response.data, null, 2));
+    } else if (error.request) {
+      // The request was made but no response was received
+      console.error('Error Request:', error.request);
+    } else {
+      // Something happened in setting up the request that triggered an Error
+      console.error('Error Message:', error.message);
+    }
+  }); 25) const axios = require('axios'); // Using axios library
+
+// Your Access Token
+const apiKey = '<YOUR_ACCESS_TOKEN>';
+
+// API endpoint URL
+const apiUrl = 'https://json.astrologyapi.com/v1/match_manglik_report';
+
+// Request data
+const data = {
+  "m_day": 10,
+  "m_month": 5,
+  "m_year": 1990,
+  "m_hour": 11,
+  "m_min": 55,
+  "m_lat": 19.2056,
+  "m_lon": 25.2056,
+  "m_tzone": 5.5,
+  "f_day": 10,
+  "f_month": 5,
+  "f_year": 1990,
+  "f_hour": 11,
+  "f_min": 55,
+  "f_lat": 19.2056,
+  "f_lon": 25.2056,
+  "f_tzone": 5.5
+};
+
+const config = {
+  method: 'post',
+  url: apiUrl,
+  headers: {
+    'x-astrologyapi-key': apiKey,
+    'Content-Type': 'application/json'
+    // Add 'Accept-Language': '<language_code>' if needed
+  },
+  data: data // Axios automatically stringifies JSON data
+};
+
+axios(config)
+  .then(function (response) {
+    console.log(JSON.stringify(response.data, null, 2));
+  })
+  .catch(function (error) {
+    if (error.response) {
+      // The request was made and the server responded with a status code
+      // that falls out of the range of 2xx
+      console.error('Error Status:', error.response.status);
+      console.error('Error Data:', JSON.stringify(error.response.data, null, 2));
+    } else if (error.request) {
+      // The request was made but no response was received
+      console.error('Error Request:', error.request);
+    } else {
+      // Something happened in setting up the request that triggered an Error
+      console.error('Error Message:', error.message);
+    }
+  }); 26) const axios = require('axios'); // Using axios library
+
+// Your Access Token
+const apiKey = '<YOUR_ACCESS_TOKEN>';
+
+// API endpoint URL
+const apiUrl = 'https://json.astrologyapi.com/v1/match_making_report';
+
+// Request data
+const data = {
+  "m_day": 10,
+  "m_month": 5,
+  "m_year": 1990,
+  "m_hour": 11,
+  "m_min": 55,
+  "m_lat": 19.2056,
+  "m_lon": 25.2056,
+  "m_tzone": 5.5,
+  "f_day": 10,
+  "f_month": 5,
+  "f_year": 1990,
+  "f_hour": 11,
+  "f_min": 55,
+  "f_lat": 19.2056,
+  "f_lon": 25.2056,
+  "f_tzone": 5.5
+};
+
+const config = {
+  method: 'post',
+  url: apiUrl,
+  headers: {
+    'x-astrologyapi-key': apiKey,
+    'Content-Type': 'application/json'
+    // Add 'Accept-Language': '<language_code>' if needed
+  },
+  data: data // Axios automatically stringifies JSON data
+};
+
+axios(config)
+  .then(function (response) {
+    console.log(JSON.stringify(response.data, null, 2));
+  })
+  .catch(function (error) {
+    if (error.response) {
+      // The request was made and the server responded with a status code
+      // that falls out of the range of 2xx
+      console.error('Error Status:', error.response.status);
+      console.error('Error Data:', JSON.stringify(error.response.data, null, 2));
+    } else if (error.request) {
+      // The request was made but no response was received
+      console.error('Error Request:', error.request);
+    } else {
+      // Something happened in setting up the request that triggered an Error
+      console.error('Error Message:', error.message);
+    }
+  }); 27) const axios = require('axios'); // Using axios library
+
+// Your Access Token
+const apiKey = '<YOUR_ACCESS_TOKEN>';
+
+// API endpoint URL
+const apiUrl = 'https://json.astrologyapi.com/v1/match_making_detailed_report';
+
+// Request data
+const data = {
+  "m_day": 10,
+  "m_month": 5,
+  "m_year": 1990,
+  "m_hour": 11,
+  "m_min": 55,
+  "m_lat": 19.2056,
+  "m_lon": 25.2056,
+  "m_tzone": 5.5,
+  "f_day": 10,
+  "f_month": 5,
+  "f_year": 1990,
+  "f_hour": 11,
+  "f_min": 55,
+  "f_lat": 19.2056,
+  "f_lon": 25.2056,
+  "f_tzone": 5.5
+};
+
+const config = {
+  method: 'post',
+  url: apiUrl,
+  headers: {
+    'x-astrologyapi-key': apiKey,
+    'Content-Type': 'application/json'
+    // Add 'Accept-Language': '<language_code>' if needed
+  },
+  data: data // Axios automatically stringifies JSON data
+};
+
+axios(config)
+  .then(function (response) {
+    console.log(JSON.stringify(response.data, null, 2));
+  })
+  .catch(function (error) {
+    if (error.response) {
+      // The request was made and the server responded with a status code
+      // that falls out of the range of 2xx
+      console.error('Error Status:', error.response.status);
+      console.error('Error Data:', JSON.stringify(error.response.data, null, 2));
+    } else if (error.request) {
+      // The request was made but no response was received
+      console.error('Error Request:', error.request);
+    } else {
+      // Something happened in setting up the request that triggered an Error
+      console.error('Error Message:', error.message);
+    }
+  }); 28) const axios = require('axios'); // Using axios library
+
+// Your Access Token
+const apiKey = '<YOUR_ACCESS_TOKEN>';
+
+// API endpoint URL
+const apiUrl = 'https://json.astrologyapi.com/v1/match_dashakoot_points';
+
+// Request data
+const data = {
+  "m_day": 10,
+  "m_month": 5,
+  "m_year": 1990,
+  "m_hour": 11,
+  "m_min": 55,
+  "m_lat": 19.2056,
+  "m_lon": 25.2056,
+  "m_tzone": 5.5,
+  "f_day": 10,
+  "f_month": 5,
+  "f_year": 1990,
+  "f_hour": 11,
+  "f_min": 55,
+  "f_lat": 19.2056,
+  "f_lon": 25.2056,
+  "f_tzone": 5.5
+};
+
+const config = {
+  method: 'post',
+  url: apiUrl,
+  headers: {
+    'x-astrologyapi-key': apiKey,
+    'Content-Type': 'application/json'
+    // Add 'Accept-Language': '<language_code>' if needed
+  },
+  data: data // Axios automatically stringifies JSON data
+};
+
+axios(config)
+  .then(function (response) {
+    console.log(JSON.stringify(response.data, null, 2));
+  })
+  .catch(function (error) {
+    if (error.response) {
+      // The request was made and the server responded with a status code
+      // that falls out of the range of 2xx
+      console.error('Error Status:', error.response.status);
+      console.error('Error Data:', JSON.stringify(error.response.data, null, 2));
+    } else if (error.request) {
+      // The request was made but no response was received
+      console.error('Error Request:', error.request);
+    } else {
+      // Something happened in setting up the request that triggered an Error
+      console.error('Error Message:', error.message);
+    }
+  }); 29) const axios = require('axios'); // Using axios library
+
+// Your Access Token
+const apiKey = '<YOUR_ACCESS_TOKEN>';
+
+// API endpoint URL
+const apiUrl = 'https://json.astrologyapi.com/v1/match_percentage';
+
+// Request data
+const data = {
+  "m_day": 10,
+  "m_month": 5,
+  "m_year": 1990,
+  "m_hour": 11,
+  "m_min": 55,
+  "m_lat": 19.2056,
+  "m_lon": 25.2056,
+  "m_tzone": 5.5,
+  "f_day": 10,
+  "f_month": 5,
+  "f_year": 1990,
+  "f_hour": 11,
+  "f_min": 55,
+  "f_lat": 19.2056,
+  "f_lon": 25.2056,
+  "f_tzone": 5.5
+};
+
+const config = {
+  method: 'post',
+  url: apiUrl,
+  headers: {
+    'x-astrologyapi-key': apiKey,
+    'Content-Type': 'application/json'
+    // Add 'Accept-Language': '<language_code>' if needed
+  },
+  data: data // Axios automatically stringifies JSON data
+};
+
+axios(config)
+  .then(function (response) {
+    console.log(JSON.stringify(response.data, null, 2));
+  })
+  .catch(function (error) {
+    if (error.response) {
+      // The request was made and the server responded with a status code
+      // that falls out of the range of 2xx
+      console.error('Error Status:', error.response.status);
+      console.error('Error Data:', JSON.stringify(error.response.data, null, 2));
+    } else if (error.request) {
+      // The request was made but no response was received
+      console.error('Error Request:', error.request);
+    } else {
+      // Something happened in setting up the request that triggered an Error
+      console.error('Error Message:', error.message);
+    }
+  });

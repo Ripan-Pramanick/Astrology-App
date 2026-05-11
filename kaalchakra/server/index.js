@@ -137,37 +137,37 @@ const getGeoLocationFree = async (place) => {
     }
 };
 
-// ============================================
-// MOCK DATA
-// ============================================
-const getMockGeoData = () => ({
-    geonames: [{
-        place_name: "Kolkata, West Bengal, India",
-        latitude: "22.5726",
-        longitude: "88.3639",
-        timezone: "5.5"
-    }]
-});
+// // ============================================
+// // MOCK DATA
+// // ============================================
+// const getMockGeoData = () => ({
+//     geonames: [{
+//         place_name: "Kolkata, West Bengal, India",
+//         latitude: "22.5726",
+//         longitude: "88.3639",
+//         timezone: "5.5"
+//     }]
+// });
 
-const getMockBirthDetails = () => ({
-    ascendant: "Leo",
-    sign: "Aries",
-    Naksahtra: "Ashwini",
-    Varna: "Kshatriya",
-    Gana: "Deva"
-});
+// const getMockBirthDetails = () => ({
+//     ascendant: "Leo",
+//     sign: "Aries",
+//     Naksahtra: "Ashwini",
+//     Varna: "Kshatriya",
+//     Gana: "Deva"
+// });
 
-const getMockPlanets = () => [
-    { name: "Sun", sign: "Aries", normDegree: 15.2, house: 1 },
-    { name: "Moon", sign: "Cancer", normDegree: 10.5, house: 4 },
-    { name: "Mars", sign: "Aries", normDegree: 25.3, house: 1 },
-    { name: "Mercury", sign: "Pisces", normDegree: 8.7, house: 12 },
-    { name: "Jupiter", sign: "Pisces", normDegree: 12.1, house: 9 },
-    { name: "Venus", sign: "Aquarius", normDegree: 18.4, house: 11 },
-    { name: "Saturn", sign: "Capricorn", normDegree: 22.9, house: 10 },
-    { name: "Rahu", sign: "Taurus", normDegree: 5.2, house: 2 },
-    { name: "Ketu", sign: "Scorpio", normDegree: 5.2, house: 8 }
-];
+// const getMockPlanets = () => [
+//     { name: "Sun", sign: "Aries", normDegree: 15.2, house: 1 },
+//     { name: "Moon", sign: "Cancer", normDegree: 10.5, house: 4 },
+//     { name: "Mars", sign: "Aries", normDegree: 25.3, house: 1 },
+//     { name: "Mercury", sign: "Pisces", normDegree: 8.7, house: 12 },
+//     { name: "Jupiter", sign: "Pisces", normDegree: 12.1, house: 9 },
+//     { name: "Venus", sign: "Aquarius", normDegree: 18.4, house: 11 },
+//     { name: "Saturn", sign: "Capricorn", normDegree: 22.9, house: 10 },
+//     { name: "Rahu", sign: "Taurus", normDegree: 5.2, house: 2 },
+//     { name: "Ketu", sign: "Scorpio", normDegree: 5.2, house: 8 }
+// ];
 
 // ============================================
 // ASTROLOGY API CALL
@@ -241,6 +241,10 @@ app.post('/api/auth/verify-email', async (req, res) => {
 // ============================================
 // ASTROLOGY API ROUTES
 // ============================================
+
+const astrologyRoutes = require('./routes/astrologyRoutes');
+
+app.use('/api/astrology', astrologyRoutes);
 
 app.post('/api/astrology/birth_details', async (req, res) => {
     try {

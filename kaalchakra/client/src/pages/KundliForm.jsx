@@ -56,6 +56,7 @@ const KundliForm = () => {
   };
 
   // Location auto-suggestion
+  // Location auto-suggestion - COMPLETE FIX
   useEffect(() => {
     if (formData.place.length < 3 || selectedExactLocation?.place_name === formData.place) {
       setSuggestions([]);
@@ -66,24 +67,41 @@ const KundliForm = () => {
     const delayDebounceFn = setTimeout(async () => {
       setIsSearchingCity(true);
       try {
-        const geoResult = await astrologyServices.kundli.getGeoDetails({ place: formData.place });
-        let placesList = [];
-        if (geoResult && geoResult.geonames) {
-          placesList = geoResult.geonames;
-        } else if (geoResult && Array.isArray(geoResult)) {
-          placesList = geoResult;
+        const response = await fetch(
+          `https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(formData.place)}&format=json&limit=5`,
+          {
+            headers: {
+              'User-Agent': 'KaalChakra-App/1.0'
+            }
+          }
+        );
+
+        const data = await response.json();
+
+        if (Array.isArray(data) && data.length > 0) {
+          const formattedSuggestions = data.map(item => ({
+            place_name: item.display_name,
+            lat: item.lat,
+            lng: item.lon,
+            name: item.name
+          }));
+          setSuggestions(formattedSuggestions);
+          setShowSuggestions(true);
+        } else {
+          setSuggestions([]);
+          setShowSuggestions(false);
         }
-        setSuggestions(placesList);
-        setShowSuggestions(placesList.length > 0);
-      } catch (error) {
-        console.error("❌ Suggestion error:", error);
+      } catch (err) {
+        console.error('Location search error:', err);
+        setSuggestions([]);
+        setShowSuggestions(false);
       } finally {
         setIsSearchingCity(false);
       }
-    }, 600);
+    }, 500);
 
     return () => clearTimeout(delayDebounceFn);
-  }, [formData.place, selectedExactLocation]);
+  }, [formData.place]);
 
   const handleSelectSuggestion = (loc) => {
     setFormData(prev => ({ ...prev, place: loc.place_name }));
@@ -91,77 +109,77 @@ const KundliForm = () => {
     setShowSuggestions(false);
   };
 
-  // Transform planet data to proper format
+  // Transform planet data - Universal parser for all API response formats
   const transformPlanetData = (apiData) => {
-    if (!apiData) return getDemoPlanets();
-    
+    console.log("🔄 Raw API data received:", apiData);
+
+    if (!apiData) {
+      throw new Error('No planet data received from API');
+    }
+
+    let planetsArray = [];
+
+    // Try to extract planets array from various possible formats
     if (Array.isArray(apiData)) {
-      return apiData.map(planet => ({
-        name: planet.name || planet.planet_name,
-        sign: planet.sign || getSignFromDegree(planet.normDegree),
-        degree: planet.degree || (planet.normDegree ? `${planet.normDegree}°` : 'N/A'),
-        house: planet.house || calculateHouseFromDegree(planet.normDegree),
-        nakshatra: planet.nakshatra || getNakshatraFromDegree(planet.normDegree),
-        retrograde: planet.retrograde || false
-      }));
+      planetsArray = apiData;
     }
-    
-    if (apiData.planets) {
-      return apiData.planets.map(planet => ({
-        name: planet.name,
-        sign: planet.sign,
-        degree: planet.degree,
-        house: planet.house,
-        nakshatra: planet.nakshatra,
-        retrograde: planet.retrograde
-      }));
+    else if (apiData.data && Array.isArray(apiData.data)) {
+      planetsArray = apiData.data;
     }
-    
-    return getDemoPlanets();
-  };
+    else if (apiData.planets && Array.isArray(apiData.planets)) {
+      planetsArray = apiData.planets;
+    }
+    else if (apiData.response && Array.isArray(apiData.response)) {
+      planetsArray = apiData.response;
+    }
+    else if (apiData.result && Array.isArray(apiData.result)) {
+      planetsArray = apiData.result;
+    }
+    else if (apiData.planets_data && Array.isArray(apiData.planets_data)) {
+      planetsArray = apiData.planets_data;
+    }
+    else if (typeof apiData === 'object') {
+      // Try to find any array property in the object
+      for (const key in apiData) {
+        if (Array.isArray(apiData[key]) && apiData[key].length > 0) {
+          planetsArray = apiData[key];
+          console.log(`✅ Found planets array in property: ${key}`);
+          break;
+        }
+      }
+    }
 
-  const getSignFromDegree = (degree) => {
-    const signs = ['Aries', 'Taurus', 'Gemini', 'Cancer', 'Leo', 'Virgo', 'Libra', 'Scorpio', 'Sagittarius', 'Capricorn', 'Aquarius', 'Pisces'];
-    const signIndex = Math.floor((degree || 0) / 30);
-    return signs[signIndex % 12];
-  };
+    if (!planetsArray || planetsArray.length === 0) {
+      console.error("❌ Could not extract planets array. Full response:", JSON.stringify(apiData, null, 2));
+      throw new Error('Invalid planet data format received from API');
+    }
 
-  const calculateHouseFromDegree = (degree) => {
-    if (!degree) return 1;
-    return Math.floor((degree % 360) / 30) + 1;
-  };
+    console.log("✅ Extracted planets array length:", planetsArray.length);
 
-  const getNakshatraFromDegree = (degree) => {
-    const nakshatras = [
-      'Ashwini', 'Bharani', 'Krittika', 'Rohini', 'Mrigashira', 'Ardra',
-      'Punarvasu', 'Pushya', 'Ashlesha', 'Magha', 'Purva Phalguni', 'Uttara Phalguni',
-      'Hasta', 'Chitra', 'Swati', 'Vishakha', 'Anuradha', 'Jyeshtha',
-      'Moola', 'Purva Ashadha', 'Uttara Ashadha', 'Shravana', 'Dhanishtha', 'Shatabhisha',
-      'Purva Bhadrapada', 'Uttara Bhadrapada', 'Revati'
-    ];
-    if (!degree) return nakshatras[0];
-    const nakshatraIndex = Math.floor((degree % 360) / 13.333);
-    return nakshatras[nakshatraIndex % 27];
-  };
+    // Transform each planet to standard format
+    return planetsArray.map((planet, index) => {
+      // Get degree value from various possible fields
+      let degreeValue = planet.degree || planet.normDegree || planet.longitude || planet.deg;
+      if (degreeValue && typeof degreeValue === 'string') {
+        degreeValue = parseFloat(degreeValue);
+      }
 
-  const getDemoPlanets = () => {
-    return [
-      { name: "Sun", sign: "Leo", degree: "15°30'", house: 1, nakshatra: "Magha", retrograde: false },
-      { name: "Moon", sign: "Pisces", degree: "22°15'", house: 7, nakshatra: "Revati", retrograde: false },
-      { name: "Mars", sign: "Scorpio", degree: "8°45'", house: 4, nakshatra: "Anuradha", retrograde: false },
-      { name: "Mercury", sign: "Virgo", degree: "5°20'", house: 2, nakshatra: "Uttara Phalguni", retrograde: false },
-      { name: "Jupiter", sign: "Sagittarius", degree: "12°10'", house: 5, nakshatra: "Purva Ashadha", retrograde: false },
-      { name: "Venus", sign: "Libra", degree: "18°35'", house: 3, nakshatra: "Swati", retrograde: false },
-      { name: "Saturn", sign: "Capricorn", degree: "25°50'", house: 6, nakshatra: "Shravana", retrograde: true },
-      { name: "Rahu", sign: "Aries", degree: "10°25'", house: 9, nakshatra: "Ashwini", retrograde: true },
-      { name: "Ketu", sign: "Libra", degree: "10°25'", house: 3, nakshatra: "Swati", retrograde: true }
-    ];
+      return {
+        id: index + 1,
+        name: planet.name || planet.planet_name || planet.planet || 'Unknown',
+        sign: planet.sign || planet.zodiac_sign || planet.rashi || planet.rasi || '',
+        degree: planet.degree || (planet.normDegree ? `${planet.normDegree}°` : (planet.longitude ? `${planet.longitude}°` : 'N/A')),
+        house: planet.house || planet.bhava || planet.house_number || 0,
+        nakshatra: planet.nakshatra || planet.nakshatra_name || planet.star || '',
+        retrograde: planet.retrograde || planet.is_retrograde || false,
+        normDegree: planet.normDegree || planet.longitude || degreeValue,
+        fullDegree: planet.fullDegree || planet.degree
+      };
+    });
   };
-
-  // Save data to Supabase (uses saved_reports table which exists)
+  // Save data to Supabase
   const saveToSupabase = async (data) => {
     try {
-      // Zero-pad month and day for proper ISO date format
       const month = String(data.birthDate.month).padStart(2, '0');
       const day = String(data.birthDate.day).padStart(2, '0');
       const minute = String(data.birthTime.minute).padStart(2, '0');
@@ -194,14 +212,14 @@ const KundliForm = () => {
 
       if (supabaseError) {
         console.error("❌ Supabase save error:", supabaseError.message);
-        return null; // Non-blocking - don't stop payment
+        return null;
       }
 
       console.log("✅ Data saved to Supabase:", savedData);
       return savedData?.[0]?.id;
     } catch (err) {
       console.error("❌ Supabase save error:", err);
-      return null; // Non-blocking
+      return null;
     }
   };
 
@@ -254,30 +272,39 @@ const KundliForm = () => {
       };
 
       // Fetch Astrology Data from API
-      console.log("🌟 Fetching birth details...");
+      console.log("🌟 Fetching birth details from API...");
       const basicDetails = await astrologyServices.kundli.getBirthDetails(astroPayload);
-      console.log("🪐 Fetching planet positions...");
+      console.log("🪐 Fetching planet positions from API...");
       let planetsData = await astrologyServices.planetary.getPlanetsExtended(astroPayload);
 
       console.log("🌟 API Response - Basic Details:", basicDetails);
       console.log("🪐 API Response - Planets Data:", planetsData);
 
+      console.log("🪐 FULL API Response Structure:", JSON.stringify(planetsData, null, 2));
+      console.log("🪐 Response keys:", Object.keys(planetsData));
+      if (planetsData.data) console.log("🪐 data keys:", Object.keys(planetsData.data));
+
       if (!basicDetails || !planetsData) {
-        throw new Error('Failed to fetch astrological data');
+        throw new Error('Failed to fetch astrological data from API');
       }
 
-      // Transform planet data
+      // Transform planet data (no demo fallback)
       const transformedPlanets = transformPlanetData(planetsData);
-      
-      // Ensure basic details have required fields
+
+      // Ensure basic details have required fields from API
       const transformedBasic = {
-        ascendant: basicDetails?.ascendant || basicDetails?.lagna || "Aries",
-        sign: basicDetails?.sign || basicDetails?.moon_sign || "Pisces",
-        Naksahtra: basicDetails?.Naksahtra || basicDetails?.nakshatra || "Ashwini",
-        Varna: basicDetails?.Varna || basicDetails?.varna || "Kshatriya",
-        Gana: basicDetails?.Gana || basicDetails?.gana || "Deva",
+        ascendant: basicDetails.ascendant || basicDetails.lagna,
+        sign: basicDetails.sign || basicDetails.moon_sign,
+        Naksahtra: basicDetails.Naksahtra || basicDetails.nakshatra,
+        Varna: basicDetails.Varna || basicDetails.varna,
+        Gana: basicDetails.Gana || basicDetails.gana,
         ...basicDetails
       };
+
+      // Check if we got real data (not demo)
+      if (!transformedBasic.ascendant || transformedBasic.ascendant === 'Aries') {
+        console.warn("⚠️ API returned default values, but continuing with actual API response");
+      }
 
       // Prepare user details
       const userFormDetails = {
@@ -349,7 +376,6 @@ const KundliForm = () => {
         handler: async function (response) {
           setSuccess(true);
 
-          // Update payment status in Supabase
           if (requestId) {
             await supabase
               .from('saved_reports')
@@ -458,11 +484,11 @@ const KundliForm = () => {
                 <div className="grid grid-cols-3 gap-3 mt-1">
                   <select value={formData.birthDate.day} onChange={(e) => handleChange(e, 'birthDate', 'day')} className="py-3 px-3 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-[#f98a2c]/50 outline-none font-medium text-sm">
                     <option value="">DD</option>
-                    {[...Array(31)].map((_, i) => <option key={i+1} value={i+1}>{i+1}</option>)}
+                    {[...Array(31)].map((_, i) => <option key={i + 1} value={i + 1}>{i + 1}</option>)}
                   </select>
                   <select value={formData.birthDate.month} onChange={(e) => handleChange(e, 'birthDate', 'month')} className="py-3 px-3 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-[#f98a2c]/50 outline-none font-medium text-sm">
                     <option value="">MM</option>
-                    {[...Array(12)].map((_, i) => <option key={i+1} value={i+1}>{i+1}</option>)}
+                    {[...Array(12)].map((_, i) => <option key={i + 1} value={i + 1}>{i + 1}</option>)}
                   </select>
                   <select value={formData.birthDate.year} onChange={(e) => handleChange(e, 'birthDate', 'year')} className="py-3 px-3 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-[#f98a2c]/50 outline-none font-medium text-sm">
                     <option value="">YYYY</option>
@@ -477,7 +503,7 @@ const KundliForm = () => {
                 <div className="grid grid-cols-3 gap-3 mt-1">
                   <select value={formData.birthTime.hour} onChange={(e) => handleChange(e, 'birthTime', 'hour')} className="py-3 px-3 bg-slate-50 border border-slate-200 rounded-xl outline-none font-medium text-sm">
                     <option value="">HH</option>
-                    {[...Array(12)].map((_, i) => <option key={i+1} value={i+1}>{i+1}</option>)}
+                    {[...Array(12)].map((_, i) => <option key={i + 1} value={i + 1}>{i + 1}</option>)}
                   </select>
                   <select value={formData.birthTime.minute} onChange={(e) => handleChange(e, 'birthTime', 'minute')} className="py-3 px-3 bg-slate-50 border border-slate-200 rounded-xl outline-none font-medium text-sm">
                     <option value="">MM</option>
