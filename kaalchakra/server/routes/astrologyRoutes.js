@@ -96,8 +96,43 @@ const {
     getKalsarpaDetailsData,
     getSadeSatiCurrentStatusData,
     getSadeSatiLifeDetailsData,
-    getPitraDoshaReportData
-} = require('../services/astrologyService');
+    getPitraDoshaReportData,
+
+    // Varshaphal
+    getVarshaphalYearChartData,
+    getVarshaphalMonthChartData,
+    getVarshaphalDetailsData,
+    getVarshaphalPlanetsData,
+    getVarshaphalMunthaData,
+    getVarshaphalMuddaDashaData,
+    getVarshaphalPanchavargeeyaBalaData,
+    getVarshaphalSahamPointsData,
+    getVarshaphalYogaData,
+
+    // KP System
+    getKpPlanetsData,
+    getKpHouseCuspsData,
+    getKpBirthChartData,
+    getKpHouseSignificatorData,
+    getKpPlanetSignificatorData,
+
+    // Matchmaking
+    getMatchBirthDetailsData,
+    getMatchAshtakootPointsData,
+    getMatchObstructionsData,
+    getMatchAstroDetailsData,
+    getMatchPlanetDetailsData,
+    getMatchManglikReportData,
+    getMatchMakingReportData,
+    getMatchMakingDetailedReportData,
+    getMatchDashakootPointsData,
+    getMatchPercentageData,
+
+    // Daily Horoscope
+    getDailyHoroscopeData
+} from '../services/astrologyService.js';
+
+const router = express.Router();
 
 // ============================================
 // CORE ENDPOINTS
