@@ -1,6 +1,6 @@
 // server/services/astrologyService.js
-const axios = require('axios');
-const { 
+import axios from 'axios';
+import { 
     // Core APIs
     getAstroDetails,
     getPlanets,
@@ -120,7 +120,7 @@ const {
     getMatchMakingDetailedReport,
     getMatchDashakootPoints,
     getMatchPercentage
-} = require('./astrologyAPIService');
+} from './astrologyAPIService.js';
 
 const OPENCAGE_API_KEY = process.env.OPENCAGE_API_KEY;
 
@@ -656,33 +656,20 @@ const getMatchPercentageData = async (params) => {
 // MATCHMAKING (SIMPLE) SERVICE
 // ============================================
 const getMatchmakingData = async (params) => {
-    try {
-        const { personA, personB } = params;
-        const result = {
-            score: Math.floor(Math.random() * 100),
-            analysis: "Based on the birth charts, the compatibility is calculated using standard Vedic principles.",
-            details: {
-                gunaMilan: "28/36",
-                manglikDosha: "None",
-                bhakutDosha: "Present",
-                nadiDosha: "Absent"
-            }
-        };
-        return { success: true, data: result };
-    } catch (error) {
-        console.error('❌ Matchmaking error:', error.message);
-        return { success: false, error: error.message };
-    }
+    const data = await getMatchAshtakootPoints(params); 
+    return { success: true, data };
+};
+
+const getDailyHoroscopeData = async (sign, day, month, year) => {
+    const data = await getDailyHoroscope(sign, day, month, year);
+    return { success: true, data };
 };
 
 // ============================================
 // EXPORT ALL SERVICES
 // ============================================
-module.exports = {
-    // Location
+export {
     getGeoDetails,
-    
-    // Core
     getBirthDetailsData,
     getAstroDetailsData,
     getPlanetsData,
@@ -691,16 +678,12 @@ module.exports = {
     getGhatChakraData,
     getAyanamshaData,
     getPlanetNatureData,
-    
-    // Biorhythm & Horoscope
     getBiorhythmData,
     getMoonBiorhythmData,
     getHoroChartData,
     getHoroChartImageData,
     getPlanetAshtakData,
     getSarvashtakData,
-    
-    // Vimshottari Dasha
     getCurrentVdashaAllData,
     getMajorVdashaData,
     getCurrentVdashaData,
@@ -709,38 +692,26 @@ module.exports = {
     getSubSubVdashaData,
     getSubSubSubVdashaData,
     getSubSubSubSubVdashaData,
-    
-    // Char Dasha
     getMajorChardashaData,
     getCurrentChardashaData,
     getSubChardashaData,
     getSubSubChardashaData,
-    
-    // Yogini Dasha
     getMajorYoginiDashaData,
     getCurrentYoginiDashaData,
     getSubYoginiDashaData,
-    
-    // General Reports
     getGeneralHouseReportData,
     getGeneralRashiReportData,
     getGeneralAscendantReportData,
     getGeneralNakshatraReportData,
-    
-    // Lal Kitab
     getLalkitabHoroscopeData,
     getLalkitabDebtsData,
     getLalkitabRemediesData,
     getLalkitabHousesData,
     getLalkitabPlanetsData,
-    
-    // Nakshatra Predictions
     getDailyNakshatraPredictionData,
     getNextDayNakshatraPredictionData,
     getPreviousDayNakshatraPredictionData,
     getDailyNakshatraConsolidatedData,
-    
-    // Panchang & Muhurta
     getBasicPanchangSunriseData,
     getBasicPanchangData,
     getAdvancedPanchangSunriseData,
@@ -753,8 +724,6 @@ module.exports = {
     getTamilMonthPanchangData,
     getTamilPanchangData,
     getPanchangFestivalData,
-    
-    // Numerology
     getNumeroTableData,
     getNumeroReportData,
     getNumeroFavTimeData,
@@ -763,16 +732,12 @@ module.exports = {
     getNumeroFavLordData,
     getNumeroFavMantraData,
     getNumeroPredictionDailyData,
-    
-    // Dosha & Yoga
     getSimpleManglikData,
     getManglikData,
     getKalsarpaDetailsData,
     getSadeSatiCurrentStatusData,
     getSadeSatiLifeDetailsData,
     getPitraDoshaReportData,
-    
-    // Varshaphal
     getVarshaphalYearChartData,
     getVarshaphalMonthChartData,
     getVarshaphalDetailsData,
@@ -782,15 +747,11 @@ module.exports = {
     getVarshaphalPanchavargeeyaBalaData,
     getVarshaphalSahamPointsData,
     getVarshaphalYogaData,
-    
-    // KP System
     getKpPlanetsData,
     getKpHouseCuspsData,
     getKpBirthChartData,
     getKpHouseSignificatorData,
     getKpPlanetSignificatorData,
-    
-    // Matchmaking
     getMatchBirthDetailsData,
     getMatchAshtakootPointsData,
     getMatchObstructionsData,
@@ -801,5 +762,6 @@ module.exports = {
     getMatchMakingDetailedReportData,
     getMatchDashakootPointsData,
     getMatchPercentageData,
-    getMatchmakingData
+    getMatchmakingData,
+    getDailyHoroscopeData
 };

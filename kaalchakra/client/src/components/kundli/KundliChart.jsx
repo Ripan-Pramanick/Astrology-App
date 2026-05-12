@@ -1,7 +1,6 @@
 // client/src/components/kundli/KundliChart.jsx
 import React, { useState, useMemo } from "react";
 
-// Planet metadata with colors and short names
 const PLANET_META = {
   Sun: { short: "Su", color: "#d97706", name: "Surya", mantra: "ॐ सूर्याय नमः" },
   Moon: { short: "Mo", color: "#475569", name: "Chandra", mantra: "ॐ चन्द्राय नमः" },
@@ -14,7 +13,6 @@ const PLANET_META = {
   Ketu: { short: "Ke", color: "#334155", name: "Ketu", mantra: "ॐ केतवे नमः" },
 };
 
-// Zodiac signs and their numbers
 const ZODIAC = [
   "Aries", "Taurus", "Gemini", "Cancer", "Leo", "Virgo",
   "Libra", "Scorpio", "Sagittarius", "Capricorn", "Aquarius", "Pisces",
@@ -25,13 +23,11 @@ const ZODIAC_NUM = {
   Libra: 7, Scorpio: 8, Sagittarius: 9, Capricorn: 10, Aquarius: 11, Pisces: 12,
 };
 
-// Geometry for 400x400 chart
 const S = 400;
-const H = S / 2;      // 200
-const Q = S / 4;      // 100
-const TQ = (3 * S) / 4; // 300
+const H = S / 2;      
+const Q = S / 4;      
+const TQ = (3 * S) / 4; 
 
-// House definitions with points and label positions
 const HOUSES = [
   { num: 1, name: "Lagna", points: `${H},0 ${TQ},${Q} ${H},${H} ${Q},${Q}`, label: { x: H, y: Q * 0.85 } },
   { num: 2, name: "Dhana", points: `${H},0 ${Q},${Q} 0,0`, label: { x: Q * 0.7, y: Q * 0.55 } },
@@ -47,7 +43,6 @@ const HOUSES = [
   { num: 12, name: "Vyaya", points: `${S},0 ${TQ},${Q} ${H},0`, label: { x: TQ * 0.7, y: Q * 0.55 } },
 ];
 
-// House significations
 const HOUSE_SIGNIFICATIONS = {
   1: "Self, personality, health, character, physical appearance",
   2: "Wealth, family, speech, values, possessions, food",
@@ -63,14 +58,13 @@ const HOUSE_SIGNIFICATIONS = {
   12: "Expenses, foreign travel, liberation, spirituality, losses"
 };
 
-// Helper: Get sign for a house based on ascendant
 const signForHouse = (ascendantSign, houseNumber) => {
   const ascIdx = ZODIAC_NUM[ascendantSign] || 1;
+  // In Vedic astrology, house 1 is ascendant, house 2 is next sign, etc.
   const idx = ((ascIdx - 1 + (houseNumber - 1)) % 12) + 1;
   return { name: ZODIAC[idx - 1], num: idx };
 };
 
-// Helper: Get zodiac symbol
 const getZodiacSymbol = (sign) => {
   const symbols = {
     'Aries': '♈', 'Taurus': '♉', 'Gemini': '♊', 'Cancer': '♋',
@@ -80,7 +74,6 @@ const getZodiacSymbol = (sign) => {
   return symbols[sign] || '';
 };
 
-// Helper: Get planet Hindi name
 const getPlanetHindiName = (planetName) => {
   const names = {
     'Sun': 'सूर्य', 'Moon': 'चंद्र', 'Mars': 'मंगल', 'Mercury': 'बुध',
@@ -89,55 +82,156 @@ const getPlanetHindiName = (planetName) => {
   return names[planetName] || planetName;
 };
 
+// Helper: Format string to capitalize
+const formatString = (str) => {
+  if (!str) return "";
+  return str.trim().charAt(0).toUpperCase() + str.trim().slice(1).toLowerCase();
+};
+
+const sanitizeSign = (signStr) => {
+  if (!signStr) return "Aries";
+  return formatString(signStr);
+};
+
 const KundliChart = ({ planets = [], ascendant = "Aries", name = "", onHouseClick }) => {
   const [selected, setSelected] = useState(null);
   const [hoverHouse, setHoverHouse] = useState(null);
 
-  // Process planets array - handle different API response formats
-  const processPlanets = (planetsData) => {
-    if (!planetsData) return [];
-    
-    // If planetsData is array, use it directly
-    if (Array.isArray(planetsData)) {
-      return planetsData;
-    }
-    
-    // If planetsData has data property (API wrapper)
-    if (planetsData.data && Array.isArray(planetsData.data)) {
-      return planetsData.data;
-    }
-    
-    // If planetsData has planets property
-    if (planetsData.planets && Array.isArray(planetsData.planets)) {
-      return planetsData.planets;
-    }
-    
-    return [];
+  // Helper: Get house for a planet based on its sign and ascendant
+  const getHouseFromSign = (planetSign, ascSign) => {
+    const planetNum = ZODIAC_NUM[planetSign] || 1;
+    const ascNum = ZODIAC_NUM[ascSign] || 1;
+    // Calculate house: (planet number - ascendant number + 12) % 12 + 1
+    let house = ((planetNum - ascNum + 12) % 12);
+    // If result is 0, it should be house 12 (not 0)
+    return house === 0 ? 12 : house;
   };
 
-  const processedPlanets = processPlanets(planets);
-  
+  // Process planets data
+  const processedData = useMemo(() => {
+    console.log("📥 KundliChart received planets:", planets);
+    
+    let rawList = [];
+    
+    // Handle different API response formats
+    if (Array.isArray(planets)) {
+      rawList = planets;
+    } else if (planets?.data && Array.isArray(planets.data)) {
+      rawList = planets.data;
+    } else if (planets?.planets && Array.isArray(planets.planets)) {
+      rawList = planets.planets;
+    } else if (typeof planets === 'object') {
+      // Try to extract planets from object
+      rawList = Object.values(planets).filter(v => v && typeof v === 'object' && v.name);
+    }
+    
+    console.log("📊 Raw planets list:", rawList);
+    
+    // Find ascendant
+    let lagnaSign = sanitizeSign(ascendant);
+    const ascPlanet = rawList.find(p => 
+      p.name && p.name.toLowerCase() === 'ascendant'
+    );
+    
+    if (ascPlanet && ascPlanet.sign) {
+      lagnaSign = sanitizeSign(ascPlanet.sign);
+    }
+    
+    console.log("🌟 Lagna (Ascendant):", lagnaSign);
+    
+    // Valid planet names (Vedic)
+    const validPlanets = ["Sun", "Moon", "Mars", "Mercury", "Jupiter", "Venus", "Saturn", "Rahu", "Ketu"];
+    const validPlanetsLower = validPlanets.map(p => p.toLowerCase());
+    
+    // Process each planet
+    const processedPlanets = [];
+    
+    rawList.forEach(p => {
+      if (!p.name) return;
+      
+      const planetName = formatString(p.name);
+      const planetNameLower = planetName.toLowerCase();
+      
+      // Skip if not a valid Vedic planet
+      if (!validPlanetsLower.includes(planetNameLower)) return;
+      
+      // Get planet sign
+      let planetSign = p.sign ? sanitizeSign(p.sign) : "";
+      
+      // Calculate house based on sign
+      let houseNum = null;
+      
+      if (planetSign) {
+        // Calculate house from sign based on ascendant
+        houseNum = getHouseFromSign(planetSign, lagnaSign);
+      } else {
+        // If no sign, try to use provided house
+        houseNum = parseInt(p.house);
+        if (isNaN(houseNum)) houseNum = null;
+      }
+      
+      // If we still don't have a house, calculate from degree if available
+      if (!houseNum && p.normDegree !== undefined) {
+        // Rough calculation: degree to sign, then to house
+        const degree = parseFloat(p.normDegree);
+        if (!isNaN(degree)) {
+          const signIndex = Math.floor(degree / 30);
+          planetSign = ZODIAC[signIndex % 12];
+          houseNum = getHouseFromSign(planetSign, lagnaSign);
+        }
+      }
+      
+      // Fallback to house 1 if all else fails
+      if (!houseNum || houseNum < 1 || houseNum > 12) {
+        houseNum = 1;
+      }
+      
+      // Get retrograde status
+      const isRetrograde = p.retrograde === true || p.isRetro === true || p.isRetro === "true";
+      
+      // Format degree
+      let formattedDegree = p.degree || "";
+      let degreeVal = parseFloat(p.normDegree);
+      if (isNaN(degreeVal)) degreeVal = parseFloat(p.fullDegree);
+      
+      if (!isNaN(degreeVal) && degreeVal !== 0) {
+        const deg = Math.floor(degreeVal % 30);
+        const min = Math.floor((degreeVal - Math.floor(degreeVal)) * 60);
+        formattedDegree = `${deg}° ${min.toString().padStart(2, '0')}'`;
+      }
+      
+      processedPlanets.push({
+        name: planetName,
+        sign: planetSign,
+        house: houseNum,
+        degree: formattedDegree,
+        normDegree: degreeVal,
+        retrograde: isRetrograde,
+        original: p
+      });
+    });
+    
+    console.log("✅ Processed planets with houses:", processedPlanets);
+    
+    return {
+      lagna: lagnaSign,
+      planets: processedPlanets,
+      hasData: rawList.length > 0
+    };
+  }, [planets, ascendant]);
+
   // Group planets by house
   const planetsByHouse = useMemo(() => {
-    const map = {};
-    processedPlanets.forEach((p) => {
-      // Get house number from planet data
-      let houseNum = parseInt(p.house);
-      
-      // If house not directly provided, calculate from sign
-      if (!houseNum && p.sign) {
-        const ascIdx = ZODIAC_NUM[ascendant] || 1;
-        const signIdx = ZODIAC_NUM[p.sign] || 1;
-        houseNum = ((signIdx - ascIdx + 12) % 12) + 1;
-      }
-      
-      if (houseNum && houseNum >= 1 && houseNum <= 12) {
-        if (!map[houseNum]) map[houseNum] = [];
-        map[houseNum].push(p);
+    const map = {1: [], 2: [], 3: [], 4: [], 5: [], 6: [], 7: [], 8: [], 9: [], 10: [], 11: [], 12: []};
+    
+    processedData.planets.forEach((p) => {
+      if (p.house >= 1 && p.house <= 12) {
+        map[p.house].push(p);
       }
     });
+    
     return map;
-  }, [processedPlanets, ascendant]);
+  }, [processedData.planets]);
 
   const handleClick = (h) => {
     const next = selected === h.num ? null : h.num;
@@ -146,15 +240,29 @@ const KundliChart = ({ planets = [], ascendant = "Aries", name = "", onHouseClic
       onHouseClick(h.num, {
         house: h.num,
         name: h.name,
-        sign: signForHouse(ascendant, h.num).name,
+        sign: signForHouse(processedData.lagna, h.num).name,
         planets: planetsByHouse[h.num] || [],
         signification: HOUSE_SIGNIFICATIONS[h.num]
       });
     }
   };
 
-  // If no planets data, show loading state
-  if (!processedPlanets || processedPlanets.length === 0) {
+  // Debug logging
+  console.log("🏠 Planets by house:", planetsByHouse);
+  console.log("📊 Processed planets count:", processedData.planets.length);
+  console.log("🔢 Houses filled:", Object.entries(planetsByHouse).filter(([k,v]) => v.length > 0).length);
+
+  // If no data
+  if (!processedData.hasData) {
+    return (
+      <div className="w-full bg-white rounded-2xl shadow-sm border border-orange-200/50 p-8 text-center mt-6">
+        <p className="text-gray-500">Planetary data not available to generate chart.</p>
+      </div>
+    );
+  }
+
+  // Show loading while processing
+  if (processedData.planets.length === 0) {
     return (
       <div className="w-full max-w-4xl mx-auto p-8 text-center">
         <div className="animate-pulse">
@@ -167,52 +275,29 @@ const KundliChart = ({ planets = [], ascendant = "Aries", name = "", onHouseClic
 
   return (
     <div className="w-full max-w-4xl mx-auto font-sans" data-testid="kundli-chart-root">
-      <div 
-        className="relative rounded-3xl p-6 md:p-8 border border-orange-200/60 shadow-[0_20px_60px_-15px_rgba(234,88,12,0.15)] overflow-hidden"
-        style={{ background: 'linear-gradient(to bottom right, #fffbeb, rgba(255, 247, 237, 0.5), #fff1f2)' }}
-      >
-        {/* Header */}
+      <div className="relative rounded-3xl p-6 md:p-8 border border-orange-200/60 shadow-[0_20px_60px_-15px_rgba(234,88,12,0.15)] overflow-hidden" style={{ background: 'linear-gradient(to bottom right, #fffbeb, rgba(255, 247, 237, 0.5), #fff1f2)' }}>
+        
         <div className="relative flex items-center justify-between mb-8 z-10">
           <div className="flex items-center gap-4">
-            <div 
-              className="w-12 h-12 rounded-2xl flex items-center justify-center text-white text-xl font-bold shadow-lg shadow-orange-500/30"
-              style={{ background: 'linear-gradient(to bottom right, #f97316, #f43f5e)' }}
-            >
-              ॐ
-            </div>
+            <div className="w-12 h-12 rounded-2xl flex items-center justify-center text-white text-xl font-bold shadow-lg shadow-orange-500/30" style={{ background: 'linear-gradient(to bottom right, #f97316, #f43f5e)' }}>ॐ</div>
             <div>
-              <h3 
-                className="text-xl md:text-2xl font-bold tracking-tight"
-                style={{ 
-                  background: 'linear-gradient(to right, #292524, #7c2d12)', 
-                  WebkitBackgroundClip: 'text', 
-                  WebkitTextFillColor: 'transparent',
-                  backgroundClip: 'text',
-                  color: 'transparent'
-                }}
-              >
+              <h3 className="text-xl md:text-2xl font-bold tracking-tight" style={{ background: 'linear-gradient(to right, #292524, #7c2d12)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', backgroundClip: 'text', color: 'transparent' }}>
                 Vedic Birth Chart
               </h3>
               <p className="text-sm text-stone-500 mt-0.5">
-                Lagna (Ascendant):{" "}
-                <span className="font-bold text-orange-600">{ascendant} {getZodiacSymbol(ascendant)}</span>
+                Lagna (Ascendant): <span className="font-bold text-orange-600">{processedData.lagna} {getZodiacSymbol(processedData.lagna)}</span>
                 {name ? <span className="text-stone-400"> • <span className="text-stone-700 font-medium">{name}</span></span> : null}
               </p>
             </div>
           </div>
         </div>
 
-        {/* Chart Area */}
         <div className="relative z-10 grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
-          
-          {/* SVG Chart */}
           <div className="lg:col-span-7 flex flex-col items-center">
             <div className="relative w-full max-w-[500px] aspect-square rounded-2xl p-2 bg-white/40 backdrop-blur-sm border border-white/60 shadow-inner">
               <svg viewBox={`-8 -8 ${S + 16} ${S + 16}`} className="w-full h-full drop-shadow-md">
                 
-                {/* Chart Background */}
                 <rect x="0" y="0" width={S} height={S} rx="4" fill="url(#paperBg)" stroke="#ea580c" strokeWidth="2.5" />
-                
                 <defs>
                   <linearGradient id="paperBg" x1="0" y1="0" x2="1" y2="1">
                     <stop offset="0%" stopColor="#fffbeb" stopOpacity="0.9" />
@@ -233,7 +318,6 @@ const KundliChart = ({ planets = [], ascendant = "Aries", name = "", onHouseClic
                   const isSelected = selected === h.num;
                   const isHover = hoverHouse === h.num;
                   const isLagna = h.num === 1;
-                  
                   let fill = "transparent";
                   if (isSelected) fill = "url(#selectedFill)";
                   else if (isLagna) fill = "url(#lagnaFill)";
@@ -241,24 +325,23 @@ const KundliChart = ({ planets = [], ascendant = "Aries", name = "", onHouseClic
 
                   return (
                     <polygon
-                      key={h.num}
-                      points={h.points}
-                      fill={fill}
-                      stroke="#ea580c"
+                      key={h.num} 
+                      points={h.points} 
+                      fill={fill} 
+                      stroke="#ea580c" 
                       strokeWidth={isSelected ? 3 : 1.5}
-                      strokeLinejoin="round"
+                      strokeLinejoin="round" 
                       className="transition-all duration-300 cursor-pointer"
-                      onClick={() => handleClick(h)}
-                      onMouseEnter={() => setHoverHouse(h.num)}
+                      onClick={() => handleClick(h)} 
+                      onMouseEnter={() => setHoverHouse(h.num)} 
                       onMouseLeave={() => setHoverHouse(null)}
-                      data-testid={`house-${h.num}`}
                     />
                   );
                 })}
 
                 {/* House Numbers and Planets */}
                 {HOUSES.map((h) => {
-                  const sign = signForHouse(ascendant, h.num);
+                  const sign = signForHouse(processedData.lagna, h.num);
                   const ps = planetsByHouse[h.num] || [];
                   const isLagna = h.num === 1;
                   
@@ -266,8 +349,12 @@ const KundliChart = ({ planets = [], ascendant = "Aries", name = "", onHouseClic
                     <g key={`t-${h.num}`} pointerEvents="none">
                       {/* Zodiac Number */}
                       <text 
-                        x={h.label.x} y={h.label.y - 16} 
-                        textAnchor="middle" fontSize="15" fontWeight="800" fill="#9a3412" 
+                        x={h.label.x} 
+                        y={h.label.y - 16} 
+                        textAnchor="middle" 
+                        fontSize="15" 
+                        fontWeight="800" 
+                        fill="#9a3412" 
                         style={{ fontFamily: "'Crimson Pro', Georgia, serif", paintOrder: "stroke", stroke: "rgba(255,255,255,0.9)", strokeWidth: "3px" }}
                       >
                         {sign.num}
@@ -275,12 +362,21 @@ const KundliChart = ({ planets = [], ascendant = "Aries", name = "", onHouseClic
 
                       {/* Lagna Label */}
                       {isLagna && ps.length === 0 && (
-                        <text x={h.label.x} y={h.label.y + 6} textAnchor="middle" fontSize="11" fontWeight="800" fill="#ea580c" letterSpacing="1.5" style={{ paintOrder: "stroke", stroke: "rgba(255,255,255,0.9)", strokeWidth: "2px" }}>
+                        <text 
+                          x={h.label.x} 
+                          y={h.label.y + 6} 
+                          textAnchor="middle" 
+                          fontSize="11" 
+                          fontWeight="800" 
+                          fill="#ea580c" 
+                          letterSpacing="1.5" 
+                          style={{ paintOrder: "stroke", stroke: "rgba(255,255,255,0.9)", strokeWidth: "2px" }}
+                        >
                           LAGNA
                         </text>
                       )}
 
-                      {/* Planets */}
+                      {/* Planets in house */}
                       {ps.map((p, i) => {
                         const meta = PLANET_META[p.name] || { short: p.name?.slice(0, 2) || "?", color: "#334155" };
                         const perRow = 3;
@@ -294,7 +390,10 @@ const KundliChart = ({ planets = [], ascendant = "Aries", name = "", onHouseClic
                         return (
                           <g key={`${h.num}-${i}`} transform={`translate(${h.label.x + xOffset}, ${h.label.y + yOffset})`}>
                             <text 
-                              textAnchor="middle" fontSize="13" fontWeight="800" fill={meta.color} 
+                              textAnchor="middle" 
+                              fontSize="13" 
+                              fontWeight="800" 
+                              fill={meta.color} 
                               style={{ fontFamily: "'Inter', sans-serif", paintOrder: "stroke", stroke: "rgba(255,255,255,0.9)", strokeWidth: "3px" }}
                             >
                               {meta.short}
@@ -306,7 +405,7 @@ const KundliChart = ({ planets = [], ascendant = "Aries", name = "", onHouseClic
                     </g>
                   );
                 })}
-
+                
                 {/* Center Om */}
                 <text x={H} y={H + 12} textAnchor="middle" fontSize="40" fill="#ea580c" opacity="0.1" fontWeight="700" pointerEvents="none">ॐ</text>
               </svg>
@@ -326,14 +425,13 @@ const KundliChart = ({ planets = [], ascendant = "Aries", name = "", onHouseClic
 
           {/* Details Panel */}
           <div className="lg:col-span-5 h-full min-h-[400px]">
-            <HouseDetails
-              selected={selected}
-              ascendant={ascendant}
-              planetsByHouse={planetsByHouse}
-              onClear={() => setSelected(null)}
+            <HouseDetails 
+              selected={selected} 
+              ascendant={processedData.lagna} 
+              planetsByHouse={planetsByHouse} 
+              onClear={() => setSelected(null)} 
             />
           </div>
-          
         </div>
       </div>
     </div>
@@ -347,12 +445,7 @@ const HouseDetails = ({ selected, ascendant, planetsByHouse, onClear }) => {
       <div className="h-full w-full rounded-3xl border-2 border-dashed border-orange-200/60 bg-white/40 backdrop-blur-md p-8 flex flex-col items-center justify-center text-center shadow-inner">
         <div className="relative w-20 h-20 mb-6">
           <div className="absolute inset-0 bg-orange-400 rounded-full blur-xl opacity-20 animate-pulse"></div>
-          <div 
-            className="relative w-full h-full rounded-full border-2 border-orange-200 flex items-center justify-center text-4xl shadow-lg"
-            style={{ background: 'linear-gradient(to bottom right, #fff7ed, #fff1f2)' }}
-          >
-            ✨
-          </div>
+          <div className="relative w-full h-full rounded-full border-2 border-orange-200 flex items-center justify-center text-4xl shadow-lg" style={{ background: 'linear-gradient(to bottom right, #fff7ed, #fff1f2)' }}>✨</div>
         </div>
         <h4 className="text-xl font-bold text-stone-800 mb-2">Explore the Chart</h4>
         <p className="text-sm text-stone-500 max-w-[240px] leading-relaxed">
@@ -368,21 +461,13 @@ const HouseDetails = ({ selected, ascendant, planetsByHouse, onClear }) => {
 
   return (
     <div className="h-full rounded-3xl border border-orange-100 bg-white/80 backdrop-blur-xl p-6 shadow-xl shadow-orange-900/5 flex flex-col animate-in fade-in slide-in-from-bottom-4 duration-300">
-      
       <div className="flex items-start justify-between pb-5 border-b border-orange-100">
         <div>
-          <span className="inline-block px-3 py-1 rounded-full bg-orange-100 text-orange-700 text-[10px] font-bold uppercase tracking-wider mb-2">
-            Bhava {selected}
-          </span>
+          <span className="inline-block px-3 py-1 rounded-full bg-orange-100 text-orange-700 text-[10px] font-bold uppercase tracking-wider mb-2">Bhava {selected}</span>
           <h4 className="text-2xl font-bold text-stone-800">{h?.name} House</h4>
           <p className="text-sm text-stone-500 mt-1.5 leading-relaxed pr-4">{HOUSE_SIGNIFICATIONS[selected]}</p>
         </div>
-        <button 
-          onClick={onClear} 
-          className="w-8 h-8 flex items-center justify-center rounded-full bg-stone-100 text-stone-500 hover:bg-rose-100 hover:text-rose-600 transition-colors"
-        >
-          ✕
-        </button>
+        <button onClick={onClear} className="w-8 h-8 flex items-center justify-center rounded-full bg-stone-100 text-stone-500 hover:bg-rose-100 hover:text-rose-600 transition-colors">✕</button>
       </div>
 
       <div className="grid grid-cols-2 gap-4 mt-6">
@@ -412,9 +497,7 @@ const HouseDetails = ({ selected, ascendant, planetsByHouse, onClear }) => {
               return (
                 <li key={i} className="flex items-center justify-between gap-3 rounded-xl border border-stone-100 bg-white p-3 shadow-sm hover:shadow-md transition-shadow">
                   <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 rounded-full flex items-center justify-center font-bold text-white shadow-inner" style={{ backgroundColor: meta.color }}>
-                      {meta.short}
-                    </div>
+                    <div className="w-10 h-10 rounded-full flex items-center justify-center font-bold text-white shadow-inner" style={{ backgroundColor: meta.color }}>{meta.short}</div>
                     <div>
                       <p className="font-bold text-stone-800">{getPlanetHindiName(p.name)} <span className="text-xs font-normal text-stone-500 ml-1">({p.name})</span></p>
                       {p.retrograde && <span className="inline-block mt-0.5 text-[10px] font-bold text-rose-600 bg-rose-50 px-2 py-0.5 rounded-md">Retrograde</span>}

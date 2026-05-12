@@ -74,35 +74,28 @@ const Horoscope = () => {
     fetchHoroscope();
   }, [selectedSign, selectedDay]);
 
-  const fetchHoroscope = async () => {
+const fetchHoroscope = async () => {
     setLoading(true);
     setError('');
     try {
       const signData = zodiacSigns.find(s => s.name === selectedSign);
-      const dayParam = getDayParam(selectedDay);
+      
+      console.log(`🔮 Fetching horoscope for ${signData.apiName}, day: ${selectedDay}`);
 
-      console.log(`🔮 Fetching horoscope for ${signData.apiName}, day offset: ${dayParam}`);
+      // সরাসরি Daily Horoscope API কল
+      const horoscopeResponse = await astrologyServices.predictions.getDailyHoroscope(signData.apiName, selectedDay);
+      console.log("📊 Horoscope response:", horoscopeResponse);
 
-      const currentDate = new Date();
-      const payload = {
-        day: currentDate.getDate() + dayParam,
-        month: currentDate.getMonth() + 1,
-        year: currentDate.getFullYear(),
-        hour: 12,
-        minute: 0,
-        second: 0,
-        latitude: 28.6139,
-        longitude: 77.2090,
-        timezone: 5.5,
-        ayanamsa: "lahiri"
-      };
-
-      const birthDetails = await astrologyServices.kundli.getBirthDetails(payload);
-      console.log("📊 Birth details for horoscope:", birthDetails);
-
-      if (birthDetails) {
-        const horoscope = generateHoroscopeFromPlanets(birthDetails, selectedSign, selectedDay);
-        setHoroscopeData(horoscope);
+      if (horoscopeResponse && horoscopeResponse.prediction) {
+        setHoroscopeData({
+          general: horoscopeResponse.prediction,
+          love: horoscopeResponse.love || getLovePrediction(selectedSign, selectedDay),
+          career: horoscopeResponse.career || getCareerPrediction(selectedSign, selectedDay),
+          health: horoscopeResponse.health || getHealthPrediction(selectedSign, selectedDay),
+          lucky_number: horoscopeResponse.lucky_number || getLuckyNumber(selectedSign),
+          lucky_color: horoscopeResponse.lucky_color || getLuckyColor(selectedSign),
+          element: signData.element
+        });
       } else {
         throw new Error('No data received');
       }
@@ -114,7 +107,6 @@ const Horoscope = () => {
       setLoading(false);
     }
   };
-
   // Generate horoscope based on planetary positions
   const generateHoroscopeFromPlanets = (planets, sign, day) => {
     const sunSign = planets.sun_sign || sign;

@@ -1,32 +1,23 @@
 // server/routes/astrologyRoutes.js
-const express = require('express');
-const router = express.Router();
-const {
-    // Core Services
+import express from 'express';
+import {
     getGeoDetails,
     getBirthDetailsData,
     getAstroDetailsData,
     getPlanetsData,
     getPlanetsExtendedData,
+    getAdvancedPanchangData,
     getBhavMadhyaData,
     getGhatChakraData,
     getAyanamshaData,
     getPlanetNatureData,
     getMatchmakingData,
-    
-    // Biorhythm
     getBiorhythmData,
     getMoonBiorhythmData,
-    
-    // Horo Chart
     getHoroChartData,
     getHoroChartImageData,
-    
-    // Planet Ashtak & Sarvashtak
     getPlanetAshtakData,
     getSarvashtakData,
-    
-    // Vimshottari Dasha
     getCurrentVdashaAllData,
     getMajorVdashaData,
     getCurrentVdashaData,
@@ -35,42 +26,29 @@ const {
     getSubSubVdashaData,
     getSubSubSubVdashaData,
     getSubSubSubSubVdashaData,
-    
-    // Chardasha
     getMajorChardashaData,
     getCurrentChardashaData,
     getSubChardashaData,
     getSubSubChardashaData,
-    
-    // Yogini Dasha
     getMajorYoginiDashaData,
     getCurrentYoginiDashaData,
     getSubYoginiDashaData,
-    
-    // General Reports
     getGeneralHouseReportData,
     getGeneralRashiReportData,
     getGeneralAscendantReportData,
     getGeneralNakshatraReportData,
-    
-    // Lal Kitab
     getLalkitabHoroscopeData,
     getLalkitabDebtsData,
     getLalkitabRemediesData,
     getLalkitabHousesData,
     getLalkitabPlanetsData,
-    
-    // Nakshatra Predictions
     getDailyNakshatraPredictionData,
     getNextDayNakshatraPredictionData,
     getPreviousDayNakshatraPredictionData,
     getDailyNakshatraConsolidatedData,
-    
-    // Panchang & Muhurta
     getBasicPanchangSunriseData,
     getBasicPanchangData,
     getAdvancedPanchangSunriseData,
-    getAdvancedPanchangData,
     getPlanetPanchangData,
     getChaughadiyaMuhurtaData,
     getHoraMuhurtaDinmanData,
@@ -79,8 +57,6 @@ const {
     getTamilMonthPanchangData,
     getTamilPanchangData,
     getPanchangFestivalData,
-    
-    // Numerology
     getNumeroTableData,
     getNumeroReportData,
     getNumeroFavTimeData,
@@ -89,16 +65,12 @@ const {
     getNumeroFavLordData,
     getNumeroFavMantraData,
     getNumeroPredictionDailyData,
-    
-    // Dosha & Yoga
     getSimpleManglikData,
     getManglikData,
     getKalsarpaDetailsData,
     getSadeSatiCurrentStatusData,
     getSadeSatiLifeDetailsData,
     getPitraDoshaReportData,
-
-    // Varshaphal
     getVarshaphalYearChartData,
     getVarshaphalMonthChartData,
     getVarshaphalDetailsData,
@@ -108,15 +80,11 @@ const {
     getVarshaphalPanchavargeeyaBalaData,
     getVarshaphalSahamPointsData,
     getVarshaphalYogaData,
-
-    // KP System
     getKpPlanetsData,
     getKpHouseCuspsData,
     getKpBirthChartData,
     getKpHouseSignificatorData,
     getKpPlanetSignificatorData,
-
-    // Matchmaking
     getMatchBirthDetailsData,
     getMatchAshtakootPointsData,
     getMatchObstructionsData,
@@ -127,8 +95,6 @@ const {
     getMatchMakingDetailedReportData,
     getMatchDashakootPointsData,
     getMatchPercentageData,
-
-    // Daily Horoscope
     getDailyHoroscopeData
 } from '../services/astrologyService.js';
 
@@ -137,7 +103,7 @@ const router = express.Router();
 // ============================================
 // CORE ENDPOINTS
 // ============================================
-router.post('/birth-details', async (req, res) => {
+router.post('/birth_details', async (req, res) => {
     try {
         const result = await getBirthDetailsData(req.body);
         res.json(result);
@@ -277,7 +243,7 @@ router.post('/horo-chart-image/:chartId', async (req, res) => {
 });
 
 // ============================================
-// PLANET ASHTAK & SARVASHTAK
+// PLANET ASHTAK AND SARVASHTAK
 // ============================================
 router.post('/planet-ashtak/:planetName', async (req, res) => {
     try {
@@ -579,7 +545,7 @@ router.post('/daily-nakshatra-consolidated', async (req, res) => {
 });
 
 // ============================================
-// PANCHANG & MUHURTA ENDPOINTS
+// PANCHANG AND MUHURTA ENDPOINTS
 // ============================================
 router.post('/basic-panchang-sunrise', async (req, res) => {
     try {
@@ -608,6 +574,7 @@ router.post('/advanced-panchang-sunrise', async (req, res) => {
     }
 });
 
+// ✅ শুধুমাত্র একবার
 router.post('/advanced-panchang', async (req, res) => {
     try {
         const result = await getAdvancedPanchangData(req.body);
@@ -690,7 +657,7 @@ router.post('/panchang-festival', async (req, res) => {
 });
 
 // ============================================
-// NUMEROLOGY ENDPOINTS
+// NUMEROLOGY ENDPOINTS (সংক্ষেপে - বাকিগুলো একই রকম)
 // ============================================
 router.post('/numero-table', async (req, res) => {
     try {
@@ -765,7 +732,7 @@ router.post('/numero-prediction-daily', async (req, res) => {
 });
 
 // ============================================
-// DOSHA & YOGA ENDPOINTS
+// DOSHA AND YOGA ENDPOINTS
 // ============================================
 router.post('/simple-manglik', async (req, res) => {
     try {
@@ -822,15 +789,250 @@ router.post('/pitra-dosha-report', async (req, res) => {
 });
 
 // ============================================
+// VARSHAPHAL ENDPOINTS
+// ============================================
+router.post('/varshaphal-year-chart', async (req, res) => {
+    try {
+        const result = await getVarshaphalYearChartData(req.body);
+        res.json(result);
+    } catch (error) {
+        res.status(500).json({ success: false, error: error.message });
+    }
+});
+
+router.post('/varshaphal-month-chart', async (req, res) => {
+    try {
+        const result = await getVarshaphalMonthChartData(req.body);
+        res.json(result);
+    } catch (error) {
+        res.status(500).json({ success: false, error: error.message });
+    }
+});
+
+router.post('/varshaphal-details', async (req, res) => {
+    try {
+        const result = await getVarshaphalDetailsData(req.body);
+        res.json(result);
+    } catch (error) {
+        res.status(500).json({ success: false, error: error.message });
+    }
+});
+
+router.post('/varshaphal-planets', async (req, res) => {
+    try {
+        const result = await getVarshaphalPlanetsData(req.body);
+        res.json(result);
+    } catch (error) {
+        res.status(500).json({ success: false, error: error.message });
+    }
+});
+
+router.post('/varshaphal-muntha', async (req, res) => {
+    try {
+        const result = await getVarshaphalMunthaData(req.body);
+        res.json(result);
+    } catch (error) {
+        res.status(500).json({ success: false, error: error.message });
+    }
+});
+
+router.post('/varshaphal-mudda-dasha', async (req, res) => {
+    try {
+        const result = await getVarshaphalMuddaDashaData(req.body);
+        res.json(result);
+    } catch (error) {
+        res.status(500).json({ success: false, error: error.message });
+    }
+});
+
+router.post('/varshaphal-panchavargeeya-bala', async (req, res) => {
+    try {
+        const result = await getVarshaphalPanchavargeeyaBalaData(req.body);
+        res.json(result);
+    } catch (error) {
+        res.status(500).json({ success: false, error: error.message });
+    }
+});
+
+router.post('/varshaphal-saham-points', async (req, res) => {
+    try {
+        const result = await getVarshaphalSahamPointsData(req.body);
+        res.json(result);
+    } catch (error) {
+        res.status(500).json({ success: false, error: error.message });
+    }
+});
+
+router.post('/varshaphal-yoga', async (req, res) => {
+    try {
+        const result = await getVarshaphalYogaData(req.body);
+        res.json(result);
+    } catch (error) {
+        res.status(500).json({ success: false, error: error.message });
+    }
+});
+
+// ============================================
+// KP SYSTEM ENDPOINTS
+// ============================================
+router.post('/kp-planets', async (req, res) => {
+    try {
+        const result = await getKpPlanetsData(req.body);
+        res.json(result);
+    } catch (error) {
+        res.status(500).json({ success: false, error: error.message });
+    }
+});
+
+router.post('/kp-house-cusps', async (req, res) => {
+    try {
+        const result = await getKpHouseCuspsData(req.body);
+        res.json(result);
+    } catch (error) {
+        res.status(500).json({ success: false, error: error.message });
+    }
+});
+
+router.post('/kp-birth-chart', async (req, res) => {
+    try {
+        const result = await getKpBirthChartData(req.body);
+        res.json(result);
+    } catch (error) {
+        res.status(500).json({ success: false, error: error.message });
+    }
+});
+
+router.post('/kp-house-significator', async (req, res) => {
+    try {
+        const result = await getKpHouseSignificatorData(req.body);
+        res.json(result);
+    } catch (error) {
+        res.status(500).json({ success: false, error: error.message });
+    }
+});
+
+router.post('/kp-planet-significator', async (req, res) => {
+    try {
+        const result = await getKpPlanetSignificatorData(req.body);
+        res.json(result);
+    } catch (error) {
+        res.status(500).json({ success: false, error: error.message });
+    }
+});
+
+// ============================================
+// MATCHMAKING ENDPOINTS
+// ============================================
+router.post('/match-birth-details', async (req, res) => {
+    try {
+        const result = await getMatchBirthDetailsData(req.body);
+        res.json(result);
+    } catch (error) {
+        res.status(500).json({ success: false, error: error.message });
+    }
+});
+
+router.post('/match-ashtakoot-points', async (req, res) => {
+    try {
+        const result = await getMatchAshtakootPointsData(req.body);
+        res.json(result);
+    } catch (error) {
+        res.status(500).json({ success: false, error: error.message });
+    }
+});
+
+router.post('/match-obstructions', async (req, res) => {
+    try {
+        const result = await getMatchObstructionsData(req.body);
+        res.json(result);
+    } catch (error) {
+        res.status(500).json({ success: false, error: error.message });
+    }
+});
+
+router.post('/match-astro-details', async (req, res) => {
+    try {
+        const result = await getMatchAstroDetailsData(req.body);
+        res.json(result);
+    } catch (error) {
+        res.status(500).json({ success: false, error: error.message });
+    }
+});
+
+router.post('/match-planet-details', async (req, res) => {
+    try {
+        const result = await getMatchPlanetDetailsData(req.body);
+        res.json(result);
+    } catch (error) {
+        res.status(500).json({ success: false, error: error.message });
+    }
+});
+
+router.post('/match-manglik-report', async (req, res) => {
+    try {
+        const result = await getMatchManglikReportData(req.body);
+        res.json(result);
+    } catch (error) {
+        res.status(500).json({ success: false, error: error.message });
+    }
+});
+
+router.post('/match-making-report', async (req, res) => {
+    try {
+        const result = await getMatchMakingReportData(req.body);
+        res.json(result);
+    } catch (error) {
+        res.status(500).json({ success: false, error: error.message });
+    }
+});
+
+router.post('/match-making-detailed-report', async (req, res) => {
+    try {
+        const result = await getMatchMakingDetailedReportData(req.body);
+        res.json(result);
+    } catch (error) {
+        res.status(500).json({ success: false, error: error.message });
+    }
+});
+
+router.post('/match-dashakoot-points', async (req, res) => {
+    try {
+        const result = await getMatchDashakootPointsData(req.body);
+        res.json(result);
+    } catch (error) {
+        res.status(500).json({ success: false, error: error.message });
+    }
+});
+
+router.post('/match-percentage', async (req, res) => {
+    try {
+        const result = await getMatchPercentageData(req.body);
+        res.json(result);
+    } catch (error) {
+        res.status(500).json({ success: false, error: error.message });
+    }
+});
+
+// ============================================
 // HEALTH CHECK ENDPOINT
 // ============================================
 router.get('/health', (req, res) => {
     res.json({
         status: 'OK',
         timestamp: new Date().toISOString(),
-        total_endpoints: 70,
         message: 'Astrology API is running successfully'
     });
 });
 
-module.exports = router;
+// Daily Horoscope endpoint
+router.post('/daily-horoscope', async (req, res) => {
+    try {
+        const { sign, day, month, year } = req.body;
+        const result = await getDailyHoroscopeData(sign, day || 12, month || 5, year || 2024);
+        res.json(result);
+    } catch (error) {
+        res.status(500).json({ success: false, error: error.message });
+    }
+});
+
+export default router;

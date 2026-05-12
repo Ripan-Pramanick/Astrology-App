@@ -1,900 +1,1037 @@
-// server/index.js - সম্পূর্ণ ফিক্সড ভার্সন
-import 'dotenv/config';
+// server/routes/astrologyRoutes.js
 import express from 'express';
-import cors from 'cors';
-import helmet from 'helmet';
-import compression from 'compression';
-import morgan from 'morgan';
-import axios from 'axios';
-import Razorpay from 'razorpay';
-import admin from 'firebase-admin';
-import { GoogleGenerativeAI } from "@google/generative-ai";
+// import {
+//     getGeoDetails,
+//     getBirthDetailsData,
+//     getAstroDetailsData,
+//     getPlanetsData,
+//     getPlanetsExtendedData,
+//     getBhavMadhyaData,
+//     getGhatChakraData,
+//     getAyanamshaData,
+//     getPlanetNatureData,
+//     getMatchmakingData,
+//     getBiorhythmData,
+//     getMoonBiorhythmData,
+//     getHoroChartData,
+//     getHoroChartImageData,
+//     getPlanetAshtakData,
+//     getSarvashtakData,
+//     getCurrentVdashaAllData,
+//     getMajorVdashaData,
+//     getCurrentVdashaData,
+//     getCurrentVdashaByDateData,
+//     getSubVdashaData,
+//     getSubSubVdashaData,
+//     getSubSubSubVdashaData,
+//     getSubSubSubSubVdashaData,
+//     getMajorChardashaData,
+//     getCurrentChardashaData,
+//     getSubChardashaData,
+//     getSubSubChardashaData,
+//     getMajorYoginiDashaData,
+//     getCurrentYoginiDashaData,
+//     getSubYoginiDashaData,
+//     getGeneralHouseReportData,
+//     getGeneralRashiReportData,
+//     getGeneralAscendantReportData,
+//     getGeneralNakshatraReportData,
+//     getLalkitabHoroscopeData,
+//     getLalkitabDebtsData,
+//     getLalkitabRemediesData,
+//     getLalkitabHousesData,
+//     getLalkitabPlanetsData,
+//     getDailyNakshatraPredictionData,
+//     getNextDayNakshatraPredictionData,
+//     getPreviousDayNakshatraPredictionData,
+//     getDailyNakshatraConsolidatedData,
+//     getBasicPanchangSunriseData,
+//     getBasicPanchangData,
+//     getAdvancedPanchangSunriseData,
+//     getPlanetPanchangData,
+//     getChaughadiyaMuhurtaData,
+//     getHoraMuhurtaDinmanData,
+//     getPanchangChartData,
+//     getPanchangChartSunriseData,
+//     getTamilMonthPanchangData,
+//     getTamilPanchangData,
+//     getPanchangFestivalData,
+//     getNumeroTableData,
+//     getNumeroReportData,
+//     getNumeroFavTimeData,
+//     getNumeroPlaceVastuData,
+//     getNumeroFastsReportData,
+//     getNumeroFavLordData,
+//     getNumeroFavMantraData,
+//     getNumeroPredictionDailyData,
+//     getSimpleManglikData,
+//     getManglikData,
+//     getKalsarpaDetailsData,
+//     getSadeSatiCurrentStatusData,
+//     getSadeSatiLifeDetailsData,
+//     getPitraDoshaReportData,
+//     getVarshaphalYearChartData,
+//     getVarshaphalMonthChartData,
+//     getVarshaphalDetailsData,
+//     getVarshaphalPlanetsData,
+//     getVarshaphalMunthaData,
+//     getVarshaphalMuddaDashaData,
+//     getVarshaphalPanchavargeeyaBalaData,
+//     getVarshaphalSahamPointsData,
+//     getVarshaphalYogaData,
+//     getKpPlanetsData,
+//     getKpHouseCuspsData,
+//     getKpBirthChartData,
+//     getKpHouseSignificatorData,
+//     getKpPlanetSignificatorData,
+//     getMatchBirthDetailsData,
+//     getMatchAshtakootPointsData,
+//     getMatchObstructionsData,
+//     getMatchAstroDetailsData,
+//     getMatchPlanetDetailsData,
+//     getMatchManglikReportData,
+//     getMatchMakingReportData,
+//     getMatchMakingDetailedReportData,
+//     getMatchDashakootPointsData,
+//     getMatchPercentageData,
+//     getDailyHoroscopeData
+// } from '../services/astrologyService.js';
 
-// Local Imports
-import { config as appConfig, config as firebaseConfig } from './config/env.js';
-import { supabase } from './utils/supabase.js';
-import logger from './utils/logger.js';
-import { errorHandler } from './middleware/errorHandler.js';
-
-// Route Imports
-import authRoutes from './routes/auth.js';
-import kundliRoutes from './routes/kundli.js';
-import paymentRoutes from './routes/payment.js';
-import adminRoutes from './routes/admin.js';
-import matchmakingRoutes from './routes/matchmaking.js';
-import serviceRoutes from './routes/services.js';
-import heroRoutes from './routes/hero.js';
-import homeRoutes from './routes/home.js';
-import articleRoutes from './routes/articles.js';
-import testimonialRoutes from './routes/testimonials.js';
-import aboutRoutes from './routes/about.js';
-import contactRoutes from './routes/contact.js';
-import panchangRoutes from './routes/panchang.js';
+import astrologyRoutes from './routes/astrologyRoutes.js';
+const router = express.Router();
 
 // ============================================
-// FIREBASE ADMIN INITIALIZATION
+// CORE ENDPOINTS (✅ হাইফেন পাল্টে আন্ডারস্কোর করা হলো)
 // ============================================
-if (!admin.apps.length) {
+router.post('/birth_details', async (req, res) => {
     try {
-        let privateKey = firebaseConfig.firebase?.privateKey;
-
-        if (!privateKey) {
-            console.error('❌ Firebase private key is missing in environment variables');
-            throw new Error('Firebase private key is missing');
-        }
-
-        if (privateKey && privateKey.includes('\\n')) {
-            privateKey = privateKey.replace(/\\n/g, '\n');
-        }
-
-        if (!privateKey.includes('-----BEGIN PRIVATE KEY-----')) {
-            console.error('❌ Invalid private key format - missing BEGIN marker');
-            throw new Error('Private key format is invalid');
-        }
-
-        if (!privateKey.includes('-----END PRIVATE KEY-----')) {
-            console.error('❌ Invalid private key format - missing END marker');
-            throw new Error('Private key format is invalid');
-        }
-
-        admin.initializeApp({
-            projectId: firebaseConfig.firebase.projectId,
-            credential: admin.credential.cert({
-                projectId: firebaseConfig.firebase.projectId,
-                privateKey: privateKey,
-                clientEmail: firebaseConfig.firebase.clientEmail,
-            }),
-        });
-        console.log('✅ Firebase Admin initialized successfully');
+        const result = await getBirthDetailsData(req.body);
+        res.json(result);
     } catch (error) {
-        console.error('❌ Firebase Admin initialization failed:', error.message);
-        console.warn('⚠️ Running with mock authentication (Firebase not configured)');
-    }
-}
-
-const app = express();
-
-// ============================================
-// CORS CONFIGURATION
-// ============================================
-const allowedOrigins = [
-    'https://astrology-app-teal.vercel.app',
-    'https://kaalchakra-two.vercel.app',
-    'http://localhost:5173',
-    'http://localhost:5174'
-];
-
-app.use(cors({
-    origin: function (origin, callback) {
-        if (!origin) return callback(null, true);
-        if (allowedOrigins.indexOf(origin) !== -1) return callback(null, true);
-        console.log(`❌ CORS blocked: ${origin}`);
-        return callback(new Error('Not allowed by CORS'), false);
-    },
-    credentials: true,
-    methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS', 'PATCH'],
-    allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With', 'Accept']
-}));
-app.options('*', cors());
-
-// --- Middlewares ---
-app.use(helmet({ contentSecurityPolicy: false }));
-app.use(compression());
-app.use(express.json({ limit: '10mb' }));
-app.use(express.urlencoded({ extended: true }));
-app.use(morgan('combined', { stream: { write: (msg) => logger.info(msg.trim()) } }));
-
-// ============================================
-// FREE GEO LOCATION API (OpenStreetMap)
-// ============================================
-const getGeoLocationFree = async (place) => {
-    try {
-        const response = await axios.get(`https://nominatim.openstreetmap.org/search`, {
-            params: {
-                q: place,
-                format: 'json',
-                limit: 5,
-                addressdetails: 1
-            },
-            headers: {
-                'User-Agent': 'KaalChakra-Astrology-App/1.0'
-            },
-            timeout: 5000
-        });
-
-        if (response.data && response.data.length > 0) {
-            return response.data.map(loc => ({
-                place_name: loc.display_name,
-                latitude: loc.lat,
-                longitude: loc.lon,
-                timezone: "5.5"
-            }));
-        }
-        return [];
-    } catch (error) {
-        console.error("Free Geo location error:", error.message);
-        return [];
-    }
-};
-
-// // ============================================
-// // MOCK DATA
-// // ============================================
-// const getMockGeoData = () => ({
-//     geonames: [{
-//         place_name: "Kolkata, West Bengal, India",
-//         latitude: "22.5726",
-//         longitude: "88.3639",
-//         timezone: "5.5"
-//     }]
-// });
-
-// const getMockBirthDetails = () => ({
-//     ascendant: "Leo",
-//     sign: "Aries",
-//     Naksahtra: "Ashwini",
-//     Varna: "Kshatriya",
-//     Gana: "Deva"
-// });
-
-// const getMockPlanets = () => [
-//     { name: "Sun", sign: "Aries", normDegree: 15.2, house: 1 },
-//     { name: "Moon", sign: "Cancer", normDegree: 10.5, house: 4 },
-//     { name: "Mars", sign: "Aries", normDegree: 25.3, house: 1 },
-//     { name: "Mercury", sign: "Pisces", normDegree: 8.7, house: 12 },
-//     { name: "Jupiter", sign: "Pisces", normDegree: 12.1, house: 9 },
-//     { name: "Venus", sign: "Aquarius", normDegree: 18.4, house: 11 },
-//     { name: "Saturn", sign: "Capricorn", normDegree: 22.9, house: 10 },
-//     { name: "Rahu", sign: "Taurus", normDegree: 5.2, house: 2 },
-//     { name: "Ketu", sign: "Scorpio", normDegree: 5.2, house: 8 }
-// ];
-
-// ============================================
-// ASTROLOGY API CALL
-// ============================================
-const callAstrologyAPI = async (endpoint, payload) => {
-    const userId = process.env.ASTROLOGY_USER_ID?.trim();
-    const walletToken = process.env.ASTROLOGY_WALLET_TOKEN?.trim();
-
-    if (!userId || !walletToken) {
-        throw new Error("ASTROLOGY_USER_ID বা ASTROLOGY_WALLET_TOKEN সেট নেই .env তে!");
-    }
-
-    const authString = Buffer.from(`${userId}:${walletToken}`).toString('base64');
-
-    try {
-        const response = await axios.post(
-            `https://json.astrologyapi.com/v1/${endpoint}`,
-            payload,
-            {
-                headers: {
-                    'Authorization': `Basic ${authString}`,
-                    'Content-Type': 'application/json'
-                },
-                timeout: 10000
-            }
-        );
-        console.log(`✅ Real Data fetched from AstrologyAPI (${endpoint})`);
-        return response.data;
-    } catch (err) {
-        console.error(`❌ AstrologyAPI Error for ${endpoint}:`, err.response?.data || err.message);
-        throw err;
-    }
-};
-
-// ============================================
-// TEST & ROOT ENDPOINTS (সবার আগে)
-// ============================================
-
-app.get('/', (req, res) => res.status(200).send('Kaalchakra API is running successfully!'));
-app.get('/health', (req, res) => res.json({ status: 'ok', timestamp: new Date().toISOString() }));
-app.get('/api/test', (req, res) => {
-    console.log("✅ Test endpoint hit");
-    res.json({ message: 'API is working!', timestamp: new Date().toISOString() });
-});
-
-// ============================================
-// AUTHENTICATION ENDPOINTS (সবার আগে যোগ করা হলো)
-// ============================================
-
-app.post('/api/auth/verify-email', async (req, res) => {
-    try {
-        const { email, code } = req.body;
-        console.log(`📧 Verifying email: ${email} with code: ${code}`);
-        
-        // এখানে আপনার ভেরিফিকেশন লজিক যোগ করুন
-        // যেমন: Supabase থেকে OTP চেক করা
-        
-        res.json({ 
-            success: true, 
-            message: "Email verified successfully" 
-        });
-    } catch (error) {
-        console.error("Verify email error:", error);
-        res.status(500).json({ 
-            success: false, 
-            message: error.message 
-        });
+        res.status(500).json({ success: false, error: error.message });
     }
 });
 
-// ============================================
-// ASTROLOGY API ROUTES
-// ============================================
-
-const astrologyRoutes = require('./routes/astrologyRoutes');
-
-app.use('/api/astrology', astrologyRoutes);
-
-app.post('/api/astrology/birth_details', async (req, res) => {
+router.post('/astro_details', async (req, res) => {
     try {
-        const data = await callAstrologyAPI('birth_details', req.body);
-        res.json({ success: true, data });
+        const result = await getAstroDetailsData(req.body);
+        res.json(result);
     } catch (error) {
-        console.warn("⚠️ Using mock birth details data");
-        res.json({ success: true, data: getMockBirthDetails() });
+        res.status(500).json({ success: false, error: error.message });
     }
 });
 
-app.post('/api/astrology/planets', async (req, res) => {
+router.post('/planets', async (req, res) => {
     try {
-        const data = await callAstrologyAPI('planets/extended', req.body);
-        res.json({ success: true, data });
+        const result = await getPlanetsData(req.body);
+        res.json(result);
     } catch (error) {
-        console.warn("⚠️ Using mock planets data");
-        res.json({ success: true, data: getMockPlanets() });
+        res.status(500).json({ success: false, error: error.message });
     }
 });
 
-app.post('/api/astrology/planets/extended', async (req, res) => {
+router.post('/planets/extended', async (req, res) => {
     try {
-        const data = await callAstrologyAPI('planets/extended', req.body);
-        res.json({ success: true, data });
+        const result = await getPlanetsExtendedData(req.body);
+        res.json(result);
     } catch (error) {
-        console.warn("⚠️ Using mock planets data");
-        res.json({ success: true, data: getMockPlanets() });
+        res.status(500).json({ success: false, error: error.message });
     }
 });
 
-app.post('/api/astrology/geo_details', async (req, res) => {
+router.post('/bhav_madhya', async (req, res) => {
     try {
-        console.log("📍 Location search request:", req.body);
+        const result = await getBhavMadhyaData(req.body);
+        res.json(result);
+    } catch (error) {
+        res.status(500).json({ success: false, error: error.message });
+    }
+});
+
+router.post('/ghat_chakra', async (req, res) => {
+    try {
+        const result = await getGhatChakraData(req.body);
+        res.json(result);
+    } catch (error) {
+        res.status(500).json({ success: false, error: error.message });
+    }
+});
+
+router.post('/ayanamsha', async (req, res) => {
+    try {
+        const result = await getAyanamshaData(req.body);
+        res.json(result);
+    } catch (error) {
+        res.status(500).json({ success: false, error: error.message });
+    }
+});
+
+router.post('/planet_nature', async (req, res) => {
+    try {
+        const result = await getPlanetNatureData(req.body);
+        res.json(result);
+    } catch (error) {
+        res.status(500).json({ success: false, error: error.message });
+    }
+});
+
+router.post('/matchmaking', async (req, res) => {
+    try {
+        const result = await getMatchmakingData(req.body);
+        res.json(result);
+    } catch (error) {
+        res.status(500).json({ success: false, error: error.message });
+    }
+});
+
+router.post('/geo_details', async (req, res) => {
+    try {
         const { place } = req.body;
-
-        let data = await getGeoLocationFree(place);
-
-        if (data && data.length > 0) {
-            const formattedData = data.map(loc => ({
-                place_name: loc.place_name,
-                lat: loc.latitude,
-                lng: loc.longitude,
-                latitude: loc.latitude,
-                longitude: loc.longitude,
-                timezone: loc.timezone || "5.5"
-            }));
-            res.json({ success: true, data: formattedData });
-        } else {
-            res.json({ success: true, data: getMockGeoData().geonames });
+        if (!place) {
+            return res.status(400).json({ success: false, error: 'Place name is required' });
         }
+        const result = await getGeoDetails(place);
+        res.json(result);
     } catch (error) {
-        console.warn("⚠️ Geo details error, sending mock response");
-        res.json({ success: true, data: getMockGeoData().geonames });
+        console.error('❌ Geo details error:', error.message);
+        res.status(500).json({ success: false, error: error.message });
     }
 });
 
 // ============================================
-// HOME PAGE / FRONTEND API ENDPOINTS
+// BIORHYTHM ENDPOINTS
 // ============================================
-
-app.get('/api/test-supabase', async (req, res) => {
+router.post('/biorhythm', async (req, res) => {
     try {
-        // সরাসরি ডেটা নিয়ে আসার চেষ্টা করুন
-        const { data, error, count } = await supabase
-            .from('articles')
-            .select('*', { count: 'exact' });  // ← এখানে পরিবর্তন
-        
-        console.log('Supabase data:', { 
-            error: error?.message, 
-            dataLength: data?.length,
-            count: count 
-        });
-        
-        res.json({ 
-            success: !error, 
-            dataLength: data?.length,
-            count: count,
-            firstArticle: data?.[0]?.title
-        });
+        const result = await getBiorhythmData(req.body);
+        res.json(result);
     } catch (error) {
-        res.json({ success: false, error: error.message });
+        res.status(500).json({ success: false, error: error.message });
     }
 });
 
-app.get('/api/articles', async (req, res) => {
+router.post('/moon_biorhythm', async (req, res) => {
     try {
-        console.log('🟢 Fetching articles from Supabase...');
-        
-        const { data, error } = await supabase
-            .from('articles')
-            .select('*')
-            .order('created_at', { ascending: false });
-        
-        console.log('📊 Supabase response:', { 
-            error: error?.message, 
-            dataCount: data?.length 
-        });
-        
-        if (error) {
-            console.error('❌ Supabase error:', error);
-            throw error;
-        }
-        
-        // নিশ্চিত করুন ডেটা সঠিক ফরম্যাটে যাচ্ছে
-        res.json({ 
-            success: true, 
-            articles: data || [],
-            count: data?.length || 0
-        });
+        const result = await getMoonBiorhythmData(req.body);
+        res.json(result);
     } catch (error) {
-        console.error('❌ Articles fetch error:', error);
-        res.json({ success: true, articles: [], count: 0 });
-    }
-});
-
-
-app.get('/api/articles/:id', async (req, res) => {
-    try {
-        const { id } = req.params;
-        const { data, error } = await supabase
-            .from('articles')
-            .select('*')
-            .eq('id', id)
-            .eq('is_published', true) 
-            .single();
-
-        if (error || !data) {
-            return res.status(404).json({ success: false, message: 'Article not found' });
-        }
-        
-        await supabase
-            .from('articles')
-            .update({ views: (data.views || 0) + 1 })
-            .eq('id', id);
-        
-        res.json({ success: true, article: data });
-    } catch (error) {
-        console.error("Single article fetch error:", error);
-        res.status(404).json({ success: false, message: 'Article not found' });
-    }
-});
-app.get('/api/hero', async (req, res) => {
-    try {
-        const { data, error } = await supabase
-            .from('hero_section')
-            .select('*')
-            .eq('is_active', true)
-            .single();
-
-        if (error) throw error;
-        res.json({ success: true, hero: data || {} });
-    } catch (error) {
-        console.error("Hero fetch error:", error);
-        res.json({ success: true, hero: {
-            title: "Discover Your Cosmic Path",
-            subtitle: "Personalized Vedic Astrology Readings",
-            ctaText: "Get Started",
-            ctaLink: "/kundli"
-        }});
-    }
-});
-
-app.get('/api/hero/stats', async (req, res) => {
-    try {
-        const [usersCount, reportsCount] = await Promise.all([
-            supabase.from('users').select('*', { count: 'exact', head: true }),
-            supabase.from('saved_reports').select('*', { count: 'exact', head: true })
-        ]);
-
-        res.json({ 
-            success: true, 
-            stats: {
-                users: usersCount.count || 10000,
-                readings: reportsCount.count || 25000,
-                satisfaction: 98,
-                astrologers: 50
-            }
-        });
-    } catch (error) {
-        console.error("Hero stats error:", error);
-        res.json({ success: true, stats: {
-            users: 10000, readings: 25000, satisfaction: 98, astrologers: 50
-        }});
-    }
-});
-
-app.get('/api/testimonials', async (req, res) => {
-    try {
-        const { is_approved, limit } = req.query;
-        
-        let query = supabase
-            .from('testimonials')
-            .select('*')
-            .order('created_at', { ascending: false });
-
-        if (is_approved === 'true') {
-            query = query.eq('is_approved', true);
-        }
-
-        if (limit) {
-            query = query.limit(parseInt(limit));
-        }
-
-        const { data, error } = await query;
-
-        if (error) throw error;
-        res.json({ success: true, testimonials: data || [], count: data?.length || 0 });
-    } catch (error) {
-        console.error("Testimonials fetch error:", error);
-        res.json({ success: true, testimonials: [
-            { id: 1, name: "Rahul Sharma", location: "Mumbai", rating: 5, text: "Amazing accuracy!", is_approved: true },
-            { id: 2, name: "Priya Patel", location: "Delhi", rating: 5, text: "Life-changing insights!", is_approved: true }
-        ]});
-    }
-});
-
-app.get('/api/testimonials/stats', async (req, res) => {
-    try {
-        const [total, fiveStar, fourStar, threeStar] = await Promise.all([
-            supabase.from('testimonials').select('*', { count: 'exact', head: true }),
-            supabase.from('testimonials').select('*', { count: 'exact', head: true }).eq('rating', 5),
-            supabase.from('testimonials').select('*', { count: 'exact', head: true }).eq('rating', 4),
-            supabase.from('testimonials').select('*', { count: 'exact', head: true }).eq('rating', 3)
-        ]);
-
-        const totalCount = total.count || 0;
-        res.json({ 
-            success: true, 
-            stats: {
-                total: totalCount,
-                averageRating: totalCount > 0 ? 4.8 : 0,
-                fiveStarCount: fiveStar.count || 0,
-                fourStarCount: fourStar.count || 0,
-                threeStarCount: threeStar.count || 0
-            }
-        });
-    } catch (error) {
-        console.error("Testimonials stats error:", error);
-        res.json({ success: true, stats: { total: 156, averageRating: 4.8, fiveStarCount: 128, fourStarCount: 22, threeStarCount: 6 }});
+        res.status(500).json({ success: false, error: error.message });
     }
 });
 
 // ============================================
-// AI INTERPRETATION API
+// HOROSCOPE CHART ENDPOINTS
 // ============================================
-let genAI;
-try {
-    if (process.env.GEMINI_API_KEY) {
-        genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
-        console.log('✅ Gemini AI initialized');
-    } else {
-        console.warn('⚠️ Gemini API key missing');
-    }
-} catch (error) {
-    console.warn('⚠️ Failed to initialize Gemini AI:', error.message);
-}
-
-app.post('/api/ai/interpret', async (req, res) => {
+router.post('/horo_chart/:chartId', async (req, res) => {
     try {
-        const { planets, basic } = req.body;
-
-        if (!genAI) {
-            const fallbackText = "Due to cosmic alignment issues, a general reading is generated: Focus on your strengths, career growth is likely in the coming months, and maintain mental peace through meditation.";
-            return res.json({ success: true, interpretation: fallbackText });
-        }
-
-        const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
-        const prompt = `You are an expert Vedic Astrologer. Analyze Lagna: ${basic?.ascendant || 'Unknown'}, Moon Sign: ${basic?.sign || 'Unknown'}, Nakshatra: ${basic?.Naksahtra || 'Unknown'}. Positions: ${JSON.stringify(planets)}. Give a professional reading in 4 short paragraphs.`;
-
-        const result = await model.generateContent(prompt);
-        const text = result.response.text();
-        res.json({ success: true, interpretation: text });
+        const { chartId } = req.params;
+        const result = await getHoroChartData(req.body, chartId);
+        res.json(result);
     } catch (error) {
-        console.error("⚠️ AI Failed, using Fallback.");
-        const fallbackText = "Due to cosmic alignment issues, a general reading is generated: Focus on your strengths, career growth is likely in the coming months, and maintain mental peace through meditation.";
-        res.json({ success: true, interpretation: fallbackText });
+        res.status(500).json({ success: false, error: error.message });
     }
 });
 
-app.post('/api/ai/quick-insight', async (req, res) => {
+router.post('/horo_chart_image/:chartId', async (req, res) => {
     try {
-        const { zodiac } = req.body;
-
-        const insights = {
-            'Aries': "Mars energizes your career sector. Leadership opportunities arise this week.",
-            'Taurus': "Venus brings harmony to relationships. Financial decisions yield long-term benefits.",
-            'Gemini': "Mercury enhances communication. Perfect time for networking.",
-            'Cancer': "Moon in your sign heightens intuition. Trust your gut feelings.",
-            'Leo': "Sun illuminates your creative sector. Your leadership will be recognized.",
-            'Virgo': "Mercury retrograde ends next week, boosting communication.",
-            'Libra': "Venus brings balance to work and home life.",
-            'Scorpio': "Pluto transforms your career path. Embrace changes.",
-            'Sagittarius': "Jupiter expands your horizons. Travel opportunities are favored.",
-            'Capricorn': "Saturn rewards your hard work. Recognition is on the horizon.",
-            'Aquarius': "Uranus brings unexpected opportunities. Stay flexible.",
-            'Pisces': "Neptune enhances creativity. Artistic pursuits are highly favored."
-        };
-
-        res.json({ success: true, insight: insights[zodiac] || "Embrace spiritual practices this week." });
+        const { chartId } = req.params;
+        const result = await getHoroChartImageData(req.body, chartId);
+        res.json(result);
     } catch (error) {
-        res.status(500).json({ success: false, message: error.message });
+        res.status(500).json({ success: false, error: error.message });
     }
 });
 
 // ============================================
-// DATABASE SAVE & FETCH APIs
+// PLANET ASHTAK AND SARVASHTAK
 // ============================================
-app.post('/api/reports/save', async (req, res) => {
+router.post('/planet_ashtak/:planetName', async (req, res) => {
     try {
-        const { user_phone, name, dob, basic_info, planets_data, ai_insights } = req.body;
-        const { data, error } = await supabase
-            .from('saved_reports')
-            .insert([{ user_phone, name, dob, basic_info, planets_data, ai_insights }])
-            .select();
-        if (error) throw error;
-        res.status(200).json({ success: true, message: "Saved!", report: data[0] });
+        const { planetName } = req.params;
+        const result = await getPlanetAshtakData(req.body, planetName);
+        res.json(result);
     } catch (error) {
-        console.error("Save error:", error);
-        res.status(500).json({ success: false, message: "Save Failed" });
+        res.status(500).json({ success: false, error: error.message });
     }
 });
 
-app.get('/api/reports/single/:id', async (req, res) => {
+router.post('/sarvashtak', async (req, res) => {
     try {
-        const { data, error } = await supabase.from('saved_reports').select('*').eq('id', req.params.id).single();
-        if (error) throw error;
-        res.status(200).json({ success: true, report: data });
+        const result = await getSarvashtakData(req.body);
+        res.json(result);
     } catch (error) {
-        res.status(500).json({ success: false, message: "Report not found" });
-    }
-});
-
-app.get('/api/reports/:phone', async (req, res) => {
-    try {
-        const { data, error } = await supabase.from('saved_reports').select('*').eq('user_phone', req.params.phone).order('created_at', { ascending: false });
-        if (error) throw error;
-        res.status(200).json({ success: true, reports: data });
-    } catch (error) {
-        res.status(500).json({ success: false, message: "Fetch failed" });
+        res.status(500).json({ success: false, error: error.message });
     }
 });
 
 // ============================================
-// ROUTES
+// VIMSHOTTARI DASHA ENDPOINTS
 // ============================================
-app.use('/api/auth', authRoutes);
-app.use('/api/kundli', kundliRoutes);
-app.use('/api/payment', paymentRoutes);
-app.use('/api/admin', adminRoutes);
-app.use('/api/matchmaking', matchmakingRoutes);
-app.use('/api/services', serviceRoutes);
-app.use('/api', homeRoutes);
-app.use('/api/hero', heroRoutes);
-app.use('/api/articles', articleRoutes);
-app.use('/api/testimonials', testimonialRoutes);
-app.use('/api/about', aboutRoutes);
-app.use('/api/contact', contactRoutes);
-app.use('/api/panchang', panchangRoutes);
-
-// ============================================
-// USER STATUS & PROFILE ENDPOINTS
-// ============================================
-app.get('/api/user/:identifier/status', async (req, res) => {
+router.post('/current_vdasha_all', async (req, res) => {
     try {
-        const { identifier } = req.params;
-
-        let { data: user, error } = await supabase
-            .from('users')
-            .select('*')
-            .or(`phone.eq.${identifier},email.eq.${identifier}`)
-            .maybeSingle();
-
-        if (error) throw error;
-
-        res.json({
-            success: true,
-            isPremium: user?.subscription === 'premium' || user?.is_premium === true,
-            user: user
-        });
+        const result = await getCurrentVdashaAllData(req.body);
+        res.json(result);
     } catch (error) {
-        console.error("User status error:", error);
-        res.status(500).json({ success: false, message: error.message });
+        res.status(500).json({ success: false, error: error.message });
     }
 });
 
-app.put('/api/user/profile/:identifier', async (req, res) => {
+router.post('/major_vdasha', async (req, res) => {
     try {
-        const { identifier } = req.params;
-        const { name, email, phone } = req.body;
-
-        const { data: user, error } = await supabase
-            .from('users')
-            .update({ name, email, updated_at: new Date().toISOString() })
-            .or(`phone.eq.${identifier},email.eq.${identifier}`)
-            .select()
-            .single();
-
-        if (error) throw error;
-
-        res.json({ success: true, user });
+        const result = await getMajorVdashaData(req.body);
+        res.json(result);
     } catch (error) {
-        console.error("Profile update error:", error);
-        res.status(500).json({ success: false, message: error.message });
+        res.status(500).json({ success: false, error: error.message });
     }
 });
 
-app.get('/api/reports/by-email/:email', async (req, res) => {
+router.post('/current_vdasha', async (req, res) => {
     try {
-        const email = decodeURIComponent(req.params.email);
-        const { data: user } = await supabase
-            .from('users')
-            .select('phone')
-            .eq('email', email)
-            .maybeSingle();
-
-        let query = supabase.from('saved_reports').select('*').order('created_at', { ascending: false });
-
-        if (user?.phone) {
-            query = query.eq('user_phone', user.phone);
-        } else {
-            return res.status(200).json({ success: true, reports: [] });
-        }
-
-        const { data, error } = await query;
-        if (error) throw error;
-        res.status(200).json({ success: true, reports: data });
+        const result = await getCurrentVdashaData(req.body);
+        res.json(result);
     } catch (error) {
-        res.status(500).json({ success: false, message: 'Fetch failed' });
+        res.status(500).json({ success: false, error: error.message });
+    }
+});
+
+router.post('/current_vdasha_date', async (req, res) => {
+    try {
+        const result = await getCurrentVdashaByDateData(req.body);
+        res.json(result);
+    } catch (error) {
+        res.status(500).json({ success: false, error: error.message });
+    }
+});
+
+router.post('/sub_vdasha/:md', async (req, res) => {
+    try {
+        const { md } = req.params;
+        const result = await getSubVdashaData(req.body, md);
+        res.json(result);
+    } catch (error) {
+        res.status(500).json({ success: false, error: error.message });
+    }
+});
+
+router.post('/sub_sub_vdasha/:md/:ad', async (req, res) => {
+    try {
+        const { md, ad } = req.params;
+        const result = await getSubSubVdashaData(req.body, md, ad);
+        res.json(result);
+    } catch (error) {
+        res.status(500).json({ success: false, error: error.message });
+    }
+});
+
+router.post('/sub_sub_sub_vdasha/:md/:ad/:pd', async (req, res) => {
+    try {
+        const { md, ad, pd } = req.params;
+        const result = await getSubSubSubVdashaData(req.body, md, ad, pd);
+        res.json(result);
+    } catch (error) {
+        res.status(500).json({ success: false, error: error.message });
+    }
+});
+
+router.post('/sub_sub_sub_sub_vdasha/:md/:ad/:pd/:sd', async (req, res) => {
+    try {
+        const { md, ad, pd, sd } = req.params;
+        const result = await getSubSubSubSubVdashaData(req.body, md, ad, pd, sd);
+        res.json(result);
+    } catch (error) {
+        res.status(500).json({ success: false, error: error.message });
     }
 });
 
 // ============================================
-// DIRECT ENDPOINTS (without /api prefix) 
+// CHAR DASHA ENDPOINTS
 // ============================================
-
-app.get('/hero', async (req, res) => {
+router.post('/major_chardasha', async (req, res) => {
     try {
-        const { data, error } = await supabase
-            .from('hero_section')
-            .select('*')
-            .eq('is_active', true)
-            .single();
-        
-        if (error) throw error;
-        res.json({ success: true, hero: data || {} });
+        const result = await getMajorChardashaData(req.body);
+        res.json(result);
     } catch (error) {
-        console.error("Hero fetch error:", error);
-        res.json({ success: true, hero: {
-            title: "Discover Your Cosmic Path",
-            subtitle: "Personalized Vedic Astrology Readings",
-            ctaText: "Get Started",
-            ctaLink: "/kundli"
-        }});
+        res.status(500).json({ success: false, error: error.message });
     }
 });
 
-app.get('/articles', async (req, res) => {
+router.post('/current_chardasha', async (req, res) => {
     try {
-        const { data, error } = await supabase
-            .from('articles')
-            .select('*')
-            .eq('status', 'published')
-            .order('created_at', { ascending: false });
-        
-        if (error) throw error;
-        res.json({ success: true, articles: data || [] });
+        const result = await getCurrentChardashaData(req.body);
+        res.json(result);
     } catch (error) {
-        console.error("Articles fetch error:", error);
-        res.json({ success: true, articles: [] });
+        res.status(500).json({ success: false, error: error.message });
     }
 });
 
-app.get('/testimonials', async (req, res) => {
+router.post('/sub_chardasha/:md', async (req, res) => {
     try {
-        const { is_approved, limit } = req.query;
-        let query = supabase
-            .from('testimonials')
-            .select('*')
-            .order('created_at', { ascending: false });
-
-        if (is_approved === 'true') {
-            query = query.eq('is_approved', true);
-        }
-        if (limit) {
-            query = query.limit(parseInt(limit));
-        }
-
-        const { data, error } = await query;
-        if (error) throw error;
-        res.json({ success: true, testimonials: data || [] });
+        const { md } = req.params;
+        const result = await getSubChardashaData(req.body, md);
+        res.json(result);
     } catch (error) {
-        console.error("Testimonials fetch error:", error);
-        res.json({ success: true, testimonials: [] });
+        res.status(500).json({ success: false, error: error.message });
     }
 });
 
-app.get('/hero/stats', async (req, res) => {
+router.post('/sub_sub_chardasha/:md/:ad', async (req, res) => {
     try {
-        const [usersCount, reportsCount] = await Promise.all([
-            supabase.from('users').select('*', { count: 'exact', head: true }),
-            supabase.from('saved_reports').select('*', { count: 'exact', head: true })
-        ]);
-
-        res.json({ 
-            success: true, 
-            stats: {
-                users: usersCount.count || 10000,
-                readings: reportsCount.count || 25000,
-                satisfaction: 98,
-                astrologers: 50
-            }
-        });
+        const { md, ad } = req.params;
+        const result = await getSubSubChardashaData(req.body, md, ad);
+        res.json(result);
     } catch (error) {
-        res.json({ success: true, stats: {
-            users: 10000, readings: 25000, satisfaction: 98, astrologers: 50
-        }});
-    }
-});
-
-app.get('/testimonials/stats', async (req, res) => {
-    try {
-        const [total, fiveStar, fourStar, threeStar] = await Promise.all([
-            supabase.from('testimonials').select('*', { count: 'exact', head: true }),
-            supabase.from('testimonials').select('*', { count: 'exact', head: true }).eq('rating', 5),
-            supabase.from('testimonials').select('*', { count: 'exact', head: true }).eq('rating', 4),
-            supabase.from('testimonials').select('*', { count: 'exact', head: true }).eq('rating', 3)
-        ]);
-
-        const totalCount = total.count || 0;
-        res.json({ 
-            success: true, 
-            stats: {
-                total: totalCount,
-                averageRating: totalCount > 0 ? 4.8 : 0,
-                fiveStarCount: fiveStar.count || 0,
-                fourStarCount: fourStar.count || 0,
-                threeStarCount: threeStar.count || 0
-            }
-        });
-    } catch (error) {
-        res.json({ success: true, stats: { total: 156, averageRating: 4.8, fiveStarCount: 128, fourStarCount: 22, threeStarCount: 6 }});
-    }
-});
-
-app.post('/astrology/birth_details', async (req, res) => {
-    try {
-        const data = await callAstrologyAPI('birth_details', req.body);
-        res.json({ success: true, data });
-    } catch (error) {
-        console.warn("⚠️ Using mock birth details data");
-        res.json({ success: true, data: getMockBirthDetails() });
-    }
-});
-
-app.post('/astrology/planets', async (req, res) => {
-    try {
-        const data = await callAstrologyAPI('planets/extended', req.body);
-        res.json({ success: true, data });
-    } catch (error) {
-        res.json({ success: true, data: getMockPlanets() });
+        res.status(500).json({ success: false, error: error.message });
     }
 });
 
 // ============================================
-// DEBUG ENDPOINTS
+// YOGINI DASHA ENDPOINTS
 // ============================================
-
-app.get('/api/debug/geo-response', async (req, res) => {
-    console.log("🟢 Debug endpoint called");
+router.post('/major_yogini_dasha', async (req, res) => {
     try {
-        const response = await axios.get(`https://nominatim.openstreetmap.org/search`, {
-            params: {
-                q: 'Kolkata',
-                format: 'json',
-                limit: 5
-            },
-            headers: {
-                'User-Agent': 'KaalChakra-Astrology-App/1.0'
-            }
-        });
-        console.log("🟢 Got response, count:", response.data.length);
-        res.json({
-            success: true,
-            data: response.data,
-            count: response.data.length
-        });
+        const result = await getMajorYoginiDashaData(req.body);
+        res.json(result);
     } catch (error) {
-        console.error("🔴 Debug endpoint error:", error.message);
-        res.json({ success: false, error: error.message });
+        res.status(500).json({ success: false, error: error.message });
     }
 });
 
-app.get('/api/test-firebase', async (req, res) => {
-    res.json({ success: true, message: 'Firebase is working!', apps: admin.apps.length });
-});
-
-app.get('/api/test-supabase', async (req, res) => {
+router.post('/current_yogini_dasha', async (req, res) => {
     try {
-        const { error } = await supabase.from('users').select('count', { count: 'exact', head: true });
-        if (error) throw error;
-        res.json({ success: true, message: 'Supabase is working!' });
+        const result = await getCurrentYoginiDashaData(req.body);
+        res.json(result);
     } catch (error) {
-        res.json({ success: false, message: error.message });
+        res.status(500).json({ success: false, error: error.message });
     }
 });
 
-app.get('/api/test-all', async (req, res) => {
+router.post('/sub_yogini_dasha/:dashaCycle/:dashaName', async (req, res) => {
+    try {
+        const { dashaCycle, dashaName } = req.params;
+        const result = await getSubYoginiDashaData(req.body, dashaCycle, dashaName);
+        res.json(result);
+    } catch (error) {
+        res.status(500).json({ success: false, error: error.message });
+    }
+});
+
+// ============================================
+// GENERAL REPORT ENDPOINTS
+// ============================================
+router.post('/general_house_report/:planetName', async (req, res) => {
+    try {
+        const { planetName } = req.params;
+        const result = await getGeneralHouseReportData(req.body, planetName);
+        res.json(result);
+    } catch (error) {
+        res.status(500).json({ success: false, error: error.message });
+    }
+});
+
+router.post('/general_rashi_report/:planetName', async (req, res) => {
+    try {
+        const { planetName } = req.params;
+        const result = await getGeneralRashiReportData(req.body, planetName);
+        res.json(result);
+    } catch (error) {
+        res.status(500).json({ success: false, error: error.message });
+    }
+});
+
+router.post('/general_ascendant_report', async (req, res) => {
+    try {
+        const result = await getGeneralAscendantReportData(req.body);
+        res.json(result);
+    } catch (error) {
+        res.status(500).json({ success: false, error: error.message });
+    }
+});
+
+router.post('/general_nakshatra_report', async (req, res) => {
+    try {
+        const result = await getGeneralNakshatraReportData(req.body);
+        res.json(result);
+    } catch (error) {
+        res.status(500).json({ success: false, error: error.message });
+    }
+});
+
+// ============================================
+// LAL KITAB ENDPOINTS
+// ============================================
+router.post('/lalkitab_horoscope', async (req, res) => {
+    try {
+        const result = await getLalkitabHoroscopeData(req.body);
+        res.json(result);
+    } catch (error) {
+        res.status(500).json({ success: false, error: error.message });
+    }
+});
+
+router.post('/lalkitab_debts', async (req, res) => {
+    try {
+        const result = await getLalkitabDebtsData(req.body);
+        res.json(result);
+    } catch (error) {
+        res.status(500).json({ success: false, error: error.message });
+    }
+});
+
+router.post('/lalkitab_remedies/:planetName', async (req, res) => {
+    try {
+        const { planetName } = req.params;
+        const result = await getLalkitabRemediesData(req.body, planetName);
+        res.json(result);
+    } catch (error) {
+        res.status(500).json({ success: false, error: error.message });
+    }
+});
+
+router.post('/lalkitab_houses', async (req, res) => {
+    try {
+        const result = await getLalkitabHousesData(req.body);
+        res.json(result);
+    } catch (error) {
+        res.status(500).json({ success: false, error: error.message });
+    }
+});
+
+router.post('/lalkitab_planets', async (req, res) => {
+    try {
+        const result = await getLalkitabPlanetsData(req.body);
+        res.json(result);
+    } catch (error) {
+        res.status(500).json({ success: false, error: error.message });
+    }
+});
+
+// ============================================
+// NAKSHATRA PREDICTION ENDPOINTS
+// ============================================
+router.post('/daily_nakshatra_prediction', async (req, res) => {
+    try {
+        const result = await getDailyNakshatraPredictionData(req.body);
+        res.json(result);
+    } catch (error) {
+        res.status(500).json({ success: false, error: error.message });
+    }
+});
+
+router.post('/next_day_nakshatra_prediction', async (req, res) => {
+    try {
+        const result = await getNextDayNakshatraPredictionData(req.body);
+        res.json(result);
+    } catch (error) {
+        res.status(500).json({ success: false, error: error.message });
+    }
+});
+
+router.post('/previous_day_nakshatra_prediction', async (req, res) => {
+    try {
+        const result = await getPreviousDayNakshatraPredictionData(req.body);
+        res.json(result);
+    } catch (error) {
+        res.status(500).json({ success: false, error: error.message });
+    }
+});
+
+router.post('/daily_nakshatra_consolidated', async (req, res) => {
+    try {
+        const result = await getDailyNakshatraConsolidatedData(req.body);
+        res.json(result);
+    } catch (error) {
+        res.status(500).json({ success: false, error: error.message });
+    }
+});
+
+// ============================================
+// PANCHANG AND MUHURTA ENDPOINTS
+// ============================================
+router.post('/basic_panchang_sunrise', async (req, res) => {
+    try {
+        const result = await getBasicPanchangSunriseData(req.body);
+        res.json(result);
+    } catch (error) {
+        res.status(500).json({ success: false, error: error.message });
+    }
+});
+
+router.post('/basic_panchang', async (req, res) => {
+    try {
+        const result = await getBasicPanchangData(req.body);
+        res.json(result);
+    } catch (error) {
+        res.status(500).json({ success: false, error: error.message });
+    }
+});
+
+router.post('/advanced_panchang_sunrise', async (req, res) => {
+    try {
+        const result = await getAdvancedPanchangSunriseData(req.body);
+        res.json(result);
+    } catch (error) {
+        res.status(500).json({ success: false, error: error.message });
+    }
+});
+
+router.post('/advanced_panchang', async (req, res) => {
+    try {
+        const result = await getAdvancedPanchangData(req.body);
+        res.json(result);
+    } catch (error) {
+        res.status(500).json({ success: false, error: error.message });
+    }
+});
+
+router.post('/planet_panchang', async (req, res) => {
+    try {
+        const result = await getPlanetPanchangData(req.body);
+        res.json(result);
+    } catch (error) {
+        res.status(500).json({ success: false, error: error.message });
+    }
+});
+
+router.post('/chaughadiya_muhurta', async (req, res) => {
+    try {
+        const result = await getChaughadiyaMuhurtaData(req.body);
+        res.json(result);
+    } catch (error) {
+        res.status(500).json({ success: false, error: error.message });
+    }
+});
+
+router.post('/hora_muhurta_dinman', async (req, res) => {
+    try {
+        const result = await getHoraMuhurtaDinmanData(req.body);
+        res.json(result);
+    } catch (error) {
+        res.status(500).json({ success: false, error: error.message });
+    }
+});
+
+router.post('/panchang_chart', async (req, res) => {
+    try {
+        const result = await getPanchangChartData(req.body);
+        res.json(result);
+    } catch (error) {
+        res.status(500).json({ success: false, error: error.message });
+    }
+});
+
+router.post('/panchang_chart_sunrise', async (req, res) => {
+    try {
+        const result = await getPanchangChartSunriseData(req.body);
+        res.json(result);
+    } catch (error) {
+        res.status(500).json({ success: false, error: error.message });
+    }
+});
+
+router.post('/tamil_month_panchang', async (req, res) => {
+    try {
+        const result = await getTamilMonthPanchangData(req.body);
+        res.json(result);
+    } catch (error) {
+        res.status(500).json({ success: false, error: error.message });
+    }
+});
+
+router.post('/tamil_panchang', async (req, res) => {
+    try {
+        const result = await getTamilPanchangData(req.body);
+        res.json(result);
+    } catch (error) {
+        res.status(500).json({ success: false, error: error.message });
+    }
+});
+
+router.post('/panchang_festival', async (req, res) => {
+    try {
+        const result = await getPanchangFestivalData(req.body);
+        res.json(result);
+    } catch (error) {
+        res.status(500).json({ success: false, error: error.message });
+    }
+});
+
+// ============================================
+// NUMEROLOGY ENDPOINTS
+// ============================================
+router.post('/numero_table', async (req, res) => {
+    try {
+        const result = await getNumeroTableData(req.body);
+        res.json(result);
+    } catch (error) {
+        res.status(500).json({ success: false, error: error.message });
+    }
+});
+
+router.post('/numero_report', async (req, res) => {
+    try {
+        const result = await getNumeroReportData(req.body);
+        res.json(result);
+    } catch (error) {
+        res.status(500).json({ success: false, error: error.message });
+    }
+});
+
+router.post('/numero_fav_time', async (req, res) => {
+    try {
+        const result = await getNumeroFavTimeData(req.body);
+        res.json(result);
+    } catch (error) {
+        res.status(500).json({ success: false, error: error.message });
+    }
+});
+
+router.post('/numero_place_vastu', async (req, res) => {
+    try {
+        const result = await getNumeroPlaceVastuData(req.body);
+        res.json(result);
+    } catch (error) {
+        res.status(500).json({ success: false, error: error.message });
+    }
+});
+
+router.post('/numero_fasts_report', async (req, res) => {
+    try {
+        const result = await getNumeroFastsReportData(req.body);
+        res.json(result);
+    } catch (error) {
+        res.status(500).json({ success: false, error: error.message });
+    }
+});
+
+router.post('/numero_fav_lord', async (req, res) => {
+    try {
+        const result = await getNumeroFavLordData(req.body);
+        res.json(result);
+    } catch (error) {
+        res.status(500).json({ success: false, error: error.message });
+    }
+});
+
+router.post('/numero_fav_mantra', async (req, res) => {
+    try {
+        const result = await getNumeroFavMantraData(req.body);
+        res.json(result);
+    } catch (error) {
+        res.status(500).json({ success: false, error: error.message });
+    }
+});
+
+router.post('/numero_prediction_daily', async (req, res) => {
+    try {
+        const result = await getNumeroPredictionDailyData(req.body);
+        res.json(result);
+    } catch (error) {
+        res.status(500).json({ success: false, error: error.message });
+    }
+});
+
+// ============================================
+// DOSHA AND YOGA ENDPOINTS
+// ============================================
+router.post('/simple_manglik', async (req, res) => {
+    try {
+        const result = await getSimpleManglikData(req.body);
+        res.json(result);
+    } catch (error) {
+        res.status(500).json({ success: false, error: error.message });
+    }
+});
+
+router.post('/manglik', async (req, res) => {
+    try {
+        const result = await getManglikData(req.body);
+        res.json(result);
+    } catch (error) {
+        res.status(500).json({ success: false, error: error.message });
+    }
+});
+
+router.post('/kalsarpa_details', async (req, res) => {
+    try {
+        const result = await getKalsarpaDetailsData(req.body);
+        res.json(result);
+    } catch (error) {
+        res.status(500).json({ success: false, error: error.message });
+    }
+});
+
+router.post('/sade_sati_current_status', async (req, res) => {
+    try {
+        const result = await getSadeSatiCurrentStatusData(req.body);
+        res.json(result);
+    } catch (error) {
+        res.status(500).json({ success: false, error: error.message });
+    }
+});
+
+router.post('/sade_sati_life_details', async (req, res) => {
+    try {
+        const result = await getSadeSatiLifeDetailsData(req.body);
+        res.json(result);
+    } catch (error) {
+        res.status(500).json({ success: false, error: error.message });
+    }
+});
+
+router.post('/pitra_dosha_report', async (req, res) => {
+    try {
+        const result = await getPitraDoshaReportData(req.body);
+        res.json(result);
+    } catch (error) {
+        res.status(500).json({ success: false, error: error.message });
+    }
+});
+
+// ============================================
+// VARSHAPHAL ENDPOINTS
+// ============================================
+router.post('/varshaphal_year_chart', async (req, res) => {
+    try {
+        const result = await getVarshaphalYearChartData(req.body);
+        res.json(result);
+    } catch (error) {
+        res.status(500).json({ success: false, error: error.message });
+    }
+});
+
+router.post('/varshaphal_month_chart', async (req, res) => {
+    try {
+        const result = await getVarshaphalMonthChartData(req.body);
+        res.json(result);
+    } catch (error) {
+        res.status(500).json({ success: false, error: error.message });
+    }
+});
+
+router.post('/varshaphal_details', async (req, res) => {
+    try {
+        const result = await getVarshaphalDetailsData(req.body);
+        res.json(result);
+    } catch (error) {
+        res.status(500).json({ success: false, error: error.message });
+    }
+});
+
+router.post('/varshaphal_planets', async (req, res) => {
+    try {
+        const result = await getVarshaphalPlanetsData(req.body);
+        res.json(result);
+    } catch (error) {
+        res.status(500).json({ success: false, error: error.message });
+    }
+});
+
+router.post('/varshaphal_muntha', async (req, res) => {
+    try {
+        const result = await getVarshaphalMunthaData(req.body);
+        res.json(result);
+    } catch (error) {
+        res.status(500).json({ success: false, error: error.message });
+    }
+});
+
+router.post('/varshaphal_mudda_dasha', async (req, res) => {
+    try {
+        const result = await getVarshaphalMuddaDashaData(req.body);
+        res.json(result);
+    } catch (error) {
+        res.status(500).json({ success: false, error: error.message });
+    }
+});
+
+router.post('/varshaphal_panchavargeeya_bala', async (req, res) => {
+    try {
+        const result = await getVarshaphalPanchavargeeyaBalaData(req.body);
+        res.json(result);
+    } catch (error) {
+        res.status(500).json({ success: false, error: error.message });
+    }
+});
+
+router.post('/varshaphal_saham_points', async (req, res) => {
+    try {
+        const result = await getVarshaphalSahamPointsData(req.body);
+        res.json(result);
+    } catch (error) {
+        res.status(500).json({ success: false, error: error.message });
+    }
+});
+
+router.post('/varshaphal_yoga', async (req, res) => {
+    try {
+        const result = await getVarshaphalYogaData(req.body);
+        res.json(result);
+    } catch (error) {
+        res.status(500).json({ success: false, error: error.message });
+    }
+});
+
+// ============================================
+// KP SYSTEM ENDPOINTS
+// ============================================
+router.post('/kp_planets', async (req, res) => {
+    try {
+        const result = await getKpPlanetsData(req.body);
+        res.json(result);
+    } catch (error) {
+        res.status(500).json({ success: false, error: error.message });
+    }
+});
+
+router.post('/kp_house_cusps', async (req, res) => {
+    try {
+        const result = await getKpHouseCuspsData(req.body);
+        res.json(result);
+    } catch (error) {
+        res.status(500).json({ success: false, error: error.message });
+    }
+});
+
+router.post('/kp_birth_chart', async (req, res) => {
+    try {
+        const result = await getKpBirthChartData(req.body);
+        res.json(result);
+    } catch (error) {
+        res.status(500).json({ success: false, error: error.message });
+    }
+});
+
+router.post('/kp_house_significator', async (req, res) => {
+    try {
+        const result = await getKpHouseSignificatorData(req.body);
+        res.json(result);
+    } catch (error) {
+        res.status(500).json({ success: false, error: error.message });
+    }
+});
+
+router.post('/kp_planet_significator', async (req, res) => {
+    try {
+        const result = await getKpPlanetSignificatorData(req.body);
+        res.json(result);
+    } catch (error) {
+        res.status(500).json({ success: false, error: error.message });
+    }
+});
+
+// ============================================
+// MATCHMAKING ENDPOINTS
+// ============================================
+router.post('/match_birth_details', async (req, res) => {
+    try {
+        const result = await getMatchBirthDetailsData(req.body);
+        res.json(result);
+    } catch (error) {
+        res.status(500).json({ success: false, error: error.message });
+    }
+});
+
+router.post('/match_ashtakoot_points', async (req, res) => {
+    try {
+        const result = await getMatchAshtakootPointsData(req.body);
+        res.json(result);
+    } catch (error) {
+        res.status(500).json({ success: false, error: error.message });
+    }
+});
+
+router.post('/match_obstructions', async (req, res) => {
+    try {
+        const result = await getMatchObstructionsData(req.body);
+        res.json(result);
+    } catch (error) {
+        res.status(500).json({ success: false, error: error.message });
+    }
+});
+
+router.post('/match_astro_details', async (req, res) => {
+    try {
+        const result = await getMatchAstroDetailsData(req.body);
+        res.json(result);
+    } catch (error) {
+        res.status(500).json({ success: false, error: error.message });
+    }
+});
+
+router.post('/match_planet_details', async (req, res) => {
+    try {
+        const result = await getMatchPlanetDetailsData(req.body);
+        res.json(result);
+    } catch (error) {
+        res.status(500).json({ success: false, error: error.message });
+    }
+});
+
+router.post('/match_manglik_report', async (req, res) => {
+    try {
+        const result = await getMatchManglikReportData(req.body);
+        res.json(result);
+    } catch (error) {
+        res.status(500).json({ success: false, error: error.message });
+    }
+});
+
+router.post('/match_making_report', async (req, res) => {
+    try {
+        const result = await getMatchMakingReportData(req.body);
+        res.json(result);
+    } catch (error) {
+        res.status(500).json({ success: false, error: error.message });
+    }
+});
+
+router.post('/match_making_detailed_report', async (req, res) => {
+    try {
+        const result = await getMatchMakingDetailedReportData(req.body);
+        res.json(result);
+    } catch (error) {
+        res.status(500).json({ success: false, error: error.message });
+    }
+});
+
+router.post('/match_dashakoot_points', async (req, res) => {
+    try {
+        const result = await getMatchDashakootPointsData(req.body);
+        res.json(result);
+    } catch (error) {
+        res.status(500).json({ success: false, error: error.message });
+    }
+});
+
+router.post('/match_percentage', async (req, res) => {
+    try {
+        const result = await getMatchPercentageData(req.body);
+        res.json(result);
+    } catch (error) {
+        res.status(500).json({ success: false, error: error.message });
+    }
+});
+
+// ============================================
+// HEALTH CHECK ENDPOINT
+// ============================================
+router.get('/health', (req, res) => {
     res.json({
-        server: { status: 'ok', timestamp: new Date().toISOString() },
-        firebase: { status: admin.apps.length ? 'ok' : 'not_initialized' },
-        supabase: { status: 'ok' },
-        env: {
-            node_env: process.env.NODE_ENV,
-            port: process.env.PORT,
-            hasFirebaseKey: !!process.env.FIREBASE_PRIVATE_KEY,
-            hasSupabaseUrl: !!process.env.SUPABASE_URL,
-            hasGeminiKey: !!process.env.GEMINI_API_KEY,
-            hasRazorpayKeys: !!(process.env.RAZORPAY_KEY_ID && process.env.RAZORPAY_KEY_SECRET)
-        }
+        status: 'OK',
+        timestamp: new Date().toISOString(),
+        message: 'Astrology API is running successfully'
     });
 });
 
-// ============================================
-// 404 HANDLER - 👉 সব রাউটের পর, সবচেয়ে শেষে
-// ============================================
-app.use((req, res) => {
-    console.log(`❌ 404 Not Found: ${req.method} ${req.url}`);
-    res.status(404).json({ message: 'Route not found' });
+// Daily Horoscope endpoint
+router.post('/daily_horoscope', async (req, res) => {
+    try {
+        const { sign, day, month, year } = req.body;
+        const result = await getDailyHoroscopeData(sign, day || 12, month || 5, year || 2024);
+        res.json(result);
+    } catch (error) {
+        res.status(500).json({ success: false, error: error.message });
+    }
 });
 
-// Global error handler
-app.use(errorHandler);
-
-// ============================================
-// START SERVER
-// ============================================
-const PORT = appConfig.port || 5000;
-app.listen(PORT, () => {
-    logger.info(`🚀 Server safely running on port ${PORT}`);
-    console.log(`\n✅ Server started successfully!`);
-    console.log(`📍 Health check: http://localhost:${PORT}/health`);
-    console.log(`📍 Root: http://localhost:${PORT}/`);
-    console.log(`📍 Auth Verify: http://localhost:${PORT}/api/auth/verify-email`);
-    console.log(`📍 Articles: http://localhost:${PORT}/api/articles`);
-    console.log(`📍 Hero: http://localhost:${PORT}/api/hero`);
-    console.log(`📍 Testimonials: http://localhost:${PORT}/api/testimonials`);
-    console.log(`🔧 Test endpoint: http://localhost:${PORT}/api/test`);
-    console.log(`🔑 Firebase: ${admin.apps.length ? '✅ Initialized' : '❌ Not initialized'}`);
-    console.log(`💾 Supabase: ${process.env.SUPABASE_URL ? '✅ Configured' : '❌ Not configured'}`);
-});
-
-export default app;
+export default router;

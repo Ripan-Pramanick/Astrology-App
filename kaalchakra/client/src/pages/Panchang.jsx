@@ -217,44 +217,45 @@ const Panchang = () => {
       console.log("🌞 Fetching Panchang data...", payload);
 
       // Fetch birth details (contains panchang info)
-      const birthDetails = await astrologyServices.kundli.getBirthDetails(payload);
-      console.log("📊 Birth Details response:", birthDetails);
+      // const birthDetails = await astrologyServices.kundli.getBirthDetails(payload);
+      const response = await astrologyServices.panchang.getAdvancedPanchang(payload);
+      console.log("📊 Birth Details response:", response);
 
-      if (birthDetails) {
+     if (response) {
         setPanchangData({
           tithi: { 
-            name: birthDetails.tithi_name || getTithiName(selectedDate), 
-            endTime: birthDetails.tithi_end_time || "12:15 PM" 
+            name: response.tithi?.details?.tithi_name || getTithiName(selectedDate), 
+            endTime: response.tithi?.end_time?.time || "12:15 PM" 
           },
           nakshatra: { 
-            name: birthDetails.nakshatra_name || getNakshatraName(selectedDate), 
-            endTime: birthDetails.nakshatra_end_time || "05:15 AM" 
+            name: response.nakshatra?.details?.nakshatra_name || getNakshatraName(selectedDate), 
+            endTime: response.nakshatra?.end_time?.time || "05:15 AM" 
           },
           yoga: { 
-            name: birthDetails.yoga_name || getYogaName(selectedDate), 
-            endTime: birthDetails.yoga_end_time || "05:53 AM" 
+            name: response.yoga?.details?.yoga_name || getYogaName(selectedDate), 
+            endTime: response.yoga?.end_time?.time || "05:53 AM" 
           },
           karana: { 
-            name: birthDetails.karana_name || getKaranaName(selectedDate), 
-            endTime: birthDetails.karana_end_time || "12:12 PM" 
+            name: response.karana?.details?.karana_name || getKaranaName(selectedDate), 
+            endTime: response.karana?.end_time?.time || "12:12 PM" 
           },
-          vaar: { name: getWeekdayName(selectedDate.getDay()) },
-          sunrise: birthDetails.sunrise || getSunriseTime(),
-          sunset: birthDetails.sunset || getSunsetTime(),
-          moonrise: birthDetails.moonrise || getMoonriseTime(),
-          moonset: birthDetails.moonset || getMoonsetTime(),
-          samvat: {
-            vikram: birthDetails.vikram_samvat || String(selectedDate.getFullYear() + 57),
-            shaka: birthDetails.shaka_samvat || String(selectedDate.getFullYear() - 78)
+          vaar: { name: response.day || getWeekdayName(selectedDate.getDay()) },
+          sunrise: response.sunrise || getSunriseTime(),
+          sunset: response.sunset || getSunsetTime(),
+          moonrise: response.moonrise || getMoonriseTime(),
+          moonset: response.moonset || getMoonsetTime(),
+          samvat: { 
+            vikram: response.hindu_maah?.vikram_samvat || String(selectedDate.getFullYear() + 57), 
+            shaka: response.hindu_maah?.shaka_samvat || String(selectedDate.getFullYear() - 78) 
           },
-          month: {
-            amanta: birthDetails.amanta_month || getMonthName(selectedDate.getMonth()),
-            purnimanta: birthDetails.purnimanta_month || getMonthName(selectedDate.getMonth())
+          month: { 
+            amanta: response.hindu_maah?.amanta || getMonthName(selectedDate.getMonth()), 
+            purnimanta: response.hindu_maah?.purnimanta || getMonthName(selectedDate.getMonth()) 
           },
-          sunSign: getSunSign(selectedDate),
-          moonSign: getMoonSign(selectedDate),
-          ritu: getRitu(selectedDate.getMonth()),
-          ayan: getAyan(selectedDate)
+          sunSign: response.sun_sign || getSunSign(selectedDate),
+          moonSign: response.moon_sign || getMoonSign(selectedDate),
+          ritu: response.ritu || getRitu(selectedDate.getMonth()),
+          ayan: response.ayana || getAyan(selectedDate)
         });
 
         // Set default timings

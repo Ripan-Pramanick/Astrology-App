@@ -1,14 +1,16 @@
 // server/services/astrologyAPIService.js
-const axios = require('axios');
+import axios from 'axios';
 
 const callAstrologyAPI = async (endpoint, requestData, pathParams = {}) => {
-    const apiKey = process.env.ASTROLOGY_API_KEY;
+    const userId = process.env.ASTROLOGY_USER_ID?.trim();
+    const apiKey = process.env.ASTROLOGY_API_KEY?.trim() || process.env.ASTROLOGY_WALLET_TOKEN?.trim();
 
-    if (!apiKey) {
-        throw new Error('❌ ASTROLOGY_API_KEY is missing in .env file');
+    if (!userId || !apiKey) {
+        throw new Error('❌ ASTROLOGY_USER_ID or ASTROLOGY_API_KEY is missing in .env file');
     }
 
-    // Replace path parameters in endpoint
+    const authString = Buffer.from(`${userId}:${apiKey}`).toString('base64');
+
     let finalEndpoint = endpoint;
     for (const [key, value] of Object.entries(pathParams)) {
         finalEndpoint = finalEndpoint.replace(`:${key}`, value);
@@ -18,18 +20,19 @@ const callAstrologyAPI = async (endpoint, requestData, pathParams = {}) => {
         method: 'post',
         url: `https://json.astrologyapi.com/v1/${finalEndpoint}`,
         headers: {
-            'x-astrologyapi-key': apiKey,
+            'Authorization': `Basic ${authString}`,
             'Content-Type': 'application/json'
         },
         data: {
-            day: requestData.day,
-            month: requestData.month,
-            year: requestData.year,
-            hour: requestData.hour,
-            min: requestData.minute,
-            lat: requestData.latitude,
-            lon: requestData.longitude,
-            tzone: requestData.timezone
+            // ✅ ডেটাকে Number এবং ParseFloat দিয়ে সুরক্ষিত করা হলো
+            day: Number(requestData.day),
+            month: Number(requestData.month),
+            year: Number(requestData.year),
+            hour: Number(requestData.hour),
+            min: Number(requestData.minute || requestData.min),
+            lat: parseFloat(requestData.latitude || requestData.lat),
+            lon: parseFloat(requestData.longitude || requestData.lon),
+            tzone: parseFloat(requestData.timezone || requestData.tzone || 5.5) // ✅ ডিফল্ট ইন্ডিয়ান টাইমজোন
         }
     };
 
@@ -46,8 +49,14 @@ const callAstrologyAPI = async (endpoint, requestData, pathParams = {}) => {
     if (requestData.varshphal_year) config.data.varshphal_year = requestData.varshphal_year;
 
     console.log(`📤 Calling AstrologyAPI: ${finalEndpoint}`);
-    const response = await axios(config);
-    return response.data;
+
+    try {
+        const response = await axios(config);
+        return response.data;
+    } catch (error) {
+        console.error(`❌ Astrology API Error (${finalEndpoint}):`, error.response?.data || error.message);
+        throw new Error(error.response?.data?.message || error.message);
+    }
 };
 
 // ============================================
@@ -209,10 +218,23 @@ const getMatchDashakootPoints = async (params) => callAstrologyAPI('match_dashak
 const getMatchPercentage = async (params) => callAstrologyAPI('match_percentage', params);
 
 // ============================================
+// DAILY HOROSCOPE
+// ============================================
+const getDailyHoroscope = async (sign, day = 1, month = 5, year = 2024) => {
+    const params = {
+        day: day,
+        month: month,
+        year: year,
+        zodiac: sign,
+        type: 'daily'
+    };
+    return callAstrologyAPI('horoscope/daily', params);
+};
+
+// ============================================
 // EXPORT ALL FUNCTIONS
 // ============================================
-module.exports = {
-    // Core
+export {
     callAstrologyAPI,
     getAstroDetails,
     getPlanets,
@@ -222,16 +244,12 @@ module.exports = {
     getAyanamsha,
     getPlanetNature,
     getBirthDetails,
-    
-    // Biorhythm & Horoscope
     getBiorhythm,
     getMoonBiorhythm,
     getHoroChart,
     getHoroChartImage,
     getPlanetAshtak,
     getSarvashtak,
-    
-    // Vimshottari Dasha
     getCurrentVdashaAll,
     getMajorVdasha,
     getCurrentVdasha,
@@ -240,38 +258,26 @@ module.exports = {
     getSubSubVdasha,
     getSubSubSubVdasha,
     getSubSubSubSubVdasha,
-    
-    // Char Dasha
     getMajorChardasha,
     getCurrentChardasha,
     getSubChardasha,
     getSubSubChardasha,
-    
-    // Yogini Dasha
     getMajorYoginiDasha,
     getCurrentYoginiDasha,
     getSubYoginiDasha,
-    
-    // General Reports
     getGeneralHouseReport,
     getGeneralRashiReport,
     getGeneralAscendantReport,
     getGeneralNakshatraReport,
-    
-    // Lal Kitab
     getLalkitabHoroscope,
     getLalkitabDebts,
     getLalkitabRemedies,
     getLalkitabHouses,
     getLalkitabPlanets,
-    
-    // Nakshatra Predictions
     getDailyNakshatraPrediction,
     getNextDayNakshatraPrediction,
     getPreviousDayNakshatraPrediction,
     getDailyNakshatraConsolidated,
-    
-    // Panchang & Muhurta
     getBasicPanchangSunrise,
     getBasicPanchang,
     getAdvancedPanchangSunrise,
@@ -284,8 +290,6 @@ module.exports = {
     getTamilMonthPanchang,
     getTamilPanchang,
     getPanchangFestival,
-    
-    // Numerology
     getNumeroTable,
     getNumeroReport,
     getNumeroFavTime,
@@ -294,16 +298,12 @@ module.exports = {
     getNumeroFavLord,
     getNumeroFavMantra,
     getNumeroPredictionDaily,
-    
-    // Dosha & Yoga
     getSimpleManglik,
     getManglik,
     getKalsarpaDetails,
     getSadeSatiCurrentStatus,
     getSadeSatiLifeDetails,
     getPitraDoshaReport,
-    
-    // Varshaphal
     getVarshaphalYearChart,
     getVarshaphalMonthChart,
     getVarshaphalDetails,
@@ -313,15 +313,11 @@ module.exports = {
     getVarshaphalPanchavargeeyaBala,
     getVarshaphalSahamPoints,
     getVarshaphalYoga,
-    
-    // KP System
     getKpPlanets,
     getKpHouseCusps,
     getKpBirthChart,
     getKpHouseSignificator,
     getKpPlanetSignificator,
-    
-    // Matchmaking
     getMatchBirthDetails,
     getMatchAshtakootPoints,
     getMatchObstructions,
@@ -331,5 +327,6 @@ module.exports = {
     getMatchMakingReport,
     getMatchMakingDetailedReport,
     getMatchDashakootPoints,
-    getMatchPercentage
+    getMatchPercentage,
+    getDailyHoroscope
 };
