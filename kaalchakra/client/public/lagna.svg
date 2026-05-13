@@ -1,0 +1,85 @@
+<svg width="350" height="350" xmlns="http://www.w3.org/2000/svg" id="chartSvg2">
+  <g width="350" height="350">
+    <g class="slice">
+      <rect width="350" height="350" fill="#fef3c7"></rect>
+      <line x1="10" y1="10" x2="340" y2="10" style="stroke: rgb(153, 27, 27); stroke-width: 1;"></line>
+      <line x1="340" y1="10" x2="340" y2="340" style="stroke: rgb(153, 27, 27); stroke-width: 1;"></line>
+      <line x1="340" y1="340" x2="10" y2="340" style="stroke: rgb(153, 27, 27); stroke-width: 1;"></line>
+      <line x1="10" y1="340" x2="10" y2="10" style="stroke: rgb(153, 27, 27); stroke-width: 1;"></line>
+      <line x1="10" y1="175" x2="175" y2="10" style="stroke: rgb(153, 27, 27); stroke-width: 1;"></line>
+      <line x1="175" y1="10" x2="340" y2="175" style="stroke: rgb(153, 27, 27); stroke-width: 1;"></line>
+      <line x1="340" y1="175" x2="175" y2="340" style="stroke: rgb(153, 27, 27); stroke-width: 1;"></line>
+      <line x1="175" y1="340" x2="10" y2="175" style="stroke: rgb(153, 27, 27); stroke-width: 1;"></line>
+      <line x1="10" y1="10" x2="175" y2="175" style="stroke: rgb(153, 27, 27); stroke-width: 1;"></line>
+      <line x1="175" y1="175" x2="340" y2="10" style="stroke: rgb(153, 27, 27); stroke-width: 1;"></line>
+      <line x1="340" y1="340" x2="175" y2="175" style="stroke: rgb(153, 27, 27); stroke-width: 1;"></line>
+      <line x1="175" y1="175" x2="10" y2="340" style="stroke: rgb(153, 27, 27); stroke-width: 1;"></line>
+      <text font-size="14" x="175" y="158.5" text-anchor="middle" dominant-baseline="central" style="fill: rgb(153, 27, 27);">10</text>
+      <text font-size="14" x="92.5" y="76" text-anchor="middle" dominant-baseline="central" style="fill: rgb(153, 27, 27);">11</text>
+      <text font-size="14" x="76" y="92.5" text-anchor="middle" dominant-baseline="central" style="fill: rgb(153, 27, 27);">12</text>
+      <text font-size="14" x="158.5" y="175" text-anchor="middle" dominant-baseline="central" style="fill: rgb(153, 27, 27);">1</text>
+      <text font-size="14" x="76" y="257.5" text-anchor="middle" dominant-baseline="central" style="fill: rgb(153, 27, 27);">2</text>
+      <text font-size="14" x="92.5" y="274" text-anchor="middle" dominant-baseline="central" style="fill: rgb(153, 27, 27);">3</text>
+      <text font-size="14" x="175" y="191.5" text-anchor="middle" dominant-baseline="central" style="fill: rgb(153, 27, 27);">4</text>
+      <text font-size="14" x="257.5" y="274" text-anchor="middle" dominant-baseline="central" style="fill: rgb(153, 27, 27);">5</text>
+      <text font-size="14" x="274" y="257.5" text-anchor="middle" dominant-baseline="central" style="fill: rgb(153, 27, 27);">6</text>
+      <text font-size="14" x="191.5" y="175" text-anchor="middle" dominant-baseline="central" style="fill: rgb(153, 27, 27);">7</text>
+      <text font-size="14" x="274" y="92.5" text-anchor="middle" dominant-baseline="central" style="fill: rgb(153, 27, 27);">8</text>
+      <text font-size="14" x="257.5" y="76" text-anchor="middle" dominant-baseline="central" style="fill: rgb(153, 27, 27);">9</text>
+      <g transform="translate(165,91.92857142857143)">
+        <text x="0" y="-14" font-size="9.799999999999999" text-anchor="middle" style="fill: rgb(153, 27, 27);"></text>
+        <text x="0" y="0" font-size="14" font-weight="bold" text-anchor="middle" style="fill: rgb(153, 27, 27);">Ne</text>
+      </g>
+      <g transform="translate(233.35714285714286,179.14285714285714)">
+        <text x="0" y="-14" font-size="9.799999999999999" text-anchor="middle" style="fill: rgb(153, 27, 27);"></text>
+        <text x="0" y="0" font-size="14" font-weight="bold" text-anchor="middle" style="fill: rgb(153, 27, 27);">Ke</text>
+      </g>
+      <g transform="translate(165,259.2857142857143)">
+        <text x="0" y="-14" font-size="9.799999999999999" text-anchor="middle" style="fill: rgb(153, 27, 27);"></text>
+        <text x="0" y="0" font-size="14" font-weight="bold" text-anchor="middle" style="fill: rgb(153, 27, 27);">Su</text>
+      </g>
+      <g transform="translate(77.78571428571428,179.14285714285714)">
+        <text x="0" y="-14" font-size="9.799999999999999" text-anchor="middle" style="fill: rgb(153, 27, 27);"></text>
+        <text x="0" y="0" font-size="14" font-weight="bold" text-anchor="middle" style="fill: rgb(153, 27, 27);">Ra</text>
+      </g>
+      <g transform="translate(87.21428571428572,33)">
+        <text x="0" y="-14" font-size="9.799999999999999" text-anchor="middle" style="fill: rgb(153, 27, 27);"></text>
+        <text x="0" y="0" font-size="14" font-weight="bold" text-anchor="middle" style="fill: rgb(153, 27, 27);">Ur</text>
+      </g>
+      <g transform="translate(87.21428571428572,330)">
+        <text x="0" y="-14" font-size="9.799999999999999" text-anchor="middle" style="fill: rgb(153, 27, 27);"></text>
+        <text x="0" y="0" font-size="14" font-weight="bold" text-anchor="middle" style="fill: rgb(153, 27, 27);">Mo</text>
+      </g>
+      <g transform="translate(117.21428571428572,330)">
+        <text x="0" y="-14" font-size="9.799999999999999" text-anchor="middle" style="fill: rgb(153, 27, 27);"></text>
+        <text x="0" y="0" font-size="14" font-weight="bold" text-anchor="middle" style="fill: rgb(153, 27, 27);">Ve</text>
+      </g>
+      <g transform="translate(87.21428571428572,304)">
+        <text x="0" y="-14" font-size="9.799999999999999" text-anchor="middle" style="fill: rgb(153, 27, 27);"></text>
+        <text x="0" y="0" font-size="14" font-weight="bold" text-anchor="middle" style="fill: rgb(153, 27, 27);">Sa</text>
+      </g>
+      <g transform="translate(254.57142857142858,330)">
+        <text x="0" y="-14" font-size="9.799999999999999" text-anchor="middle" style="fill: rgb(153, 27, 27);"></text>
+        <text x="0" y="0" font-size="14" font-weight="bold" text-anchor="middle" style="fill: rgb(153, 27, 27);">Ma</text>
+      </g>
+      <g transform="translate(284.57142857142856,330)">
+        <text x="0" y="-14" font-size="9.799999999999999" text-anchor="middle" style="fill: rgb(153, 27, 27);"></text>
+        <text x="0" y="0" font-size="14" font-weight="bold" text-anchor="middle" style="fill: rgb(153, 27, 27);">Me</text>
+      </g>
+      <g transform="translate(254.57142857142858,304)">
+        <text x="0" y="-14" font-size="9.799999999999999" text-anchor="middle" style="fill: rgb(153, 27, 27);"></text>
+        <text x="0" y="0" font-size="14" font-weight="bold" text-anchor="middle" style="fill: rgb(153, 27, 27);">Ju</text>
+      </g>
+      <g transform="translate(297,91.92857142857143)">
+        <text x="0" y="-14" font-size="9.799999999999999" text-anchor="middle" style="fill: rgb(153, 27, 27);"></text>
+        <text x="0" y="0" font-size="14" font-weight="bold" text-anchor="middle" style="fill: rgb(153, 27, 27);">Pl</text>
+        
+      </g>
+      <g transform="translate(26.400000000000002,247.5)"><text x="0" y="-14" font-size="9.799999999999999" text-anchor="middle" style="fill: rgb(153, 27, 27);"></text><text x="0" y="0" font-size="14" font-weight="bold" text-anchor="middle" style="fill: rgb(153, 27, 27);">Ra</text></g>
+      
+      <g transform="translate(327,91.92857142857143)"><text x="0" y="-14" font-size="9.799999999999999" text-anchor="middle" style="fill: rgb(153, 27, 27);"></text><text x="0" y="0" font-size="14" font-weight="bold" text-anchor="middle" style="fill: rgb(153, 27, 27);">ke</text></g>
+      <g transform="translate(297,247.5)"><text x="0" y="-14" font-size="9.799999999999999" text-anchor="middle" style="fill: rgb(153, 27, 27);"></text><text x="0" y="0" font-size="14" font-weight="bold" text-anchor="middle" style="fill: rgb(153, 27, 27);">Ma</text></g>
+
+    </g>
+  </g>
+</svg>

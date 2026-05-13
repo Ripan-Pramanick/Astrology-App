@@ -62,7 +62,21 @@ const formatDegree = (degree) => {
   return `${deg}° ${min.toString().padStart(2, '0')}'`;
 };
 
-const PlanetTable = ({ planets }) => {
+// // --- Added Mock Data ---
+// const mockPlanetsData = [
+//   { name: 'Ascendant', sign: 'Leo', house: 1, degree: '12.45' },
+//   { name: 'Sun', sign: 'Aries', house: 9, normDegree: '15.30', retrograde: false },
+//   { name: 'Moon', sign: 'Cancer', house: 12, normDegree: '22.10', retrograde: false },
+//   { name: 'Mars', sign: 'Gemini', house: 11, normDegree: '05.25', retrograde: false },
+//   { name: 'Mercury', sign: 'Taurus', house: 10, normDegree: '28.40', retrograde: true },
+//   { name: 'Jupiter', sign: 'Leo', house: 1, normDegree: '10.15', retrograde: false },
+//   { name: 'Venus', sign: 'Pisces', house: 8, normDegree: '18.55', retrograde: false },
+//   { name: 'Saturn', sign: 'Capricorn', house: 6, normDegree: '12.00', retrograde: true },
+//   { name: 'Rahu', sign: 'Scorpio', house: 4, normDegree: '08.20', retrograde: true },
+//   { name: 'Ketu', sign: 'Taurus', house: 10, normDegree: '08.20', retrograde: true },
+// ];
+
+const PlanetTable = ({ planets = [] }) => {
   const [sortBy, setSortBy] = useState('house');
   const [sortOrder, setSortOrder] = useState('asc');
 
@@ -175,7 +189,7 @@ const PlanetTable = ({ planets }) => {
   };
 
   const SortIcon = ({ column }) => {
-    if (sortBy !== column) return <span className="ml-1 text-gray-400 text-xs">↕</span>;
+    if (sortBy !== column) return <span className="ml-1 text-orange-200/50 text-xs">↕</span>;
     return <span className="ml-1 text-white">{sortOrder === 'asc' ? '↑' : '↓'}</span>;
   };
 
@@ -194,143 +208,152 @@ const PlanetTable = ({ planets }) => {
   }
 
   return (
-    <div className="w-full">
-      {/* Header with count */}
-      <div className="mb-4 flex justify-between items-center">
-        <h3 className="text-[#4a3727] font-bold text-lg flex items-center gap-2">
-          <span className="inline-block w-1 h-5 bg-orange-500 rounded-full"></span>
-          Planetary Positions
-        </h3>
-        <span className="text-xs text-gray-400 bg-gray-100 px-2 py-1 rounded-full">
-          {validPlanets.length} Planets
-        </span>
-      </div>
+    <>
+      <style>
+        {`
+          .grad-table-header {
+            background: linear-gradient(to right, #f97316, #f59e0b);
+          }
+        `}
+      </style>
+      <div className="w-full p-4">
+        {/* Header with count */}
+        <div className="mb-4 flex justify-between items-center">
+          <h3 className="text-[#4a3727] font-bold text-lg flex items-center gap-2">
+            <span className="inline-block w-1 h-5 bg-orange-500 rounded-full"></span>
+            Planetary Positions
+          </h3>
+          <span className="text-xs text-gray-500 bg-gray-100 px-3 py-1 rounded-full font-medium">
+            {validPlanets.length} Planets
+          </span>
+        </div>
 
-      {/* Table */}
-      <div className="overflow-x-auto rounded-xl border border-gray-100 shadow-sm">
-        <table className="min-w-full bg-white">
-          <thead className="bg-gradient-to-r from-orange-500 to-amber-500">
-            <tr>
-              <th 
-                onClick={() => handleSort('name')}
-                className="px-4 py-3 text-left text-xs font-semibold text-white uppercase tracking-wider cursor-pointer hover:bg-orange-600/50 transition-colors"
-              >
-                Planet <SortIcon column="name" />
-              </th>
-              <th 
-                onClick={() => handleSort('sign')}
-                className="px-4 py-3 text-left text-xs font-semibold text-white uppercase tracking-wider cursor-pointer hover:bg-orange-600/50 transition-colors"
-              >
-                Sign <SortIcon column="sign" />
-              </th>
-              <th 
-                onClick={() => handleSort('house')}
-                className="px-4 py-3 text-left text-xs font-semibold text-white uppercase tracking-wider cursor-pointer hover:bg-orange-600/50 transition-colors"
-              >
-                House <SortIcon column="house" />
-              </th>
-              <th 
-                onClick={() => handleSort('degree')}
-                className="px-4 py-3 text-left text-xs font-semibold text-white uppercase tracking-wider cursor-pointer hover:bg-orange-600/50 transition-colors"
-              >
-                Degree <SortIcon column="degree" />
-              </th>
-              <th 
-                onClick={() => handleSort('lord')}
-                className="px-4 py-3 text-left text-xs font-semibold text-white uppercase tracking-wider cursor-pointer hover:bg-orange-600/50 transition-colors"
-              >
-                Lord <SortIcon column="lord" />
-              </th>
-              <th className="px-4 py-3 text-center text-xs font-semibold text-white uppercase tracking-wider">
-                Status
-              </th>
-            </tr>
-          </thead>
-          <tbody className="divide-y divide-gray-100">
-            {sortedPlanets.map((planet, idx) => {
-              const abbrev = PLANET_ABBREVIATIONS[planet.name] || planet.name?.slice(0, 2) || '?';
-              const planetColor = PLANET_COLORS[planet.name] || '#6B7280';
-              
-              return (
-                <tr 
-                  key={idx} 
-                  className="hover:bg-orange-50/50 transition-colors duration-150"
+        {/* Table */}
+        <div className="overflow-x-auto rounded-xl border border-gray-100 shadow-sm">
+          <table className="min-w-full bg-white">
+            <thead className="grad-table-header">
+              <tr>
+                <th 
+                  onClick={() => handleSort('name')}
+                  className="px-4 py-3 text-left text-xs font-semibold text-white uppercase tracking-wider cursor-pointer hover:bg-black/10 transition-colors"
                 >
-                  <td className="px-4 py-3 whitespace-nowrap">
-                    <div className="flex items-center gap-2">
-                      <div 
-                        className="w-8 h-8 rounded-full flex items-center justify-center text-white text-xs font-bold shadow-sm"
-                        style={{ backgroundColor: planetColor }}
-                      >
-                        {abbrev}
+                  Planet <SortIcon column="name" />
+                </th>
+                <th 
+                  onClick={() => handleSort('sign')}
+                  className="px-4 py-3 text-left text-xs font-semibold text-white uppercase tracking-wider cursor-pointer hover:bg-black/10 transition-colors"
+                >
+                  Sign <SortIcon column="sign" />
+                </th>
+                <th 
+                  onClick={() => handleSort('house')}
+                  className="px-4 py-3 text-left text-xs font-semibold text-white uppercase tracking-wider cursor-pointer hover:bg-black/10 transition-colors"
+                >
+                  House <SortIcon column="house" />
+                </th>
+                <th 
+                  onClick={() => handleSort('degree')}
+                  className="px-4 py-3 text-left text-xs font-semibold text-white uppercase tracking-wider cursor-pointer hover:bg-black/10 transition-colors"
+                >
+                  Degree <SortIcon column="degree" />
+                </th>
+                <th 
+                  onClick={() => handleSort('lord')}
+                  className="px-4 py-3 text-left text-xs font-semibold text-white uppercase tracking-wider cursor-pointer hover:bg-black/10 transition-colors"
+                >
+                  Lord <SortIcon column="lord" />
+                </th>
+                <th className="px-4 py-3 text-center text-xs font-semibold text-white uppercase tracking-wider">
+                  Status
+                </th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-gray-100">
+              {sortedPlanets.map((planet, idx) => {
+                const abbrev = PLANET_ABBREVIATIONS[planet.name] || planet.name?.slice(0, 2) || '?';
+                const planetColor = PLANET_COLORS[planet.name] || '#6B7280';
+                
+                return (
+                  <tr 
+                    key={idx} 
+                    className="hover:bg-orange-50/50 transition-colors duration-150"
+                  >
+                    <td className="px-4 py-3 whitespace-nowrap">
+                      <div className="flex items-center gap-2">
+                        <div 
+                          className="w-8 h-8 rounded-full flex items-center justify-center text-white text-xs font-bold shadow-sm"
+                          style={{ backgroundColor: planetColor }}
+                        >
+                          {abbrev}
+                        </div>
+                        <span className="font-semibold text-gray-800">{planet.name}</span>
                       </div>
-                      <span className="font-semibold text-gray-800">{planet.name}</span>
-                    </div>
-                  </td>
-                  <td className="px-4 py-3 whitespace-nowrap">
-                    <div className="flex items-center gap-1">
-                      <span className="text-lg">{ZODIAC_SYMBOLS[planet.sign] || ''}</span>
-                      <span className="text-gray-700">{planet.sign}</span>
-                    </div>
-                  </td>
-                  <td className="px-4 py-3 whitespace-nowrap">
-                    <span className="inline-flex items-center justify-center w-7 h-7 rounded-full bg-gray-100 text-gray-700 font-semibold text-sm">
-                      {planet.house}
-                    </span>
-                  </td>
-                  <td className="px-4 py-3 whitespace-nowrap">
-                    <div>
-                      <span className="font-mono text-sm text-gray-700 font-medium">
-                        {formatDegree(planet.degree)}
+                    </td>
+                    <td className="px-4 py-3 whitespace-nowrap">
+                      <div className="flex items-center gap-1">
+                        <span className="text-lg">{ZODIAC_SYMBOLS[planet.sign] || ''}</span>
+                        <span className="text-gray-700">{planet.sign}</span>
+                      </div>
+                    </td>
+                    <td className="px-4 py-3 whitespace-nowrap">
+                      <span className="inline-flex items-center justify-center w-7 h-7 rounded-full bg-gray-100 text-gray-700 font-semibold text-sm">
+                        {planet.house}
                       </span>
-                      {planet.normDegree && (
-                        <span className="text-xs text-gray-400 ml-1">
-                          ({planet.normDegree}°)
+                    </td>
+                    <td className="px-4 py-3 whitespace-nowrap">
+                      <div>
+                        <span className="font-mono text-sm text-gray-700 font-medium">
+                          {formatDegree(planet.degree)}
+                        </span>
+                        {planet.normDegree && (
+                          <span className="text-xs text-gray-400 ml-1">
+                            ({planet.normDegree}°)
+                          </span>
+                        )}
+                      </div>
+                    </td>
+                    <td className="px-4 py-3 whitespace-nowrap">
+                      <div className="flex items-center gap-1.5">
+                        <span className="text-gray-700">{planet.lord}</span>
+                        {PLANET_COLORS[planet.lord] && (
+                          <div 
+                            className="w-3 h-3 rounded-full"
+                            style={{ backgroundColor: PLANET_COLORS[planet.lord] }}
+                          />
+                        )}
+                      </div>
+                    </td>
+                    <td className="px-4 py-3 whitespace-nowrap text-center">
+                      {planet.retrograde ? (
+                        <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-bold bg-red-100 text-red-600">
+                          <span className="w-1.5 h-1.5 rounded-full bg-red-500"></span>
+                          Retrograde
+                        </span>
+                      ) : (
+                        <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-bold bg-green-100 text-green-600">
+                          <span className="w-1.5 h-1.5 rounded-full bg-green-500"></span>
+                          Direct
                         </span>
                       )}
-                    </div>
-                  </td>
-                  <td className="px-4 py-3 whitespace-nowrap">
-                    <div className="flex items-center gap-1.5">
-                      <span className="text-gray-700">{planet.lord}</span>
-                      {PLANET_COLORS[planet.lord] && (
-                        <div 
-                          className="w-3 h-3 rounded-full"
-                          style={{ backgroundColor: PLANET_COLORS[planet.lord] }}
-                        />
-                      )}
-                    </div>
-                  </td>
-                  <td className="px-4 py-3 whitespace-nowrap text-center">
-                    {planet.retrograde ? (
-                      <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-bold bg-red-100 text-red-600">
-                        <span className="w-1.5 h-1.5 rounded-full bg-red-500"></span>
-                        Retrograde
-                      </span>
-                    ) : (
-                      <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-bold bg-green-100 text-green-600">
-                        <span className="w-1.5 h-1.5 rounded-full bg-green-500"></span>
-                        Direct
-                      </span>
-                    )}
-                  </td>
-                </tr>
-              );
-            })}
-          </tbody>
-        </table>
-      </div>
+                    </td>
+                  </tr>
+                );
+              })}
+            </tbody>
+          </table>
+        </div>
 
-      {/* Footer Note */}
-      <div className="mt-4 p-3 bg-amber-50/50 rounded-lg border border-amber-100">
-        <div className="flex items-start gap-2 text-xs text-amber-700">
-          <span className="text-base">📌</span>
-          <div>
-            <span className="font-semibold">Vedic Calculation:</span> House positions are calculated based on Ascendant. Degree values are from sidereal (Nirayana) system using Lahiri Ayanamsa.
+        {/* Footer Note */}
+        <div className="mt-4 p-3 bg-amber-50/50 rounded-lg border border-amber-100">
+          <div className="flex items-start gap-2 text-xs text-amber-700">
+            <span className="text-base">📌</span>
+            <div>
+              <span className="font-semibold">Vedic Calculation:</span> House positions are calculated based on Ascendant. Degree values are from sidereal (Nirayana) system using Lahiri Ayanamsa.
+            </div>
           </div>
         </div>
       </div>
-    </div>
+    </>
   );
 };
 
