@@ -4,26 +4,12 @@ import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext.jsx';
 import { supabase } from '../lib/supabase.js';
 import astrologyServices from '../services/astrologyApi.js';
-import { Sparkles, MapPin, User, ShieldCheck, Stars, Loader2, AlertCircle, Phone, Mail } from 'lucide-react';
+import { Sparkles, MapPin, User, Stars, Loader2, AlertCircle, Phone, Mail } from 'lucide-react';
 import astrologerImg from '../assets/kundliRishi.svg';
-
-const loadRazorpayScript = () => {
-  return new Promise((resolve) => {
-    if (window.Razorpay) {
-      resolve(true);
-      return;
-    }
-    const script = document.createElement('script');
-    script.src = 'https://checkout.razorpay.com/v1/checkout.js';
-    script.onload = () => resolve(true);
-    script.onerror = () => resolve(false);
-    document.body.appendChild(script);
-  });
-};
 
 const KundliForm = () => {
   const navigate = useNavigate();
-  const { user, refreshPremiumStatus } = useAuth();
+  const { user } = useAuth();
 
   const [formData, setFormData] = useState({
     name: user?.name || '',
@@ -56,7 +42,6 @@ const KundliForm = () => {
   };
 
   // Location auto-suggestion
-  // Location auto-suggestion - COMPLETE FIX
   useEffect(() => {
     if (formData.place.length < 3 || selectedExactLocation?.place_name === formData.place) {
       setSuggestions([]);
@@ -69,11 +54,7 @@ const KundliForm = () => {
       try {
         const response = await fetch(
           `https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(formData.place)}&format=json&limit=5`,
-          {
-            headers: {
-              'User-Agent': 'KaalChakra-App/1.0'
-            }
-          }
+          { headers: { 'User-Agent': 'KaalChakra-App/1.0' } }
         );
 
         const data = await response.json();
@@ -109,60 +90,33 @@ const KundliForm = () => {
     setShowSuggestions(false);
   };
 
-  // Transform planet data - Universal parser for all API response formats
+  // Transform planet data
   const transformPlanetData = (apiData) => {
-    console.log("🔄 Raw API data received:", apiData);
-
-    if (!apiData) {
-      throw new Error('No planet data received from API');
-    }
+    if (!apiData) throw new Error('No planet data received from API');
 
     let planetsArray = [];
-
-    // Try to extract planets array from various possible formats
-    if (Array.isArray(apiData)) {
-      planetsArray = apiData;
-    }
-    else if (apiData.data && Array.isArray(apiData.data)) {
-      planetsArray = apiData.data;
-    }
-    else if (apiData.planets && Array.isArray(apiData.planets)) {
-      planetsArray = apiData.planets;
-    }
-    else if (apiData.response && Array.isArray(apiData.response)) {
-      planetsArray = apiData.response;
-    }
-    else if (apiData.result && Array.isArray(apiData.result)) {
-      planetsArray = apiData.result;
-    }
-    else if (apiData.planets_data && Array.isArray(apiData.planets_data)) {
-      planetsArray = apiData.planets_data;
-    }
+    if (Array.isArray(apiData)) planetsArray = apiData;
+    else if (apiData.data && Array.isArray(apiData.data)) planetsArray = apiData.data;
+    else if (apiData.planets && Array.isArray(apiData.planets)) planetsArray = apiData.planets;
+    else if (apiData.response && Array.isArray(apiData.response)) planetsArray = apiData.response;
+    else if (apiData.result && Array.isArray(apiData.result)) planetsArray = apiData.result;
+    else if (apiData.planets_data && Array.isArray(apiData.planets_data)) planetsArray = apiData.planets_data;
     else if (typeof apiData === 'object') {
-      // Try to find any array property in the object
       for (const key in apiData) {
         if (Array.isArray(apiData[key]) && apiData[key].length > 0) {
           planetsArray = apiData[key];
-          console.log(`✅ Found planets array in property: ${key}`);
           break;
         }
       }
     }
 
     if (!planetsArray || planetsArray.length === 0) {
-      console.error("❌ Could not extract planets array. Full response:", JSON.stringify(apiData, null, 2));
       throw new Error('Invalid planet data format received from API');
     }
 
-    console.log("✅ Extracted planets array length:", planetsArray.length);
-
-    // Transform each planet to standard format
     return planetsArray.map((planet, index) => {
-      // Get degree value from various possible fields
       let degreeValue = planet.degree || planet.normDegree || planet.longitude || planet.deg;
-      if (degreeValue && typeof degreeValue === 'string') {
-        degreeValue = parseFloat(degreeValue);
-      }
+      if (degreeValue && typeof degreeValue === 'string') degreeValue = parseFloat(degreeValue);
 
       return {
         id: index + 1,
@@ -177,6 +131,7 @@ const KundliForm = () => {
       };
     });
   };
+
   // Save data to Supabase
   const saveToSupabase = async (data) => {
     try {
@@ -205,20 +160,11 @@ const KundliForm = () => {
         created_at: new Date().toISOString(),
       };
 
-      const { data: savedData, error: supabaseError } = await supabase
-        .from('saved_reports')
-        .insert([reportRecord])
-        .select();
+      const { data: savedData, error: supabaseError } = await supabase.from('saved_reports').insert([reportRecord]).select();
 
-      if (supabaseError) {
-        console.error("❌ Supabase save error:", supabaseError.message);
-        return null;
-      }
-
-      console.log("✅ Data saved to Supabase:", savedData);
+      if (supabaseError) return null;
       return savedData?.[0]?.id;
     } catch (err) {
-      console.error("❌ Supabase save error:", err);
       return null;
     }
   };
@@ -229,18 +175,12 @@ const KundliForm = () => {
     setLoading(true);
 
     try {
-      // Validations
       if (!formData.name) throw new Error('Please enter your name');
       if (!formData.phone) throw new Error('Please enter your phone number');
-      if (!formData.birthDate.day || !formData.birthDate.month || !formData.birthDate.year) {
-        throw new Error('Please enter complete birth date');
-      }
-      if (!formData.birthTime.hour || !formData.birthTime.minute) {
-        throw new Error('Please enter complete birth time');
-      }
+      if (!formData.birthDate.day || !formData.birthDate.month || !formData.birthDate.year) throw new Error('Please enter complete birth date');
+      if (!formData.birthTime.hour || !formData.birthTime.minute) throw new Error('Please enter complete birth time');
       if (!formData.place) throw new Error('Please enter your birthplace');
 
-      // Get location coordinates
       let finalLat, finalLon, finalTzone;
       let exactLoc = selectedExactLocation;
       if (!exactLoc) {
@@ -253,7 +193,6 @@ const KundliForm = () => {
       finalLon = parseFloat(exactLoc.lng);
       finalTzone = parseFloat(exactLoc.timezone || 5.5);
 
-      // Convert time to 24hr
       let hour24 = parseInt(formData.birthTime.hour);
       if (formData.birthTime.ampm === 'PM' && hour24 !== 12) hour24 += 12;
       if (formData.birthTime.ampm === 'AM' && hour24 === 12) hour24 = 0;
@@ -271,27 +210,12 @@ const KundliForm = () => {
         ayanamsa: "lahiri"
       };
 
-      // Fetch Astrology Data from API
-      console.log("🌟 Fetching birth details from API...");
       const basicDetails = await astrologyServices.kundli.getBirthDetails(astroPayload);
-      console.log("🪐 Fetching planet positions from API...");
       let planetsData = await astrologyServices.planetary.getPlanetsExtended(astroPayload);
 
-      console.log("🌟 API Response - Basic Details:", basicDetails);
-      console.log("🪐 API Response - Planets Data:", planetsData);
+      if (!basicDetails || !planetsData) throw new Error('Failed to fetch astrological data from API');
 
-      console.log("🪐 FULL API Response Structure:", JSON.stringify(planetsData, null, 2));
-      console.log("🪐 Response keys:", Object.keys(planetsData));
-      if (planetsData.data) console.log("🪐 data keys:", Object.keys(planetsData.data));
-
-      if (!basicDetails || !planetsData) {
-        throw new Error('Failed to fetch astrological data from API');
-      }
-
-      // Transform planet data (no demo fallback)
       const transformedPlanets = transformPlanetData(planetsData);
-
-      // Ensure basic details have required fields from API
       const transformedBasic = {
         ascendant: basicDetails.ascendant || basicDetails.lagna,
         sign: basicDetails.sign || basicDetails.moon_sign,
@@ -301,12 +225,6 @@ const KundliForm = () => {
         ...basicDetails
       };
 
-      // Check if we got real data (not demo)
-      if (!transformedBasic.ascendant || transformedBasic.ascendant === 'Aries') {
-        console.warn("⚠️ API returned default values, but continuing with actual API response");
-      }
-
-      // Prepare user details
       const userFormDetails = {
         name: formData.name,
         phone: formData.phone,
@@ -325,10 +243,8 @@ const KundliForm = () => {
         reportData: { basic: transformedBasic, planets: transformedPlanets }
       };
 
-      // Save to Supabase
       const requestId = await saveToSupabase(userFormDetails);
 
-      // Store in localStorage
       const kundliDataToStore = {
         userDetails: {
           name: formData.name,
@@ -342,72 +258,17 @@ const KundliForm = () => {
         basic: transformedBasic,
         planets: transformedPlanets,
         request_id: requestId,
-        saved_to_supabase: !!requestId
+        saved_to_supabase: !!requestId,
+        payment_completed: true // Bypass payment marker
       };
 
       localStorage.setItem('kundliData', JSON.stringify(kundliDataToStore));
       sessionStorage.setItem('kundliData', JSON.stringify(kundliDataToStore));
 
-      // Payment Logic
-      const res = await loadRazorpayScript();
-      if (!res) {
-        throw new Error('Razorpay SDK failed to load');
-      }
-
-      const orderResponse = await fetch('/api/payment/create-order', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ amount: 1100, currency: 'INR' })
-      });
-      const orderData = await orderResponse.json();
-
-      if (!orderData.success) {
-        throw new Error('Failed to create payment order');
-      }
-
-      const options = {
-        key: import.meta.env.VITE_RAZORPAY_KEY_ID || orderData.razorpayKey || "rzp_test_SZrJ56ltWYlhmu",
-        amount: orderData.order.amount,
-        currency: "INR",
-        name: "Kaal Chakra",
-        description: "Premium Kundli Report",
-        image: "https://cdn-icons-png.flaticon.com/512/3592/3592033.png",
-        order_id: orderData.order.id,
-        handler: async function (response) {
-          setSuccess(true);
-
-          if (requestId) {
-            await supabase
-              .from('saved_reports')
-              .update({
-                ai_insights: { payment_id: response.razorpay_payment_id, payment_status: 'completed' }
-              })
-              .eq('id', requestId);
-          }
-
-          localStorage.setItem('kundliData', JSON.stringify({
-            ...kundliDataToStore,
-            payment_id: response.razorpay_payment_id,
-            payment_completed: true
-          }));
-
-          console.log("Payment Successful! Payment ID:", response.razorpay_payment_id);
-          setTimeout(() => navigate('/kundli-result'), 2000);
-        },
-        prefill: {
-          name: formData.name,
-          email: formData.email || '',
-          contact: formData.phone
-        },
-        theme: { color: "#f98a2c" }
-      };
-
-      const paymentObject = new window.Razorpay(options);
-      paymentObject.on('payment.failed', function (response) {
-        setError("Payment Failed! " + (response.error?.description || 'Please try again'));
-        setLoading(false);
-      });
-      paymentObject.open();
+      setSuccess(true);
+      
+      // ✅ পেমেন্ট ছাড়াই সরাসরি রেজাল্ট পেজে রিডাইরেক্ট
+      setTimeout(() => navigate('/kundli-result'), 1000);
 
     } catch (err) {
       console.error("Submission error:", err);
@@ -425,7 +286,7 @@ const KundliForm = () => {
         <div className="text-center mb-16 max-w-3xl mx-auto">
           <h1 className="text-4xl md:text-5xl font-black text-[#1e293b] mb-4">Every Problem Has A Solution</h1>
           <p className="text-lg text-slate-700 font-medium leading-relaxed">
-            Get your accurate Vedic Kundli report with planetary positions and predictions.
+            Get your accurate Vedic Kundli report with planetary positions and predictions, completely free.
           </p>
         </div>
 
@@ -437,7 +298,7 @@ const KundliForm = () => {
           <div className="w-full max-w-lg mx-auto lg:mx-0">
             <form onSubmit={handleSubmit} className="bg-white rounded-3xl p-8 shadow-2xl border border-slate-100 space-y-6">
               <div className="text-center mb-6">
-                <h2 className="text-2xl font-bold text-[#f98a2c]">Janam Kundli Report</h2>
+                <h2 className="text-2xl font-bold text-[#f98a2c]">Free Janam Kundli</h2>
                 <p className="text-sm text-slate-500">Complete Vedic Astrology Analysis</p>
               </div>
 
@@ -535,26 +396,22 @@ const KundliForm = () => {
                 </div>
               </div>
 
-              {/* Submit */}
-              <div className="pt-6 border-t border-slate-100 flex items-center justify-between">
-                <div>
-                  <div className="text-xs text-slate-400 line-through">Rs. 1500</div>
-                  <div className="text-xl font-black text-red-500">Rs. 1100/-</div>
-                </div>
-                <button type="submit" disabled={loading} className="py-3 px-8 bg-[#f98a2c] text-white font-bold rounded-xl shadow-lg shadow-orange-500/30 hover:bg-orange-600 active:scale-95 transition-all disabled:opacity-70 flex items-center gap-2">
-                  {loading ? <Loader2 className="animate-spin" size={18} /> : <Sparkles size={18} />}
-                  {loading ? 'Processing...' : 'Pay Now'}
+              {/* ✅ Updated Free Submit Button */}
+              <div className="pt-6 border-t border-slate-100">
+                <button type="submit" disabled={loading} className="w-full py-4 bg-[#f98a2c] text-white font-black text-lg rounded-xl shadow-lg shadow-orange-500/30 hover:bg-orange-600 active:scale-95 transition-all disabled:opacity-70 flex items-center justify-center gap-2">
+                  {loading ? <Loader2 className="animate-spin" size={24} /> : <Sparkles size={24} />}
+                  {loading ? 'Consulting the Stars...' : 'Generate Free Kundli'}
                 </button>
               </div>
 
               {error && (
-                <div className="flex items-center gap-2 text-red-500 text-sm font-bold bg-red-50 py-2 px-3 rounded-lg">
-                  <AlertCircle size={16} /> {error}
+                <div className="flex items-center gap-2 text-red-500 text-sm font-bold bg-red-50 py-3 px-4 rounded-xl border border-red-100">
+                  <AlertCircle size={18} /> {error}
                 </div>
               )}
               {success && (
-                <div className="flex items-center gap-2 text-green-600 text-sm font-bold bg-green-50 py-2 px-3 rounded-lg">
-                  <ShieldCheck size={16} /> Payment successful! Redirecting...
+                <div className="flex items-center gap-2 text-green-600 text-sm font-bold bg-green-50 py-3 px-4 rounded-xl border border-green-100">
+                  <Stars size={18} /> Celestial alignment successful! Redirecting...
                 </div>
               )}
 

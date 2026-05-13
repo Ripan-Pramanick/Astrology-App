@@ -2,15 +2,19 @@
 import axios from 'axios';
 
 const callAstrologyAPI = async (endpoint, requestData, pathParams = {}) => {
+    // .env থেকে User ID এবং API Key/Token নিচ্ছি
     const userId = process.env.ASTROLOGY_USER_ID?.trim();
     const apiKey = process.env.ASTROLOGY_API_KEY?.trim() || process.env.ASTROLOGY_WALLET_TOKEN?.trim();
 
     if (!userId || !apiKey) {
-        throw new Error('❌ ASTROLOGY_USER_ID or ASTROLOGY_API_KEY is missing in .env file');
+        console.error("❌ Missing Auth:", { userId: !!userId, apiKey: !!apiKey });
+        throw new Error('ASTROLOGY_USER_ID or ASTROLOGY_API_KEY is missing in .env file');
     }
 
+    // Basic Auth টোকেন তৈরি করা হচ্ছে
     const authString = Buffer.from(`${userId}:${apiKey}`).toString('base64');
 
+    // Replace path parameters in endpoint
     let finalEndpoint = endpoint;
     for (const [key, value] of Object.entries(pathParams)) {
         finalEndpoint = finalEndpoint.replace(`:${key}`, value);
@@ -20,7 +24,7 @@ const callAstrologyAPI = async (endpoint, requestData, pathParams = {}) => {
         method: 'post',
         url: `https://json.astrologyapi.com/v1/${finalEndpoint}`,
         headers: {
-            'Authorization': `Basic ${authString}`,
+            'Authorization': `Basic ${authString}`, // ✅ সঠিক হেডার
             'Content-Type': 'application/json'
         },
         data: {
@@ -32,7 +36,7 @@ const callAstrologyAPI = async (endpoint, requestData, pathParams = {}) => {
             min: Number(requestData.minute || requestData.min),
             lat: parseFloat(requestData.latitude || requestData.lat),
             lon: parseFloat(requestData.longitude || requestData.lon),
-            tzone: parseFloat(requestData.timezone || requestData.tzone || 5.5) // ✅ ডিফল্ট ইন্ডিয়ান টাইমজোন
+            tzone: parseFloat(requestData.timezone || requestData.tzone || 5.5) // ইন্ডিয়ান ডিফল্ট টাইমজোন
         }
     };
 
@@ -49,7 +53,7 @@ const callAstrologyAPI = async (endpoint, requestData, pathParams = {}) => {
     if (requestData.varshphal_year) config.data.varshphal_year = requestData.varshphal_year;
 
     console.log(`📤 Calling AstrologyAPI: ${finalEndpoint}`);
-
+    
     try {
         const response = await axios(config);
         return response.data;
