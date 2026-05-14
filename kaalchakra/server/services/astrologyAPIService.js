@@ -24,19 +24,19 @@ const callAstrologyAPI = async (endpoint, requestData, pathParams = {}) => {
         method: 'post',
         url: `https://json.astrologyapi.com/v1/${finalEndpoint}`,
         headers: {
-            'Authorization': `Basic ${authString}`, // ✅ সঠিক হেডার
+            'Authorization': `Basic ${authString}`, 
             'Content-Type': 'application/json'
         },
         data: {
-            // ✅ ডেটাকে Number এবং ParseFloat দিয়ে সুরক্ষিত করা হলো
+            // ✅ Fix: ?? অপারেটর ব্যবহার করা হলো যাতে '0' মিনিটকে NaN না ধরে 
             day: Number(requestData.day),
             month: Number(requestData.month),
             year: Number(requestData.year),
             hour: Number(requestData.hour),
-            min: Number(requestData.minute || requestData.min),
-            lat: parseFloat(requestData.latitude || requestData.lat),
-            lon: parseFloat(requestData.longitude || requestData.lon),
-            tzone: parseFloat(requestData.timezone || requestData.tzone || 5.5) // ইন্ডিয়ান ডিফল্ট টাইমজোন
+            min: Number(requestData.min ?? requestData.minute ?? 0),
+            lat: parseFloat(requestData.lat ?? requestData.latitude ?? 0),
+            lon: parseFloat(requestData.lon ?? requestData.longitude ?? 0),
+            tzone: parseFloat(requestData.tzone ?? requestData.timezone ?? 5.5)
         }
     };
 
@@ -225,19 +225,10 @@ const getMatchPercentage = async (params) => callAstrologyAPI('match_percentage'
 // DAILY HOROSCOPE
 // ============================================
 const getDailyHoroscope = async (sign, day = 1, month = 5, year = 2024) => {
-    const params = {
-        day: day,
-        month: month,
-        year: year,
-        zodiac: sign,
-        type: 'daily'
-    };
+    const params = { day, month, year, zodiac: sign, type: 'daily' };
     return callAstrologyAPI('horoscope/daily', params);
 };
 
-// ============================================
-// EXPORT ALL FUNCTIONS
-// ============================================
 export {
     callAstrologyAPI,
     getAstroDetails,
