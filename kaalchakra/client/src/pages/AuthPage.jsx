@@ -3,7 +3,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { Eye, EyeOff, Mail, Lock, User, Star, Sparkles, Phone } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { auth, signInWithEmailAndPassword, createUserWithEmailAndPassword, updateProfile } from '../firebase.js';
-import api from '../services/api'; // ✅ API import করা হলো
+import api from '../services/api';
 
 const AuthPage = () => {
   const navigate = useNavigate();
@@ -11,14 +11,14 @@ const AuthPage = () => {
   const [isBusy, setIsBusy] = useState(false);
 
   // Form states
-  const [loginId, setLoginId] = useState(''); // Email or Phone
+  const [loginId, setLoginId] = useState(''); 
   const [loginPassword, setLoginPassword] = useState('');
   
   const [regName, setRegName] = useState('');
   const [regEmail, setRegEmail] = useState('');
-  const [regPhone, setRegPhone] = useState(''); // Phone Number
+  const [regPhone, setRegPhone] = useState(''); 
   const [regPassword, setRegPassword] = useState('');
-  const [confirmPassword, setConfirmPassword] = useState(''); // Confirm Password
+  const [confirmPassword, setConfirmPassword] = useState(''); 
   
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
@@ -61,7 +61,6 @@ const AuthPage = () => {
         throw new Error('Please enter both Email/Phone and password');
       }
 
-      // Check if it's a phone number
       const isPhone = /^[0-9+\-\s]+$/.test(loginId);
       
       if (isPhone) {
@@ -177,81 +176,47 @@ const AuthPage = () => {
 
       {/* Decorative Stars Background */}
       <div className="absolute inset-0 overflow-hidden pointer-events-none">
-        <div className="absolute top-20 left-[10%] text-orange-200/20">
-          <Star className="w-8 h-8" fill="#F7931E" />
-        </div>
-        <div className="absolute bottom-32 right-[15%] text-amber-200/20">
-          <Sparkles className="w-6 h-6" />
-        </div>
-        <div className="absolute top-40 right-[20%] text-orange-200/20">
-          <Star className="w-5 h-5" fill="#F7931E" />
-        </div>
-        <div className="absolute bottom-20 left-[20%] text-amber-200/20">
-          <Sparkles className="w-7 h-7" />
-        </div>
+        <div className="absolute top-20 left-[10%] text-orange-200/20"><Star className="w-8 h-8" fill="#F7931E" /></div>
+        <div className="absolute bottom-32 right-[15%] text-amber-200/20"><Sparkles className="w-6 h-6" /></div>
+        <div className="absolute top-40 right-[20%] text-orange-200/20"><Star className="w-5 h-5" fill="#F7931E" /></div>
+        <div className="absolute bottom-20 left-[20%] text-amber-200/20"><Sparkles className="w-7 h-7" /></div>
       </div>
 
       {/* Auth Box */}
       <div
         ref={authBoxRef}
-        className={`auth-box w-[min(880px,96vw)] h-[clamp(400px,80vh,560px)] rounded-[clamp(16px,2.5vw,28px)] relative z-10 overflow-hidden transition-all duration-700 ease-[cubic-bezier(0.65,0,0.35,1)] ${isSignupMode ? 'signup-mode' : ''}`}
-        style={{
-          background: '#e8edf4',
-          boxShadow: '18px 18px 40px rgba(155, 172, 205, 0.78), -12px -12px 30px rgba(255, 255, 255, 0.98), 0 4px 16px rgba(140, 158, 198, 0.3)'
-        }}
+        // ✅ Changed height for mobile to ensure form fits perfectly (h-[650px] on mobile, clamp on desktop)
+        className={`auth-box w-[min(880px,96vw)] h-[650px] md:h-[clamp(400px,85vh,620px)] rounded-[clamp(16px,2.5vw,28px)] relative z-10 overflow-hidden transition-all duration-700 ease-[cubic-bezier(0.65,0,0.35,1)] ${isSignupMode ? 'signup-mode' : ''}`}
+        style={{ background: '#e8edf4', boxShadow: '18px 18px 40px rgba(155, 172, 205, 0.78), -12px -12px 30px rgba(255, 255, 255, 0.98), 0 4px 16px rgba(140, 158, 198, 0.3)' }}
       >
         {/* Divider Line */}
-        <div className="absolute top-0 bottom-0 w-px z-10 pointer-events-none transition-all duration-700 ease-[cubic-bezier(0.65,0,0.35,1)]"
-          style={{
-            left: isSignupMode ? '40%' : '60%',
-            boxShadow: '-1px 0 0 rgba(212, 175, 55, 0.28), 1px 0 0 rgba(255, 255, 255, 0.88)'
-          }}
+        {/* ✅ Hidden on mobile (max-md:hidden) */}
+        <div className="absolute top-0 bottom-0 w-px z-10 pointer-events-none transition-all duration-700 ease-[cubic-bezier(0.65,0,0.35,1)] max-md:hidden"
+          style={{ left: isSignupMode ? '40%' : '60%', boxShadow: '-1px 0 0 rgba(212, 175, 55, 0.28), 1px 0 0 rgba(255, 255, 255, 0.88)' }}
         />
 
-        {/* Panel A - Form Panel (60%) */}
+        {/* Panel A - Form Panel */}
+        {/* ✅ Takes full width on mobile (w-full max-md:!left-0) */}
         <div
           ref={pARef}
-          className="absolute top-0 w-[60%] h-full transition-all duration-700 ease-[cubic-bezier(0.65,0,0.35,1)] z-[1]"
-          style={{
-            left: isSignupMode ? '40%' : '0%',
-            background: 'rgba(255, 255, 255, 0.07)',
-            boxShadow: 'inset -8px 0 24px rgba(212, 175, 55, 0.08)'
-          }}
+          className="absolute top-0 h-full transition-all duration-700 ease-[cubic-bezier(0.65,0,0.35,1)] z-[1] w-full max-md:!left-0 md:w-[60%]"
+          style={{ left: isSignupMode ? '40%' : '0%', background: 'rgba(255, 255, 255, 0.07)', boxShadow: 'inset -8px 0 24px rgba(212, 175, 55, 0.08)' }}
         >
           {/* Login Form */}
-          <div className={`p-inner absolute inset-0 flex flex-col items-center justify-center p-[clamp(20px,4.5vh,48px)] ${isSignupMode ? 'hidden' : 'flex'}`}>
+          {/* ✅ Added max-md:pt-16 to push form down below mobile tabs */}
+          <div className={`p-inner absolute inset-0 flex flex-col items-center justify-center p-[clamp(20px,4.5vh,48px)] max-md:pt-16 ${isSignupMode ? 'hidden' : 'flex'}`}>
             <div className="fp-title text-[clamp(17px,2.6vw,26px)] font-bold text-[#1e2545] tracking-[0.18em] mb-[clamp(12px,2.5vh,22px)] flex items-center gap-2">
               <span className="text-[#d4af37]">✨</span> WELCOME BACK <span className="text-[#d4af37]">✨</span>
-            </div>
-
-            <div className="social-row flex gap-[clamp(8px,1.2vw,14px)] mb-[clamp(6px,1vh,10px)]">
-              <div className="s-icon w-[clamp(34px,4.2vw,44px)] h-[clamp(34px,4.2vw,44px)] rounded-full bg-[#e8edf4] flex items-center justify-center cursor-pointer shadow-[7px_7px_14px_rgba(212,175,55,0.3),-6px_-6px_12px_rgba(255,255,255,0.96)] transition-all hover:-translate-y-0.5">
-                <svg viewBox="0 0 24 24" fill="none" stroke="#d4af37" strokeWidth="1.8" className="w-5 h-5 opacity-60">
-                  <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9" />
-                  <path d="M13.73 21a2 2 0 0 1-3.46 0" />
-                </svg>
-              </div>
-              <div className="s-icon w-[clamp(34px,4.2vw,44px)] h-[clamp(34px,4.2vw,44px)] rounded-full bg-[#e8edf4] flex items-center justify-center cursor-pointer shadow-[7px_7px_14px_rgba(212,175,55,0.3),-6px_-6px_12px_rgba(255,255,255,0.96)] transition-all hover:-translate-y-0.5">
-                <svg viewBox="0 0 24 24" fill="none" stroke="#d4af37" strokeWidth="1.8" className="w-5 h-5 opacity-60">
-                  <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />
-                </svg>
-              </div>
-              <div className="s-icon active w-[clamp(34px,4.2vw,44px)] h-[clamp(34px,4.2vw,44px)] rounded-full bg-[#e8edf4] flex items-center justify-center cursor-pointer shadow-[inset_5px_5px_10px_rgba(212,175,55,0.5),inset_-4px_-4px_8px_rgba(255,255,255,0.9)]">
-                <svg viewBox="0 0 24 24" fill="none" stroke="#d4af37" strokeWidth="1.8" className="w-5 h-5 opacity-100">
-                  <rect x="2" y="6" width="20" height="12" rx="4" />
-                  <path d="M8 12h4M10 10v4M15 12h.01M17 12h.01" />
-                </svg>
-              </div>
             </div>
 
             <div className="social-hint text-[11px] text-[#9ba4bb] tracking-[0.05em] mb-[clamp(10px,2vh,20px)]">
               Connect with cosmic energy
             </div>
 
-            <form onSubmit={handleLogin} className="w-full">
-              <div className="field w-full mb-[clamp(6px,1.3vh,12px)] relative">
+            <form onSubmit={handleLogin} className="w-full mt-4">
+              <div className="field w-full mb-[clamp(8px,1.5vh,14px)] relative">
                 <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                   <User size={15} className="text-[#9ba4bb]" />
+                  <User size={16} className="text-[#9ba4bb]" />
                 </div>
                 <input
                   type="text"
@@ -259,23 +224,30 @@ const AuthPage = () => {
                   onChange={(e) => setLoginId(e.target.value)}
                   placeholder="Email or Phone Number"
                   autoComplete="username"
-                  className="w-full bg-white/88 border border-[#d4af37]/30 rounded-[10px] p-[clamp(9px,1.8vh,13px)] pl-9 px-4 text-[#2a3054] outline-none transition-all focus:border-[#d4af37] focus:bg-white focus:shadow-[0_0_0_3px_rgba(212,175,55,0.1)]"
+                  className="w-full bg-white/88 border border-[#d4af37]/30 rounded-[10px] py-[clamp(10px,2vh,14px)] pl-10 pr-4 text-[#2a3054] outline-none transition-all focus:border-[#d4af37] focus:bg-white focus:shadow-[0_0_0_3px_rgba(212,175,55,0.1)]"
                   required
                 />
               </div>
-              <div className="field w-full mb-[clamp(6px,1.3vh,12px)] relative">
+              <div className="field w-full mb-[clamp(8px,1.5vh,14px)] relative">
                 <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                  <Lock size={15} className="text-[#9ba4bb]" />
+                  <Lock size={16} className="text-[#9ba4bb]" />
                 </div>
                 <input
-                  type="password"
+                  type={showPassword ? "text" : "password"}
                   value={loginPassword}
                   onChange={(e) => setLoginPassword(e.target.value)}
                   placeholder="Password"
                   autoComplete="current-password"
-                  className="w-full bg-white/88 border border-[#d4af37]/30 rounded-[10px] p-[clamp(9px,1.8vh,13px)] pl-9 px-4 text-[#2a3054] outline-none transition-all focus:border-[#d4af37] focus:bg-white"
+                  className="w-full bg-white/88 border border-[#d4af37]/30 rounded-[10px] py-[clamp(10px,2vh,14px)] pl-10 pr-10 text-[#2a3054] outline-none transition-all focus:border-[#d4af37] focus:bg-white"
                   required
                 />
+                <button
+                  type="button"
+                  onClick={() => setShowPassword(!showPassword)}
+                  className="absolute inset-y-0 right-0 pr-4 flex items-center"
+                >
+                  {showPassword ? <EyeOff size={16} className="text-[#9ba4bb] hover:text-[#d4af37]" /> : <Eye size={16} className="text-[#9ba4bb] hover:text-[#d4af37]" />}
+                </button>
               </div>
               <span onClick={() => navigate('/forgot-password')} className="forgot text-[12px] text-[#9ba4bb] underline underline-offset-[3px] cursor-pointer mt-1 mb-[clamp(12px,2vh,20px)] block text-center hover:text-[#d4af37]">
                 Forgot Password?
@@ -286,7 +258,7 @@ const AuthPage = () => {
               <button
                 type="submit"
                 disabled={loading}
-                className="btn-blue w-full py-[clamp(10px,1.8vh,13px)] rounded-full border-none cursor-pointer font-bold text-[12px] tracking-[0.2em] uppercase text-white shadow-[0_6px_22px_rgba(212,175,55,0.45)] hover:brightness-110 hover:shadow-[0_10px_30px_rgba(212,175,55,0.55)] hover:-translate-y-px active:translate-y-0 transition-all disabled:opacity-50"
+                className="btn-blue w-full py-[clamp(10px,1.8vh,14px)] rounded-full border-none cursor-pointer font-bold text-[12px] tracking-[0.2em] uppercase text-white shadow-[0_6px_22px_rgba(212,175,55,0.45)] hover:brightness-110 hover:shadow-[0_10px_30px_rgba(212,175,55,0.55)] transition-all disabled:opacity-50"
                 style={{ backgroundImage: 'linear-gradient(to right, #d4af37, #e4b363)' }}
               >
                 {loading && !isSignupMode ? <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin mx-auto"></div> : 'SIGN IN'}
@@ -295,7 +267,8 @@ const AuthPage = () => {
           </div>
 
           {/* Register Form */}
-          <div className={`p-inner absolute inset-0 flex flex-col items-center justify-center p-[clamp(20px,4.5vh,48px)] ${isSignupMode ? 'flex' : 'hidden'}`}>
+          {/* ✅ Added max-md:pt-16 to push form down below mobile tabs */}
+          <div className={`p-inner absolute inset-0 flex flex-col items-center justify-center p-[clamp(20px,4.5vh,48px)] max-md:pt-16 ${isSignupMode ? 'flex' : 'hidden'}`}>
             <div className="fp-title text-[clamp(17px,2.6vw,26px)] font-bold text-[#1e2545] tracking-[0.18em] mb-[clamp(8px,1.5vh,12px)] flex items-center gap-2">
               <span className="text-[#d4af37]">🌟</span> CREATE ACCOUNT <span className="text-[#d4af37]">🌟</span>
             </div>
@@ -304,77 +277,67 @@ const AuthPage = () => {
               Begin your cosmic journey
             </div>
 
-            <form onSubmit={handleRegister} className="w-full">
+            <form onSubmit={handleRegister} className="w-full mt-2">
                <div className="field w-full mb-[clamp(6px,1.2vh,10px)] relative">
-                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                  <User size={15} className="text-[#9ba4bb]" />
-                </div>
+                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none"><User size={15} className="text-[#9ba4bb]" /></div>
                 <input
                   type="text"
                   value={regName}
                   onChange={(e) => setRegName(e.target.value)}
                   placeholder="Full Name"
                   autoComplete="name"
-                  className="w-full bg-white/88 border border-[#d4af37]/30 rounded-[10px] p-[clamp(8px,1.5vh,11px)] pl-9 px-4 text-[#2a3054] outline-none transition-all focus:border-[#d4af37] focus:bg-white text-sm"
+                  className="w-full bg-white/88 border border-[#d4af37]/30 rounded-[10px] py-[clamp(8px,1.4vh,11px)] pl-9 pr-3 text-[#2a3054] outline-none transition-all focus:border-[#d4af37] focus:bg-white text-sm"
                   required
                 />
               </div>
-
+              
               <div className="field w-full mb-[clamp(6px,1.2vh,10px)] relative">
-                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                  <Mail size={15} className="text-[#9ba4bb]" />
-                </div>
+                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none"><Mail size={15} className="text-[#9ba4bb]" /></div>
                 <input
                   type="email"
                   value={regEmail}
                   onChange={(e) => setRegEmail(e.target.value)}
                   placeholder="Email Address"
                   autoComplete="username"
-                  className="w-full bg-white/88 border border-[#d4af37]/30 rounded-[10px] p-[clamp(8px,1.5vh,11px)] pl-9 px-4 text-[#2a3054] outline-none transition-all focus:border-[#d4af37] focus:bg-white text-sm"
+                  className="w-full bg-white/88 border border-[#d4af37]/30 rounded-[10px] py-[clamp(8px,1.4vh,11px)] pl-9 pr-3 text-[#2a3054] outline-none transition-all focus:border-[#d4af37] focus:bg-white text-sm"
                   required
                 />
               </div>
 
                <div className="field w-full mb-[clamp(6px,1.2vh,10px)] relative">
-                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                  <Phone size={15} className="text-[#9ba4bb]" />
-                </div>
+                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none"><Phone size={15} className="text-[#9ba4bb]" /></div>
                 <input
                   type="tel"
                   value={regPhone}
                   onChange={(e) => setRegPhone(e.target.value)}
                   placeholder="Phone Number"
-                  className="w-full bg-white/88 border border-[#d4af37]/30 rounded-[10px] p-[clamp(8px,1.5vh,11px)] pl-9 px-4 text-[#2a3054] outline-none transition-all focus:border-[#d4af37] focus:bg-white text-sm"
+                  className="w-full bg-white/88 border border-[#d4af37]/30 rounded-[10px] py-[clamp(8px,1.4vh,11px)] pl-9 pr-3 text-[#2a3054] outline-none transition-all focus:border-[#d4af37] focus:bg-white text-sm"
                   required
                 />
               </div>
 
               <div className="field w-full mb-[clamp(6px,1.2vh,10px)] relative">
-                 <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                  <Lock size={15} className="text-[#9ba4bb]" />
-                </div>
+                 <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none"><Lock size={15} className="text-[#9ba4bb]" /></div>
                 <input
                   type="password"
                   value={regPassword}
                   onChange={(e) => setRegPassword(e.target.value)}
                   placeholder="Password"
                   autoComplete="new-password"
-                  className="w-full bg-white/88 border border-[#d4af37]/30 rounded-[10px] p-[clamp(8px,1.5vh,11px)] pl-9 px-4 text-[#2a3054] outline-none transition-all focus:border-[#d4af37] focus:bg-white text-sm"
+                  className="w-full bg-white/88 border border-[#d4af37]/30 rounded-[10px] py-[clamp(8px,1.4vh,11px)] pl-9 pr-3 text-[#2a3054] outline-none transition-all focus:border-[#d4af37] focus:bg-white text-sm"
                   required
                 />
               </div>
               
               <div className="field w-full mb-[clamp(8px,2vh,14px)] relative">
-                 <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                  <Lock size={15} className="text-[#9ba4bb]" />
-                </div>
+                 <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none"><Lock size={15} className="text-[#9ba4bb]" /></div>
                 <input
                   type="password"
                   value={confirmPassword}
                   onChange={(e) => setConfirmPassword(e.target.value)}
                   placeholder="Confirm Password"
                   autoComplete="new-password"
-                  className="w-full bg-white/88 border border-[#d4af37]/30 rounded-[10px] p-[clamp(8px,1.5vh,11px)] pl-9 px-4 text-[#2a3054] outline-none transition-all focus:border-[#d4af37] focus:bg-white text-sm"
+                  className="w-full bg-white/88 border border-[#d4af37]/30 rounded-[10px] py-[clamp(8px,1.4vh,11px)] pl-9 pr-3 text-[#2a3054] outline-none transition-all focus:border-[#d4af37] focus:bg-white text-sm"
                   required
                 />
               </div>
@@ -394,9 +357,10 @@ const AuthPage = () => {
         </div>
 
         {/* Panel B - Overlay Panel (40%) */}
+        {/* ✅ Hidden entirely on mobile (max-md:hidden) */}
         <div
           ref={pBRef}
-          className="absolute top-0 w-[40%] h-full transition-all duration-700 ease-[cubic-bezier(0.65,0,0.35,1)] z-[3] overflow-hidden"
+          className="absolute top-0 w-[40%] h-full transition-all duration-700 ease-[cubic-bezier(0.65,0,0.35,1)] z-[3] overflow-hidden max-md:hidden"
           style={{ left: isSignupMode ? '0%' : '60%', background: '#e8edf4' }}
         >
           {/* Decorative Circles */}
@@ -420,8 +384,8 @@ const AuthPage = () => {
           </div>
         </div>
 
-        {/* Mobile Navigation Tabs */}
-        <div className="mobile-nav md:hidden absolute top-0 left-0 right-0 flex bg-[#e8edf4] rounded-t-[20px] overflow-hidden border-b border-[#d4af37]/30 z-20">
+        {/* Mobile Navigation Tabs (This controls the switching on mobile perfectly) */}
+        <div className="mobile-nav md:hidden absolute top-0 left-0 right-0 flex bg-[#e8edf4] rounded-t-[16px] overflow-hidden border-b border-[#d4af37]/30 z-20">
           <div onClick={() => toggleMode(false)} className={`flex-1 py-3.5 text-center text-[13px] font-bold tracking-[0.1em] uppercase cursor-pointer transition-all ${!isSignupMode ? 'text-[#d4af37] border-b-2 border-[#d4af37] bg-white/50' : 'text-[#9ba4bb] border-b-2 border-transparent'}`}>SIGN IN</div>
           <div onClick={() => toggleMode(true)} className={`flex-1 py-3.5 text-center text-[13px] font-bold tracking-[0.1em] uppercase cursor-pointer transition-all ${isSignupMode ? 'text-[#d4af37] border-b-2 border-[#d4af37] bg-white/50' : 'text-[#9ba4bb] border-b-2 border-transparent'}`}>SIGN UP</div>
         </div>
