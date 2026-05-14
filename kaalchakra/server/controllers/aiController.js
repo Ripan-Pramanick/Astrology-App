@@ -22,10 +22,13 @@ export const getPrediction = async (req, res) => {
       // finalBirthDetails = data;
     }
 
+    // AI সার্ভিসকে কল করা হচ্ছে
     const prediction = await generatePrediction(finalBirthDetails);
-    res.json(prediction);
+    
+    // JSON রেসপন্স পাঠানো হচ্ছে
+    res.json({ success: true, data: prediction });
   } catch (error) {
     console.error('AI prediction error:', error);
-    res.status(500).json({ message: 'Failed to generate prediction.' });
+    res.status(500).json({ success: false, message: 'Failed to generate prediction.' });
   }
 };

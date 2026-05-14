@@ -1,44 +1,34 @@
-// client/src/services/ai.js
-import api from './api';
+// server/services/aiService.js
 
-export const getAIPrediction = async (data) => {
-  try {
-    const response = await api.post('/ai/interpret', {
-      planets: data.planets || [],
-      basic: {
-        ascendant: data.birthDetails?.lagna || data.basicInfo?.ascendant || 'Unknown',
-        sign: data.birthDetails?.rasi || data.basicInfo?.sign || 'Unknown',
-        Naksahtra: data.birthDetails?.nakshatra || data.basicInfo?.Naksahtra || 'Unknown',
-        name: data.birthDetails?.name || 'Client',
-        dob: data.birthDetails?.dob || 'Unknown',
-        tob: data.birthDetails?.tob || 'Unknown',
-        pob: data.birthDetails?.pob || 'Unknown'
-      },
-      kundliId: data.kundliId
-    });
-    
-    if (response.data.success) {
-      return {
-        summary: response.data.interpretation,
-        insights: [],
-        ...response.data
-      };
+// ❌ ভুল: import api from './api'; 
+// ✅ সঠিক: ফাইলের নামের শেষে .js দিতে হবে
+// (যদি api.js ফাইলটি আপনার এই ফোল্ডারে থাকে তবেই এটি রাখুন, নাহলে ডিলিট করে দিন)
+// import api from './api.js'; 
+
+import { GoogleGenerativeAI } from "@google/generative-ai";
+
+/**
+ * Generate AI Prediction using Gemini
+ */
+export const generatePrediction = async (birthDetails) => {
+    try {
+        // এখানে আপনার Gemini AI এর লজিক থাকবে
+        // উদাহরণস্বরূপ:
+        /*
+        const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
+        const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
+        const prompt = `Astrology prediction for: ${JSON.stringify(birthDetails)}`;
+        const result = await model.generateContent(prompt);
+        return result.response.text();
+        */
+
+        // আপাতত সার্ভার ক্র্যাশ ঠেকানোর জন্য একটি ডামি রেসপন্স:
+        return {
+            insight: "The stars are aligning in your favor. A great opportunity is coming soon!",
+            details: birthDetails
+        };
+    } catch (error) {
+        console.error("Error in aiService:", error);
+        throw error; // Controller-এর catch ব্লকে এরর পাঠানোর জন্য
     }
-    
-    throw new Error(response.data.message || 'Failed to get prediction');
-    
-  } catch (error) {
-    console.error('AI Service Error:', error);
-    throw error;
-  }
-};
-
-export const getRemedySuggestion = async (planets) => {
-  try {
-    const response = await api.post('/ai/remedies', { planets });
-    return response.data;
-  } catch (error) {
-    console.error('Remedy suggestion error:', error);
-    throw error;
-  }
 };

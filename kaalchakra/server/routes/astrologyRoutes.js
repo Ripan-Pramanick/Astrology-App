@@ -656,6 +656,17 @@ router.post('/panchang-festival', async (req, res) => {
     }
 });
 
+router.post('/panchang/basic', async (req, res) => {
+    try {
+        // basic_panchang এর বদলে advanced_panchang কল করছি
+        const data = await astrologyService.getAdvancedPanchang(req.body);
+        res.json({ success: true, data: data });
+    } catch (error) {
+        console.error("Panchang API Error:", error.message);
+        res.status(500).json({ success: false, message: error.message });
+    }
+});
+
 // ============================================
 // NUMEROLOGY ENDPOINTS (সংক্ষেপে - বাকিগুলো একই রকম)
 // ============================================
@@ -1025,13 +1036,22 @@ router.get('/health', (req, res) => {
 });
 
 // Daily Horoscope endpoint
-router.post('/daily-horoscope', async (req, res) => {
+router.get('/horoscope/daily/:sign', async (req, res) => {
     try {
-        const { sign, day, month, year } = req.body;
-        const result = await getDailyHoroscopeData(sign, day || 12, month || 5, year || 2024);
-        res.json(result);
+        const sign = req.params.sign;
+        const date = new Date();
+        
+        // আজকের তারিখ পাঠানো হচ্ছে
+        const data = await astrologyService.getDailyHoroscope(
+            sign, 
+            date.getDate(), 
+            date.getMonth() + 1, 
+            date.getFullYear()
+        );
+        res.json({ success: true, data: data });
     } catch (error) {
-        res.status(500).json({ success: false, error: error.message });
+        console.error("Horoscope Error:", error.message);
+        res.status(500).json({ success: false, message: 'Failed to fetch daily horoscope' });
     }
 });
 

@@ -28,6 +28,7 @@ import aboutRoutes from './routes/about.js';
 import contactRoutes from './routes/contact.js';
 import panchangRoutes from './routes/panchang.js';
 import astrologyRoutes from './routes/astrologyRoutes.js'; 
+import aiRoutes from './routes/ai.js'; // ✅ IMPORTED AI ROUTES HERE
 
 // ============================================
 // FIREBASE ADMIN INITIALIZATION
@@ -101,7 +102,6 @@ app.use('/api/panchang', panchangRoutes);
 
 app.get('/hero/stats', async (req, res) => {
     try {
-        // এখানে আপনার ডাটাবেস থেকে স্ট্যাটস এনেও দেখাতে পারেন। আপাতত আমি একটি ডামি ডেটা দিয়ে দিচ্ছি:
         res.json({ 
             success: true, 
             stats: { 
@@ -115,10 +115,12 @@ app.get('/hero/stats', async (req, res) => {
     }
 });
 
-
 // ✅ ASTROLOGY ROUTES
 app.use('/api', astrologyRoutes); 
 app.use('/', astrologyRoutes);
+
+// ✅ MOUNTED AI ROUTES HERE
+app.use('/api/ai', aiRoutes); 
 
 // ============================================
 // DATABASE SAVE & FETCH APIs (Reports)
