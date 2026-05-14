@@ -99,8 +99,26 @@ app.use('/api/about', aboutRoutes);
 app.use('/api/contact', contactRoutes);
 app.use('/api/panchang', panchangRoutes);
 
+app.get('/hero/stats', async (req, res) => {
+    try {
+        // এখানে আপনার ডাটাবেস থেকে স্ট্যাটস এনেও দেখাতে পারেন। আপাতত আমি একটি ডামি ডেটা দিয়ে দিচ্ছি:
+        res.json({ 
+            success: true, 
+            stats: { 
+                happy_users: "10k+", 
+                kundlis_generated: "50k+", 
+                expert_astrologers: "50+" 
+            } 
+        });
+    } catch (error) {
+        res.json({ success: false, stats: {} });
+    }
+});
+
+
 // ✅ ASTROLOGY ROUTES
 app.use('/api', astrologyRoutes); 
+app.use('/', astrologyRoutes);
 
 // ============================================
 // DATABASE SAVE & FETCH APIs (Reports)
