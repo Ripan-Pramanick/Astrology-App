@@ -155,13 +155,24 @@ router.post('/verify-phone', async (req, res) => {
       user = newUser;
       console.log("✅ New user created:", user);
     } else {
-      // Update existing user's firebase_uid if not set
-      if (!user.firebase_uid) {
-        await supabase
+      // ✅ Update existing user's firebase_uid if it doesn't match the new Firebase UID
+      if (user.firebase_uid !== uid) {
+        console.log(`🔄 Updating UID for existing user by phone: ${phone_number}`);
+        const { data: updatedUser, error: updateError } = await supabase
           .from('users')
-          .update({ firebase_uid: uid, updated_at: new Date().toISOString() })
-          .eq('id', user.id);
-        user.firebase_uid = uid;
+          .update({ 
+            firebase_uid: uid, 
+            updated_at: new Date().toISOString() 
+          })
+          .eq('id', user.id)
+          .select()
+          .single();
+          
+        if (updateError) {
+          console.error("Supabase update error:", updateError);
+        } else {
+          user = updatedUser;
+        }
       }
       console.log("✅ Existing user found:", user);
     }
@@ -228,7 +239,7 @@ router.post('/verify-email', async (req, res) => {
     let { data: user, error } = await supabase
       .from('users')
       .select('*')
-      .eq('email', userEmail)
+      .ilike('email', userEmail) // ilike for case-insensitive match
       .maybeSingle();
     
     if (error) {
@@ -265,13 +276,26 @@ router.post('/verify-email', async (req, res) => {
       user = newUser;
       console.log("✅ New user created:", user);
     } else {
-      // Update existing user's firebase_uid if not set
-      if (!user.firebase_uid) {
-        await supabase
+      // ✅ Update existing user's firebase_uid if it doesn't match the new Firebase UID
+      if (user.firebase_uid !== uid) {
+        console.log(`🔄 Updating UID for existing user by email: ${userEmail}`);
+        const { data: updatedUser, error: updateError } = await supabase
           .from('users')
-          .update({ firebase_uid: uid, updated_at: new Date().toISOString() })
-          .eq('id', user.id);
-        user.firebase_uid = uid;
+          .update({ 
+            firebase_uid: uid, 
+            name: name || user.name, // optionally update name if provided from registration
+            updated_at: new Date().toISOString() 
+          })
+          .eq('id', user.id)
+          .select()
+          .single();
+          
+        if (updateError) {
+          console.error("Supabase UID update error:", updateError);
+          return res.status(500).json({ success: false, message: 'Database error while updating UID' });
+        } else {
+          user = updatedUser;
+        }
       }
       console.log("✅ Existing user found:", user);
     }
@@ -297,4 +321,4 @@ router.post('/verify-email', async (req, res) => {
   }
 });
 
-export default router; // Make sure this is at the end
+export default router;
