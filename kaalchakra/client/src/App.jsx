@@ -18,6 +18,7 @@ import NotFound from './pages/NotFound';
 import Horoscope from './pages/Horoscope';
 import Panchang from './pages/Panchang';
 import AuthPage from './pages/AuthPage';
+import ForgotPassword from './pages/ForgotPassword';
 
 // Blog Pages
 import Blog from './pages/Blog';
@@ -59,6 +60,7 @@ function App() {
               <Route path="/matchmaking" element={<Matchmaking />} />
               <Route path="/login" element={<AuthPage />} />
               <Route path="/register" element={<AuthPage />} />
+              <Route path="/forgot-password" element={<ForgotPassword />} />
               <Route path="/horoscope" element={<Horoscope />} />
               <Route path="/panchang" element={<Panchang />} />
               <Route path="/blog" element={<Blog />} />
