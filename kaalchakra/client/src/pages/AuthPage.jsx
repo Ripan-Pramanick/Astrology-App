@@ -1,9 +1,9 @@
 // client/src/pages/AuthPage.jsx
 import React, { useState, useEffect, useRef } from 'react';
-import { Eye, EyeOff, Mail, Lock, User, Star, Sparkles } from 'lucide-react';
+import { Eye, EyeOff, Mail, Lock, User, Star, Sparkles, Phone } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { auth, signInWithEmailAndPassword, createUserWithEmailAndPassword, updateProfile } from '../firebase.js';
-import api from '../services/api'; // ✅ API ইমপোর্ট করা হলো
+import api from '../services/api'; // ✅ API import করা হলো
 
 const AuthPage = () => {
   const navigate = useNavigate();
@@ -11,11 +11,15 @@ const AuthPage = () => {
   const [isBusy, setIsBusy] = useState(false);
 
   // Form states
-  const [loginEmail, setLoginEmail] = useState('');
+  const [loginId, setLoginId] = useState(''); // Email or Phone
   const [loginPassword, setLoginPassword] = useState('');
+  
   const [regName, setRegName] = useState('');
   const [regEmail, setRegEmail] = useState('');
+  const [regPhone, setRegPhone] = useState(''); // Phone Number
   const [regPassword, setRegPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState(''); // Confirm Password
+  
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
@@ -31,6 +35,7 @@ const AuthPage = () => {
     setIsBusy(true);
 
     setIsSignupMode(toSignup);
+    setError('');
 
     setTimeout(() => {
       if (pARef.current) {
@@ -52,26 +57,32 @@ const AuthPage = () => {
     setLoading(true);
 
     try {
-      console.log("1. Signing in with email:", loginEmail);
-      const userCredential = await signInWithEmailAndPassword(auth, loginEmail, loginPassword);
+      if (!loginId || !loginPassword) {
+        throw new Error('Please enter both Email/Phone and password');
+      }
+
+      // Check if it's a phone number
+      const isPhone = /^[0-9+\-\s]+$/.test(loginId);
+      
+      if (isPhone) {
+        setError('Phone number login is coming soon! Please use your Email to login for now.');
+        setLoading(false);
+        return;
+      }
+
+      const userCredential = await signInWithEmailAndPassword(auth, loginId, loginPassword);
       const user = userCredential.user;
-      console.log("2. User signed in:", user.uid);
       
       const idToken = await user.getIdToken();
-      console.log("3. ID token obtained");
       
-      // ✅ Fetch এর বদলে সরাসরি Render API-তে POST রিকোয়েস্ট
       const response = await api.post('/auth/verify-email', {
         token: idToken,
-        email: loginEmail 
+        email: loginId 
       });
 
-      console.log("4. Response status:", response.status);
-      const data = response.data; // axios এ response.data ব্যবহার করতে হয়
-      console.log("5. Response data:", data);
+      const data = response.data;
 
       if (data.success && data.user) {
-        // Store user data in localStorage
         const userData = {
           id: data.user.id,
           name: data.user.name,
@@ -81,16 +92,20 @@ const AuthPage = () => {
           uid: user.uid
         };
         localStorage.setItem('user', JSON.stringify(userData));
-        console.log("6. User data saved:", userData);
         
-        // Redirect to dashboard
         navigate('/dashboard');
       } else {
         throw new Error(data.message || 'Login failed');
       }
     } catch (err) {
       console.error("Login error:", err);
-      setError(err.message || 'Login failed. Please try again.');
+      if (err.code === 'auth/user-not-found' || err.code === 'auth/invalid-credential') {
+        setError('No account found or incorrect password.');
+      } else if (err.code === 'auth/invalid-email') {
+        setError('Please enter a valid email address.');
+      } else {
+        setError(err.message || 'Login failed. Please try again.');
+      }
       setLoading(false);
     }
   };
@@ -101,40 +116,43 @@ const AuthPage = () => {
     setLoading(true);
 
     try {
-      console.log("1. Creating user with email:", regEmail);
+      if (!regName || !regEmail || !regPhone || !regPassword || !confirmPassword) {
+        throw new Error('Please fill in all fields');
+      }
+      if (regPassword !== confirmPassword) {
+        throw new Error('Passwords do not match!');
+      }
+      if (regPassword.length < 6) {
+        throw new Error('Password must be at least 6 characters long');
+      }
+
       const userCredential = await createUserWithEmailAndPassword(auth, regEmail, regPassword);
       const user = userCredential.user;
-      console.log("2. User created:", user.uid);
       
       await updateProfile(user, { displayName: regName });
       
       const idToken = await user.getIdToken();
-      console.log("3. ID token obtained");
       
-      // ✅ Fetch এর বদলে সরাসরি Render API-তে POST রিকোয়েস্ট
       const response = await api.post('/auth/verify-email', {
         token: idToken,
         email: regEmail,
-        name: regName
+        name: regName,
+        phone: regPhone
       });
 
-      console.log("4. Response status:", response.status);
-      const data = response.data; // axios এ response.data ব্যবহার করতে হয়
-      console.log("5. Response data:", data);
+      const data = response.data; 
 
       if (data.success && data.user) {
         const userData = {
           id: data.user.id,
           name: regName,
           email: regEmail,
-          phone: data.user.phone || '',
+          phone: regPhone,
           role: data.user.role || 'user',
           uid: user.uid
         };
         localStorage.setItem('user', JSON.stringify(userData));
-        console.log("6. Registration successful, user data saved:", userData);
         
-        // Redirect to dashboard
         navigate('/dashboard');
       } else {
         throw new Error(data.message || 'Registration failed');
@@ -142,7 +160,7 @@ const AuthPage = () => {
     } catch (err) {
       console.error("Registration error:", err);
       if (err.code === 'auth/email-already-in-use') {
-        setError('Email already registered');
+        setError('Email already registered. Please sign in.');
       } else if (err.code === 'auth/invalid-email') {
         setError('Invalid email format');
       } else if (err.code === 'auth/weak-password') {
@@ -231,33 +249,39 @@ const AuthPage = () => {
             </div>
 
             <form onSubmit={handleLogin} className="w-full">
-              <div className="field w-full mb-[clamp(6px,1.3vh,12px)]">
+              <div className="field w-full mb-[clamp(6px,1.3vh,12px)] relative">
+                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                   <User size={15} className="text-[#9ba4bb]" />
+                </div>
                 <input
-                  type="email"
-                  value={loginEmail}
-                  onChange={(e) => setLoginEmail(e.target.value)}
-                  placeholder="Email Address"
-                   autoComplete="username"
-                  className="w-full bg-white/88 border border-[#d4af37]/30 rounded-[10px] p-[clamp(9px,1.8vh,13px)] px-4 text-[#2a3054] outline-none transition-all focus:border-[#d4af37] focus:bg-white focus:shadow-[0_0_0_3px_rgba(212,175,55,0.1)]"
+                  type="text"
+                  value={loginId}
+                  onChange={(e) => setLoginId(e.target.value)}
+                  placeholder="Email or Phone Number"
+                  autoComplete="username"
+                  className="w-full bg-white/88 border border-[#d4af37]/30 rounded-[10px] p-[clamp(9px,1.8vh,13px)] pl-9 px-4 text-[#2a3054] outline-none transition-all focus:border-[#d4af37] focus:bg-white focus:shadow-[0_0_0_3px_rgba(212,175,55,0.1)]"
                   required
                 />
               </div>
-              <div className="field w-full mb-[clamp(6px,1.3vh,12px)]">
+              <div className="field w-full mb-[clamp(6px,1.3vh,12px)] relative">
+                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                  <Lock size={15} className="text-[#9ba4bb]" />
+                </div>
                 <input
                   type="password"
                   value={loginPassword}
                   onChange={(e) => setLoginPassword(e.target.value)}
                   placeholder="Password"
                   autoComplete="current-password"
-                  className="w-full bg-white/88 border border-[#d4af37]/30 rounded-[10px] p-[clamp(9px,1.8vh,13px)] px-4 text-[#2a3054] outline-none transition-all focus:border-[#d4af37] focus:bg-white"
+                  className="w-full bg-white/88 border border-[#d4af37]/30 rounded-[10px] p-[clamp(9px,1.8vh,13px)] pl-9 px-4 text-[#2a3054] outline-none transition-all focus:border-[#d4af37] focus:bg-white"
                   required
                 />
               </div>
-              <span className="forgot text-[12px] text-[#9ba4bb] underline underline-offset-[3px] cursor-pointer mt-1 mb-[clamp(12px,2vh,20px)] block text-center hover:text-[#d4af37]">
+              <span onClick={() => navigate('/forgot-password')} className="forgot text-[12px] text-[#9ba4bb] underline underline-offset-[3px] cursor-pointer mt-1 mb-[clamp(12px,2vh,20px)] block text-center hover:text-[#d4af37]">
                 Forgot Password?
               </span>
 
-              {error && <p className="text-red-500 text-xs text-center mb-3 bg-red-50 p-2 rounded-lg">{error}</p>}
+              {error && !isSignupMode && <p className="text-red-500 text-xs font-bold text-center mb-3 bg-red-50 p-2 rounded-lg border border-red-100">{error}</p>}
 
               <button
                 type="submit"
@@ -265,85 +289,105 @@ const AuthPage = () => {
                 className="btn-blue w-full py-[clamp(10px,1.8vh,13px)] rounded-full border-none cursor-pointer font-bold text-[12px] tracking-[0.2em] uppercase text-white shadow-[0_6px_22px_rgba(212,175,55,0.45)] hover:brightness-110 hover:shadow-[0_10px_30px_rgba(212,175,55,0.55)] hover:-translate-y-px active:translate-y-0 transition-all disabled:opacity-50"
                 style={{ backgroundImage: 'linear-gradient(to right, #d4af37, #e4b363)' }}
               >
-                {loading ? <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin mx-auto"></div> : 'SIGN IN'}
+                {loading && !isSignupMode ? <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin mx-auto"></div> : 'SIGN IN'}
               </button>
             </form>
           </div>
 
           {/* Register Form */}
           <div className={`p-inner absolute inset-0 flex flex-col items-center justify-center p-[clamp(20px,4.5vh,48px)] ${isSignupMode ? 'flex' : 'hidden'}`}>
-            <div className="fp-title text-[clamp(17px,2.6vw,26px)] font-bold text-[#1e2545] tracking-[0.18em] mb-[clamp(12px,2.5vh,22px)] flex items-center gap-2">
+            <div className="fp-title text-[clamp(17px,2.6vw,26px)] font-bold text-[#1e2545] tracking-[0.18em] mb-[clamp(8px,1.5vh,12px)] flex items-center gap-2">
               <span className="text-[#d4af37]">🌟</span> CREATE ACCOUNT <span className="text-[#d4af37]">🌟</span>
             </div>
 
-            <div className="social-row flex gap-[clamp(8px,1.2vw,14px)] mb-[clamp(6px,1vh,10px)]">
-              <div className="s-icon w-[clamp(34px,4.2vw,44px)] h-[clamp(34px,4.2vw,44px)] rounded-full bg-[#e8edf4] flex items-center justify-center cursor-pointer shadow-[7px_7px_14px_rgba(212,175,55,0.3),-6px_-6px_12px_rgba(255,255,255,0.96)] transition-all">
-                <svg viewBox="0 0 24 24" fill="none" stroke="#d4af37" strokeWidth="1.8" className="w-5 h-5 opacity-60">
-                  <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9" />
-                  <path d="M13.73 21a2 2 0 0 1-3.46 0" />
-                </svg>
-              </div>
-              <div className="s-icon w-[clamp(34px,4.2vw,44px)] h-[clamp(34px,4.2vw,44px)] rounded-full bg-[#e8edf4] flex items-center justify-center cursor-pointer shadow-[7px_7px_14px_rgba(212,175,55,0.3),-6px_-6px_12px_rgba(255,255,255,0.96)] transition-all">
-                <svg viewBox="0 0 24 24" fill="none" stroke="#d4af37" strokeWidth="1.8" className="w-5 h-5 opacity-60">
-                  <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />
-                </svg>
-              </div>
-              <div className="s-icon w-[clamp(34px,4.2vw,44px)] h-[clamp(34px,4.2vw,44px)] rounded-full bg-[#e8edf4] flex items-center justify-center cursor-pointer shadow-[7px_7px_14px_rgba(212,175,55,0.3),-6px_-6px_12px_rgba(255,255,255,0.96)] transition-all">
-                <svg viewBox="0 0 24 24" fill="none" stroke="#d4af37" strokeWidth="1.8" className="w-5 h-5 opacity-60">
-                  <rect x="2" y="6" width="20" height="12" rx="4" />
-                  <path d="M8 12h4M10 10v4M15 12h.01M17 12h.01" />
-                </svg>
-              </div>
-            </div>
-
-            <div className="social-hint text-[11px] text-[#9ba4bb] tracking-[0.05em] mb-[clamp(10px,2vh,20px)]">
+            <div className="social-hint text-[11px] text-[#9ba4bb] tracking-[0.05em] mb-[clamp(8px,1.5vh,12px)]">
               Begin your cosmic journey
             </div>
 
             <form onSubmit={handleRegister} className="w-full">
-              <div className="field w-full mb-[clamp(6px,1.3vh,12px)]">
+               <div className="field w-full mb-[clamp(6px,1.2vh,10px)] relative">
+                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                  <User size={15} className="text-[#9ba4bb]" />
+                </div>
                 <input
                   type="text"
                   value={regName}
                   onChange={(e) => setRegName(e.target.value)}
                   placeholder="Full Name"
                   autoComplete="name"
-                  className="w-full bg-white/88 border border-[#d4af37]/30 rounded-[10px] p-[clamp(9px,1.8vh,13px)] px-4 text-[#2a3054] outline-none transition-all focus:border-[#d4af37] focus:bg-white"
+                  className="w-full bg-white/88 border border-[#d4af37]/30 rounded-[10px] p-[clamp(8px,1.5vh,11px)] pl-9 px-4 text-[#2a3054] outline-none transition-all focus:border-[#d4af37] focus:bg-white text-sm"
                   required
                 />
               </div>
-              <div className="field w-full mb-[clamp(6px,1.3vh,12px)]">
+
+              <div className="field w-full mb-[clamp(6px,1.2vh,10px)] relative">
+                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                  <Mail size={15} className="text-[#9ba4bb]" />
+                </div>
                 <input
                   type="email"
                   value={regEmail}
                   onChange={(e) => setRegEmail(e.target.value)}
                   placeholder="Email Address"
                   autoComplete="username"
-                  className="w-full bg-white/88 border border-[#d4af37]/30 rounded-[10px] p-[clamp(9px,1.8vh,13px)] px-4 text-[#2a3054] outline-none transition-all focus:border-[#d4af37] focus:bg-white"
+                  className="w-full bg-white/88 border border-[#d4af37]/30 rounded-[10px] p-[clamp(8px,1.5vh,11px)] pl-9 px-4 text-[#2a3054] outline-none transition-all focus:border-[#d4af37] focus:bg-white text-sm"
                   required
                 />
               </div>
-              <div className="field w-full mb-[clamp(6px,1.3vh,12px)]">
+
+               <div className="field w-full mb-[clamp(6px,1.2vh,10px)] relative">
+                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                  <Phone size={15} className="text-[#9ba4bb]" />
+                </div>
+                <input
+                  type="tel"
+                  value={regPhone}
+                  onChange={(e) => setRegPhone(e.target.value)}
+                  placeholder="Phone Number"
+                  className="w-full bg-white/88 border border-[#d4af37]/30 rounded-[10px] p-[clamp(8px,1.5vh,11px)] pl-9 px-4 text-[#2a3054] outline-none transition-all focus:border-[#d4af37] focus:bg-white text-sm"
+                  required
+                />
+              </div>
+
+              <div className="field w-full mb-[clamp(6px,1.2vh,10px)] relative">
+                 <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                  <Lock size={15} className="text-[#9ba4bb]" />
+                </div>
                 <input
                   type="password"
                   value={regPassword}
                   onChange={(e) => setRegPassword(e.target.value)}
                   placeholder="Password"
-                  autoComplete="current-password"
-                  className="w-full bg-white/88 border border-[#d4af37]/30 rounded-[10px] p-[clamp(9px,1.8vh,13px)] px-4 text-[#2a3054] outline-none transition-all focus:border-[#d4af37] focus:bg-white"
+                  autoComplete="new-password"
+                  className="w-full bg-white/88 border border-[#d4af37]/30 rounded-[10px] p-[clamp(8px,1.5vh,11px)] pl-9 px-4 text-[#2a3054] outline-none transition-all focus:border-[#d4af37] focus:bg-white text-sm"
+                  required
+                />
+              </div>
+              
+              <div className="field w-full mb-[clamp(8px,2vh,14px)] relative">
+                 <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                  <Lock size={15} className="text-[#9ba4bb]" />
+                </div>
+                <input
+                  type="password"
+                  value={confirmPassword}
+                  onChange={(e) => setConfirmPassword(e.target.value)}
+                  placeholder="Confirm Password"
+                  autoComplete="new-password"
+                  className="w-full bg-white/88 border border-[#d4af37]/30 rounded-[10px] p-[clamp(8px,1.5vh,11px)] pl-9 px-4 text-[#2a3054] outline-none transition-all focus:border-[#d4af37] focus:bg-white text-sm"
                   required
                 />
               </div>
 
-              {error && <p className="text-red-500 text-xs text-center mb-3 bg-red-50 p-2 rounded-lg">{error}</p>}
+              {error && isSignupMode && <p className="text-red-500 text-[11px] font-bold text-center mb-2 bg-red-50 p-1.5 rounded-lg border border-red-100">{error}</p>}
 
               <button
                 type="submit"
                 disabled={loading}
-                className="btn-blue w-full py-[clamp(10px,1.8vh,13px)] rounded-full border-none cursor-pointer font-bold text-[12px] tracking-[0.2em] uppercase text-white shadow-[0_6px_22px_rgba(212,175,55,0.45)] hover:brightness-110 hover:shadow-[0_10px_30px_rgba(212,175,55,0.55)] hover:-translate-y-px active:translate-y-0 transition-all disabled:opacity-50 mt-1"
+                className="btn-blue w-full py-[clamp(10px,1.6vh,13px)] rounded-full border-none cursor-pointer font-bold text-[12px] tracking-[0.2em] uppercase text-white shadow-[0_6px_22px_rgba(212,175,55,0.45)] hover:brightness-110 hover:shadow-[0_10px_30px_rgba(212,175,55,0.55)] transition-all disabled:opacity-50 mt-1"
                 style={{ backgroundImage: 'linear-gradient(to right, #d4af37, #e4b363)' }}
               >
-                {loading ? <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin mx-auto"></div> : 'SIGN UP'}
+                {loading && isSignupMode ? <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin mx-auto"></div> : 'SIGN UP'}
               </button>
             </form>
           </div>
@@ -356,82 +400,30 @@ const AuthPage = () => {
           style={{ left: isSignupMode ? '0%' : '60%', background: '#e8edf4' }}
         >
           {/* Decorative Circles */}
-          <div 
-            className="absolute w-[230px] h-[230px] rounded-full shadow-[9px_9px_20px_rgba(212,175,55,0.3),-7px_-7px_16px_rgba(255,255,255,0.92)] top-[-95px] right-[-85px] pointer-events-none opacity-60"
-            style={{ backgroundImage: 'linear-gradient(to bottom right, rgba(212, 175, 55, 0.2), rgba(228, 179, 99, 0.2))' }}
-          ></div>
-          <div 
-            className="absolute w-[210px] h-[210px] rounded-full shadow-[8px_8px_18px_rgba(212,175,55,0.25),-6px_-6px_14px_rgba(255,255,255,0.9)] bottom-[-85px] left-[-75px] pointer-events-none opacity-60"
-            style={{ backgroundImage: 'linear-gradient(to top right, rgba(228, 179, 99, 0.2), rgba(212, 175, 55, 0.2))' }}
-          ></div>
+          <div className="absolute w-[230px] h-[230px] rounded-full shadow-[9px_9px_20px_rgba(212,175,55,0.3),-7px_-7px_16px_rgba(255,255,255,0.92)] top-[-95px] right-[-85px] pointer-events-none opacity-60" style={{ backgroundImage: 'linear-gradient(to bottom right, rgba(212, 175, 55, 0.2), rgba(228, 179, 99, 0.2))' }}></div>
+          <div className="absolute w-[210px] h-[210px] rounded-full shadow-[8px_8px_18px_rgba(212,175,55,0.25),-6px_-6px_14px_rgba(255,255,255,0.9)] bottom-[-85px] left-[-75px] pointer-events-none opacity-60" style={{ backgroundImage: 'linear-gradient(to top right, rgba(228, 179, 99, 0.2), rgba(212, 175, 55, 0.2))' }}></div>
 
           {/* Hello Friend (Login Mode) */}
           <div className={`p-inner absolute inset-0 flex flex-col items-center justify-center text-center p-[clamp(20px,4.5vh,52px)] transition-opacity duration-180 ${isSignupMode ? 'opacity-0 pointer-events-none' : 'opacity-100 pointer-events-auto'}`}>
-            <div 
-              className="w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4 shadow-lg"
-              style={{ backgroundImage: 'linear-gradient(to bottom right, #d4af37, #e4b363)' }}
-            >
-              <Star className="w-8 h-8 text-white" fill="currentColor" />
-            </div>
-            <div className="o-title text-[clamp(17px,2.6vw,26px)] font-bold text-[#1e2545] mb-[clamp(10px,1.5vh,14px)]">
-              Hello Friend!
-            </div>
-            <div className="o-sub text-[clamp(11px,1.3vw,13px)] text-[#9ba4bb] leading-relaxed mb-[clamp(18px,3.5vh,36px)] max-w-[210px]">
-              Register an account to become a valued member and embark on a wonderful journey with us!
-            </div>
-            <button
-              onClick={() => toggleMode(true)}
-              className="btn-blue py-[clamp(10px,1.8vh,13px)] px-[clamp(22px,3.5vw,48px)] rounded-full border-none cursor-pointer font-bold text-[12px] tracking-[0.2em] uppercase text-white shadow-[0_6px_22px_rgba(212,175,55,0.45)] hover:brightness-110 hover:shadow-[0_10px_30px_rgba(212,175,55,0.55)] transition-all"
-              style={{ backgroundImage: 'linear-gradient(to right, #d4af37, #e4b363)' }}
-            >
-              SIGN UP
-            </button>
+            <div className="w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4 shadow-lg" style={{ backgroundImage: 'linear-gradient(to bottom right, #d4af37, #e4b363)' }}><Star className="w-8 h-8 text-white" fill="currentColor" /></div>
+            <div className="o-title text-[clamp(17px,2.6vw,26px)] font-bold text-[#1e2545] mb-[clamp(10px,1.5vh,14px)]">Hello Friend!</div>
+            <div className="o-sub text-[clamp(11px,1.3vw,13px)] text-[#9ba4bb] leading-relaxed mb-[clamp(18px,3.5vh,36px)] max-w-[210px]">Register an account to become a valued member and embark on a wonderful journey with us!</div>
+            <button onClick={() => toggleMode(true)} className="btn-blue py-[clamp(10px,1.8vh,13px)] px-[clamp(22px,3.5vw,48px)] rounded-full border-none cursor-pointer font-bold text-[12px] tracking-[0.2em] uppercase text-white shadow-[0_6px_22px_rgba(212,175,55,0.45)] hover:brightness-110 hover:shadow-[0_10px_30px_rgba(212,175,55,0.55)] transition-all" style={{ backgroundImage: 'linear-gradient(to right, #d4af37, #e4b363)' }}>SIGN UP</button>
           </div>
 
           {/* Welcome Back (Register Mode) */}
           <div className={`p-inner absolute inset-0 flex flex-col items-center justify-center text-center p-[clamp(20px,4.5vh,52px)] transition-opacity duration-180 ${isSignupMode ? 'opacity-100 pointer-events-auto' : 'opacity-0 pointer-events-none'}`}>
-            <div 
-              className="w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4 shadow-lg"
-              style={{ backgroundImage: 'linear-gradient(to bottom right, #d4af37, #e4b363)' }}
-            >
-              <Sparkles className="w-8 h-8 text-white" />
-            </div>
-            <div className="o-title text-[clamp(17px,2.6vw,26px)] font-bold text-[#1e2545] mb-[clamp(10px,1.5vh,14px)]">
-              Welcome Back!
-            </div>
-            <div className="o-sub text-[clamp(11px,1.3vw,13px)] text-[#9ba4bb] leading-relaxed mb-[clamp(18px,3.5vh,36px)] max-w-[210px]">
-              Already have an account? Sign in to enter the wonderful world of astrology!
-            </div>
-            <button
-              onClick={() => toggleMode(false)}
-              className="btn-blue py-[clamp(10px,1.8vh,13px)] px-[clamp(22px,3.5vw,48px)] rounded-full border-none cursor-pointer font-bold text-[12px] tracking-[0.2em] uppercase text-white shadow-[0_6px_22px_rgba(212,175,55,0.45)] hover:brightness-110 hover:shadow-[0_10px_30px_rgba(212,175,55,0.55)] transition-all"
-              style={{ backgroundImage: 'linear-gradient(to right, #d4af37, #e4b363)' }}
-            >
-              SIGN IN
-            </button>
+            <div className="w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4 shadow-lg" style={{ backgroundImage: 'linear-gradient(to bottom right, #d4af37, #e4b363)' }}><Sparkles className="w-8 h-8 text-white" /></div>
+            <div className="o-title text-[clamp(17px,2.6vw,26px)] font-bold text-[#1e2545] mb-[clamp(10px,1.5vh,14px)]">Welcome Back!</div>
+            <div className="o-sub text-[clamp(11px,1.3vw,13px)] text-[#9ba4bb] leading-relaxed mb-[clamp(18px,3.5vh,36px)] max-w-[210px]">Already have an account? Sign in to enter the wonderful world of astrology!</div>
+            <button onClick={() => toggleMode(false)} className="btn-blue py-[clamp(10px,1.8vh,13px)] px-[clamp(22px,3.5vw,48px)] rounded-full border-none cursor-pointer font-bold text-[12px] tracking-[0.2em] uppercase text-white shadow-[0_6px_22px_rgba(212,175,55,0.45)] hover:brightness-110 hover:shadow-[0_10px_30px_rgba(212,175,55,0.55)] transition-all" style={{ backgroundImage: 'linear-gradient(to right, #d4af37, #e4b363)' }}>SIGN IN</button>
           </div>
         </div>
 
         {/* Mobile Navigation Tabs */}
         <div className="mobile-nav md:hidden absolute top-0 left-0 right-0 flex bg-[#e8edf4] rounded-t-[20px] overflow-hidden border-b border-[#d4af37]/30 z-20">
-          <div
-            onClick={() => toggleMode(false)}
-            className={`flex-1 py-3.5 text-center text-[13px] font-bold tracking-[0.1em] uppercase cursor-pointer transition-all ${!isSignupMode
-                ? 'text-[#d4af37] border-b-2 border-[#d4af37] bg-white/50'
-                : 'text-[#9ba4bb] border-b-2 border-transparent'
-              }`}
-          >
-            SIGN IN
-          </div>
-          <div
-            onClick={() => toggleMode(true)}
-            className={`flex-1 py-3.5 text-center text-[13px] font-bold tracking-[0.1em] uppercase cursor-pointer transition-all ${isSignupMode
-                ? 'text-[#d4af37] border-b-2 border-[#d4af37] bg-white/50'
-                : 'text-[#9ba4bb] border-b-2 border-transparent'
-              }`}
-          >
-            SIGN UP
-          </div>
+          <div onClick={() => toggleMode(false)} className={`flex-1 py-3.5 text-center text-[13px] font-bold tracking-[0.1em] uppercase cursor-pointer transition-all ${!isSignupMode ? 'text-[#d4af37] border-b-2 border-[#d4af37] bg-white/50' : 'text-[#9ba4bb] border-b-2 border-transparent'}`}>SIGN IN</div>
+          <div onClick={() => toggleMode(true)} className={`flex-1 py-3.5 text-center text-[13px] font-bold tracking-[0.1em] uppercase cursor-pointer transition-all ${isSignupMode ? 'text-[#d4af37] border-b-2 border-[#d4af37] bg-white/50' : 'text-[#9ba4bb] border-b-2 border-transparent'}`}>SIGN UP</div>
         </div>
       </div>
     </div>
