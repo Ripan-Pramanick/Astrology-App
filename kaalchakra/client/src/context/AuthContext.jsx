@@ -1,4 +1,5 @@
 import React, { createContext, useState, useContext, useEffect } from 'react';
+import api from '../services/api'; // ✅ API import করা হলো
 
 const AuthContext = createContext();
 
@@ -39,8 +40,11 @@ export const AuthProvider = ({ children }) => {
     try {
       const identifier = user.email || user.phone;
       if (!identifier) return;
-      const response = await fetch(`/api/user/${encodeURIComponent(identifier)}/status`);
-      const data = await response.json();
+      
+      // ✅ Fetch এর বদলে সরাসরি Render-এ কল করা হচ্ছে
+      const response = await api.get(`/user/${encodeURIComponent(identifier)}/status`);
+      const data = response.data;
+      
       if (data.success && data.user) {
         updateUser({
           is_premium: data.isPremium,

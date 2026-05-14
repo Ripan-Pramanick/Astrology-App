@@ -4,6 +4,7 @@ import { useNavigate, Link } from 'react-router-dom';
 import { signInWithEmailAndPassword } from 'firebase/auth';
 import { auth } from '../firebase';
 import { Star, ArrowRight, Mail, Lock, Eye, EyeOff } from 'lucide-react';
+import api from '../services/api'; // ✅ API import করা হলো
 
 const Login = () => {
   const navigate = useNavigate();
@@ -31,14 +32,9 @@ const Login = () => {
       // Get ID token for backend verification
       const idToken = await user.getIdToken();
 
-      // Send token to your backend
-      const response = await fetch('/api/auth/verify-phone', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ token: idToken })
-      });
-
-      const data = await response.json();
+      // ✅ Fetch এর বদলে Render API-তে POST রিকোয়েস্ট
+      const response = await api.post('/auth/verify-phone', { token: idToken });
+      const data = response.data;
 
       if (data.success) {
         // Store user data in localStorage

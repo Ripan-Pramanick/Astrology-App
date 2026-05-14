@@ -3,6 +3,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { Eye, EyeOff, Mail, Lock, User, Star, Sparkles } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { auth, signInWithEmailAndPassword, createUserWithEmailAndPassword, updateProfile } from '../firebase.js';
+import api from '../services/api'; // ✅ API ইমপোর্ট করা হলো
 
 const AuthPage = () => {
   const navigate = useNavigate();
@@ -59,20 +60,14 @@ const AuthPage = () => {
       const idToken = await user.getIdToken();
       console.log("3. ID token obtained");
       
-      const response = await fetch('/api/auth/verify-email', {
-        method: 'POST',
-        headers: { 
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({ 
-          token: idToken,
-          email: loginEmail 
-        })
+      // ✅ Fetch এর বদলে সরাসরি Render API-তে POST রিকোয়েস্ট
+      const response = await api.post('/auth/verify-email', {
+        token: idToken,
+        email: loginEmail 
       });
 
       console.log("4. Response status:", response.status);
-      
-      const data = await response.json();
+      const data = response.data; // axios এ response.data ব্যবহার করতে হয়
       console.log("5. Response data:", data);
 
       if (data.success && data.user) {
@@ -116,20 +111,15 @@ const AuthPage = () => {
       const idToken = await user.getIdToken();
       console.log("3. ID token obtained");
       
-      const response = await fetch('/api/auth/verify-email', {
-        method: 'POST',
-        headers: { 
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({
-          token: idToken,
-          email: regEmail,
-          name: regName
-        })
+      // ✅ Fetch এর বদলে সরাসরি Render API-তে POST রিকোয়েস্ট
+      const response = await api.post('/auth/verify-email', {
+        token: idToken,
+        email: regEmail,
+        name: regName
       });
 
       console.log("4. Response status:", response.status);
-      const data = await response.json();
+      const data = response.data; // axios এ response.data ব্যবহার করতে হয়
       console.log("5. Response data:", data);
 
       if (data.success && data.user) {
@@ -258,7 +248,7 @@ const AuthPage = () => {
                   value={loginPassword}
                   onChange={(e) => setLoginPassword(e.target.value)}
                   placeholder="Password"
-                  autocomplete="current-password"
+                  autoComplete="current-password"
                   className="w-full bg-white/88 border border-[#d4af37]/30 rounded-[10px] p-[clamp(9px,1.8vh,13px)] px-4 text-[#2a3054] outline-none transition-all focus:border-[#d4af37] focus:bg-white"
                   required
                 />
@@ -339,7 +329,7 @@ const AuthPage = () => {
                   value={regPassword}
                   onChange={(e) => setRegPassword(e.target.value)}
                   placeholder="Password"
-                  autocomplete="current-password"
+                  autoComplete="current-password"
                   className="w-full bg-white/88 border border-[#d4af37]/30 rounded-[10px] p-[clamp(9px,1.8vh,13px)] px-4 text-[#2a3054] outline-none transition-all focus:border-[#d4af37] focus:bg-white"
                   required
                 />
