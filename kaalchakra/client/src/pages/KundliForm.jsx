@@ -4,7 +4,7 @@ import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext.jsx';
 import { supabase } from '../lib/supabase.js';
 import astrologyServices from '../services/astrologyApi.js';
-import { Sparkles, MapPin, User, Stars, Loader2, AlertCircle, Phone, Mail } from 'lucide-react';
+import { Sparkles, MapPin, User, Stars, Loader2, AlertCircle, Mail } from 'lucide-react'; // ✅ Phone আইকন সরানো হয়েছে
 import astrologerImg from '../assets/kundliRishi.svg';
 
 const KundliForm = () => {
@@ -13,8 +13,7 @@ const KundliForm = () => {
 
   const [formData, setFormData] = useState({
     name: user?.name || '',
-    phone: user?.phone || '',
-    email: user?.email || '',
+    email: user?.email || '', // ইমেইল ফিল্ডটি থাকবে (অপশনাল)
     gender: 'male',
     birthDate: { day: '', month: '', year: '' },
     birthTime: { hour: '', minute: '', ampm: 'AM' },
@@ -140,7 +139,7 @@ const KundliForm = () => {
       const minute = String(data.birthTime.minute).padStart(2, '0');
 
       const reportRecord = {
-        user_phone: data.phone || null,
+        user_phone: user?.phone || null, // ✅ ইউজার লগইন থাকলে তার প্রোফাইলের ফোন নাম্বার ব্যাকগ্রাউন্ডে চলে যাবে
         name: data.name,
         dob: `${data.birthDate.year}-${month}-${day}`,
         basic_info: {
@@ -176,7 +175,7 @@ const KundliForm = () => {
 
     try {
       if (!formData.name) throw new Error('Please enter your name');
-      if (!formData.phone) throw new Error('Please enter your phone number');
+      // ❌ ফোন নাম্বারের রিকোয়ার্ড ভ্যালিডেশন রুল মুছে ফেলা হয়েছে
       if (!formData.birthDate.day || !formData.birthDate.month || !formData.birthDate.year) throw new Error('Please enter complete birth date');
       if (!formData.birthTime.hour || !formData.birthTime.minute) throw new Error('Please enter complete birth time');
       if (!formData.place) throw new Error('Please enter your birthplace');
@@ -227,7 +226,6 @@ const KundliForm = () => {
 
       const userFormDetails = {
         name: formData.name,
-        phone: formData.phone,
         email: formData.email,
         gender: formData.gender,
         birthDate: formData.birthDate,
@@ -248,7 +246,6 @@ const KundliForm = () => {
       const kundliDataToStore = {
         userDetails: {
           name: formData.name,
-          phone: formData.phone,
           email: formData.email,
           gender: formData.gender,
           dob: `${formData.birthDate.day}/${formData.birthDate.month}/${formData.birthDate.year}`,
@@ -259,7 +256,7 @@ const KundliForm = () => {
         planets: transformedPlanets,
         request_id: requestId,
         saved_to_supabase: !!requestId,
-        payment_completed: true // Bypass payment marker
+        payment_completed: true 
       };
 
       localStorage.setItem('kundliData', JSON.stringify(kundliDataToStore));
@@ -267,7 +264,6 @@ const KundliForm = () => {
 
       setSuccess(true);
       
-      // ✅ পেমেন্ট ছাড়াই সরাসরি রেজাল্ট পেজে রিডাইরেক্ট
       setTimeout(() => navigate('/kundli-result'), 1000);
 
     } catch (err) {
@@ -311,16 +307,9 @@ const KundliForm = () => {
                 </div>
               </div>
 
-              {/* Phone */}
-              <div>
-                <label className="text-xs font-bold text-slate-500 uppercase ml-1">Phone Number</label>
-                <div className="mt-1 relative">
-                  <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none text-slate-400"><Phone size={18} /></div>
-                  <input type="tel" required placeholder="Your phone number" value={formData.phone} onChange={(e) => handleChange(e, null, 'phone')} className="w-full pl-12 pr-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-[#f98a2c]/50 outline-none font-medium transition-all" />
-                </div>
-              </div>
+              {/* ❌ Phone Input Section Removed entirely to enhance UX */}
 
-              {/* Email */}
+              {/* Email (Optional) */}
               <div>
                 <label className="text-xs font-bold text-slate-500 uppercase ml-1">Email (Optional)</label>
                 <div className="mt-1 relative">
@@ -396,7 +385,7 @@ const KundliForm = () => {
                 </div>
               </div>
 
-              {/* ✅ Updated Free Submit Button */}
+              {/* Submit Button */}
               <div className="pt-6 border-t border-slate-100">
                 <button type="submit" disabled={loading} className="w-full py-4 bg-[#f98a2c] text-white font-black text-lg rounded-xl shadow-lg shadow-orange-500/30 hover:bg-orange-600 active:scale-95 transition-all disabled:opacity-70 flex items-center justify-center gap-2">
                   {loading ? <Loader2 className="animate-spin" size={24} /> : <Sparkles size={24} />}
