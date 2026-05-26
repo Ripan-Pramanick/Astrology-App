@@ -29,6 +29,9 @@ import contactRoutes from './routes/contact.js';
 import panchangRoutes from './routes/panchang.js';
 import astrologyRoutes from './routes/astrologyRoutes.js'; 
 import aiRoutes from './routes/ai.js'; // ✅ IMPORTED AI ROUTES HERE
+import reportRoutes from "./routes/reportRoutes.js";
+import testAstro from "./routes/testAstro.js";
+// import reportRoutes from "./routes/reportRoutes.js";
 
 // ============================================
 // FIREBASE ADMIN INITIALIZATION
@@ -121,6 +124,8 @@ app.use('/', astrologyRoutes);
 
 // ✅ MOUNTED AI ROUTES HERE
 app.use('/api/ai', aiRoutes); 
+app.use("/api/report", reportRoutes);
+app.use("/api", testAstro);
 
 // ============================================
 // DATABASE SAVE & FETCH APIs (Reports)
@@ -226,5 +231,7 @@ const PORT = appConfig.port || 5000;
 app.listen(PORT, () => {
     console.log(`\n✅ Server started successfully on port ${PORT}!`);
 });
+
+
 
 export default app;
