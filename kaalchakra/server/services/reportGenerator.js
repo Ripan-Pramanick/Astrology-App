@@ -70,6 +70,7 @@ export const generateFreeReport = async (userData) => {
     // 4. Format reportData
     const reportData = {
       name: userData.name || "Seeker",
+      language: userData.language || "en",
       date: new Date().toLocaleDateString('en-IN'),
       ascendant: astroDetails.ascendant,
       moonSign: astroDetails.sign,
