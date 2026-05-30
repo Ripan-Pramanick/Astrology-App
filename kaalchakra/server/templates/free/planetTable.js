@@ -9,6 +9,19 @@ const generatePlanetTable = (data) => {
         return symbols[sign] || '';
     };
 
+    // 🌟 রাশির নাম অনুযায়ী অধিপতি (Lord) বের করা
+    const getSignLord = (sign) => {
+        const lords = {
+            'Aries': 'Mars', 'Taurus': 'Venus', 'Gemini': 'Mercury', 'Cancer': 'Moon',
+            'Leo': 'Sun', 'Virgo': 'Mercury', 'Libra': 'Venus', 'Scorpio': 'Mars',
+            'Sagittarius': 'Jupiter', 'Capricorn': 'Saturn', 'Aquarius': 'Saturn', 'Pisces': 'Jupiter'
+        };
+        const lordEn = lords[sign];
+        if (!lordEn) return '-';
+        // অধিপতি গ্রহের নামকে বাংলা/হিন্দিতে ট্রান্সলেট করা হচ্ছে
+        return t[lordEn.toLowerCase()] || lordEn;
+    };
+
     const formatDegree = (degreeVal) => {
         if (!degreeVal) return "0° 00' 00\"";
         const num = parseFloat(degreeVal);
@@ -27,9 +40,11 @@ const generatePlanetTable = (data) => {
                 `<span class="status-lagna">${t.ascendant.split(' ')[0]}</span>` : 
                 (planet.retrograde ? `<span class="status-retro">${t.retrograde} (R)</span>` : `<span class="status-direct">${t.direct}</span>`);
 
-            // API এর ইংরেজি নামগুলোকে ট্রান্সলেট করা হচ্ছে
             const planetNameTranslated = t[planet.name.toLowerCase()] || planet.name;
             const signNameTranslated = t[planet.sign.toLowerCase()] || planet.sign;
+            
+            // 🌟 API থেকে Lord না এলে আমাদের লজিক থেকে Lord নিয়ে নেবে
+            const calculatedLord = planet.lord ? (t[planet.lord.toLowerCase()] || planet.lord) : getSignLord(planet.sign);
 
             return `
                 <tr>
@@ -37,7 +52,7 @@ const generatePlanetTable = (data) => {
                     <td><span class="zodiac-symbol">${symbol}</span> ${signNameTranslated}</td>
                     <td class="text-center">${planet.house}</td>
                     <td class="font-mono">${degreeText}</td>
-                    <td>${planet.lord || '-'}</td>
+                    <td style="font-weight: 500; color: #4a4a4a;">${calculatedLord}</td>
                     <td class="text-center">${statusLabel}</td>
                 </tr>
             `;

@@ -1,9 +1,6 @@
-// client/src/pages/KundliResult.jsx
 import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Download, ArrowLeft, Loader2, Sparkles, AlertTriangle, Star, User, Heart, Shield, HeartHandshake, Eye, Moon, Sun } from 'lucide-react';
-import { toPng } from 'html-to-image';
-import jsPDF from 'jspdf';
 import KundliChart from '../components/kundli/KundliChart';
 import PlanetTable from '../components/kundli/PlanetTable';
 import SadeSatiCard from '../components/kundli/SadeSatiCard';
@@ -12,7 +9,7 @@ import { useAuth } from '../context/AuthContext';
 import { supabase } from '../lib/supabase';
 import api from '../services/api';
 
-// ==================== BUILT-IN FALLBACK DATA (NEVER FAILS) ====================
+// ==================== BUILT-IN FALLBACK DATA ====================
 const LAGNA_FALLBACKS = {
   Aries: { characteristics: "Energetic, pioneering, and courageous. Always ready for action.", strengths: "Brave, direct, highly independent.", weaknesses: "Impulsive, short-tempered, impatient.", lucky_color: "Red" },
   Taurus: { characteristics: "Grounded, practical, and appreciates beauty and comfort.", strengths: "Reliable, patient, devoted.", weaknesses: "Stubborn, possessive, uncompromising.", lucky_color: "White, Pink" },
@@ -130,6 +127,7 @@ const KundliResult = () => {
 
   const [loading, setLoading] = useState(true);
   const [isDownloading, setIsDownloading] = useState(false);
+  const [downloadProgress, setDownloadProgress] = useState('');
   const [kundliData, setKundliData] = useState(null);
   const [aiInsights, setAiInsights] = useState('');
   const [isAiLoading, setIsAiLoading] = useState(false);
@@ -152,19 +150,18 @@ const KundliResult = () => {
     return sign.trim().charAt(0).toUpperCase() + sign.trim().slice(1).toLowerCase();
   };
 
-  // Fetch additional data from Supabase + Strong Fallbacks
+  // Fetch additional data from Supabase
   const fetchAdditionalData = async (ascendant, moonSign, planetsList) => {
     const cleanAscendant = normalizeSign(ascendant);
     const cleanMoonSign = normalizeSign(moonSign);
 
     try {
       if (cleanAscendant) {
-        // Fetch Lagna data
         const { data: lagnaDataRes, error: lagnaErr } = await supabase.from('lagna_characteristics').select('*').eq('lagna_name', cleanAscendant).single();
         if (lagnaDataRes && !lagnaErr && lagnaDataRes.characteristics) {
           setLagnaData(lagnaDataRes);
         } else {
-          setLagnaData(LAGNA_FALLBACKS[cleanAscendant] || LAGNA_FALLBACKS['Aries']); // Ultimate Fallback
+          setLagnaData(LAGNA_FALLBACKS[cleanAscendant] || LAGNA_FALLBACKS['Aries']); 
         }
 
         const { data: moonData } = await supabase.from('planet_drishti').select('*').eq('planet', 'Moon').eq('base_sign', cleanAscendant).single();
@@ -177,10 +174,8 @@ const KundliResult = () => {
         if (compatData) setCompatibilityList(compatData);
       }
 
-      // Fetch Sade Sati with Strong Fallback
       if (cleanMoonSign) {
         const { data: currentSaturn } = await supabase.from('current_sade_sati').select('*').single();
-        
         let phase = null;
         let isAffected = false;
         let saturnSign = CURRENT_SATURN_SIGN;
@@ -192,7 +187,6 @@ const KundliResult = () => {
           else if (currentSaturn.second_phase_signs?.includes(cleanMoonSign)) phase = 'Second Phase';
           else if (currentSaturn.third_phase_signs?.includes(cleanMoonSign)) phase = 'Third Phase';
         } else {
-          // Offline Fallback for Sade Sati Calculation
           phase = SADE_SATI_PHASES[cleanMoonSign] || null;
           isAffected = !!phase;
         }
@@ -204,12 +198,11 @@ const KundliResult = () => {
           if (sadeSatiDetails && sadeSatiDetails.length > 0) {
             setSadeSatiData(sadeSatiDetails.find(d => d.phase === phase));
           } else {
-            setSadeSatiData(SADE_SATI_FALLBACKS[phase]); // Ultimate Fallback
+            setSadeSatiData(SADE_SATI_FALLBACKS[phase]); 
           }
         }
       }
 
-      // Darakaraka Logic
       if (planetsList && planetsList.length > 0) {
         const eligiblePlanets = planetsList.filter(p => !['Rahu', 'Ketu'].includes(p.name));
         let lowestDegree = 360;
@@ -247,7 +240,7 @@ const KundliResult = () => {
   };
 
   useEffect(() => {
-    const storedData = localStorage.getItem('kundliData');
+    const storedData = localStorage.getItem('kundliData') || sessionStorage.getItem('kundliData');
     if (storedData) {
       const parsedData = JSON.parse(storedData);
       setKundliData(parsedData);
@@ -304,12 +297,9 @@ const KundliResult = () => {
             updatedData.basic.ai_insights = cleanText;
             localStorage.setItem('kundliData', JSON.stringify(updatedData));
           }
-        } else {
-          setAiInsights("Could not load AI insights at the moment.");
         }
       } catch (err) {
         console.error("AI Error:", err);
-        setAiInsights("Failed to connect to the AI service.");
       } finally {
         setIsAiLoading(false);
       }
@@ -317,21 +307,74 @@ const KundliResult = () => {
     fetchAIAndSave();
   }, [kundliData, user]);
 
+  // ==========================================
+  // PDF DOWNLOAD LOGIC CONNECTED TO BACKEND API
+  // ==========================================
   const handleDownloadPdf = async () => {
-    if (!reportRef.current) return;
+    if (!kundliData) return;
     setIsDownloading(true);
+    setDownloadProgress('Generating Premium Report...');
+    
     try {
-      const dataUrl = await toPng(reportRef.current, { quality: 1.0, backgroundColor: '#fefaf5' });
-      const pdf = new jsPDF('p', 'mm', 'a4');
-      const pdfWidth = pdf.internal.pageSize.getWidth();
-      const pdfHeight = (reportRef.current.offsetHeight * pdfWidth) / reportRef.current.offsetWidth;
-      pdf.addImage(dataUrl, 'PNG', 0, 0, pdfWidth, pdfHeight);
-      pdf.save('Premium_Vedic_Report.pdf');
+      // লোকাল স্টোরেজ থেকে ইউজারের সিলেক্ট করা ল্যাঙ্গুয়েজ নেওয়া হচ্ছে
+      const selectedLanguage = localStorage.getItem('i18nextLng') || 'en';
+      
+      // জন্মতারিখ এবং সময় পার্স করা হচ্ছে API এর জন্য
+      const dobParts = kundliData.userDetails?.dob ? kundliData.userDetails.dob.split('/') : ['1', '1', '2000'];
+      const day = parseInt(dobParts[0]);
+      const month = parseInt(dobParts[1]);
+      const year = parseInt(dobParts[2]);
+
+      let hour = 12;
+      let minute = 0;
+      if (kundliData.userDetails?.time) {
+         const timeParts = kundliData.userDetails.time.split(' ');
+         const hm = timeParts[0].split(':');
+         hour = parseInt(hm[0]);
+         minute = parseInt(hm[1]);
+         if (timeParts[1] === 'PM' && hour !== 12) hour += 12;
+         if (timeParts[1] === 'AM' && hour === 12) hour = 0;
+      }
+
+      const payload = {
+        name: kundliData.userDetails?.name || "Seeker",
+        language: selectedLanguage, // 'bn', 'hi', or 'en'
+        day: day,
+        month: month,
+        year: year,
+        hour: hour,
+        min: minute,
+        lat: kundliData.basic?.latitude || 28.6139,
+        lon: kundliData.basic?.longitude || 77.2090,
+        tzone: kundliData.basic?.timezone || 5.5,
+        gender: kundliData.userDetails?.gender || "male"
+      };
+
+      setDownloadProgress('Connecting to Astro-Engine...');
+      
+      const response = await api.post('/report/generate-report', payload, {
+        responseType: 'blob', // Important for PDF download
+        timeout: 60000 // 60 seconds timeout as PDF generation takes time
+      });
+
+      setDownloadProgress('Downloading...');
+      
+      // ফাইলটি ব্রাউজারে ডাউনলোড করা
+      const url = window.URL.createObjectURL(new Blob([response.data], { type: 'application/pdf' }));
+      const link = document.createElement('a');
+      link.href = url;
+      link.setAttribute('download', `${payload.name}_Premium_Kundli.pdf`);
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      window.URL.revokeObjectURL(url);
+      
     } catch (err) {
-      console.error("PDF error:", err);
-      alert("Failed to download PDF.");
+      console.error("PDF generation failed:", err);
+      alert("Oops! Failed to generate premium report. Please try again.");
     } finally {
       setIsDownloading(false);
+      setDownloadProgress('');
     }
   };
 
@@ -405,8 +448,13 @@ const KundliResult = () => {
           <button onClick={() => navigate('/dashboard')} className="w-full sm:w-auto flex items-center justify-center gap-2 text-[#4a3727] hover:text-[#b46f2c] font-bold px-4 py-2.5 sm:py-2 bg-white rounded-xl shadow-sm border border-orange-50">
             <ArrowLeft size={18} /> Dashboard
           </button>
-          <button onClick={handleDownloadPdf} disabled={isDownloading} className="w-full sm:w-auto flex items-center justify-center gap-2 bg-[#b46f2c] text-white font-bold px-6 py-2.5 sm:py-3 rounded-xl hover:bg-[#8f551e] transition-colors disabled:opacity-70 shadow-md">
-            {isDownloading ? <Loader2 className="animate-spin" size={20} /> : <Download size={20} />} Download PDF
+          
+          <button onClick={handleDownloadPdf} disabled={isDownloading} className="w-full sm:w-auto flex flex-col items-center justify-center gap-1 bg-[#b46f2c] text-white font-bold px-6 py-2 rounded-xl hover:bg-[#8f551e] transition-colors disabled:opacity-70 shadow-md">
+            <div className="flex items-center gap-2">
+              {isDownloading ? <Loader2 className="animate-spin" size={20} /> : <Download size={20} />} 
+              {isDownloading ? 'Generating...' : 'Download Premium PDF'}
+            </div>
+            {isDownloading && <span className="text-[10px] font-normal tracking-wider opacity-80">{downloadProgress}</span>}
           </button>
         </div>
 

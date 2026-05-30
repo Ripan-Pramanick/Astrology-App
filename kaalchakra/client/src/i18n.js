@@ -1,39 +1,23 @@
 import i18n from 'i18next';
 import { initReactI18next } from 'react-i18next';
+import Backend from 'i18next-http-backend';
+import LanguageDetector from 'i18next-browser-languagedetector';
 
 i18n
-  .use(initReactI18next)
+  .use(Backend) // locales ফোল্ডার থেকে ফাইল লোড করার জন্য
+  .use(LanguageDetector) // ব্রাউজারের ল্যাঙ্গুয়েজ ডিটেক্ট করার জন্য
+  .use(initReactI18next) // React এর সাথে কানেক্ট করার জন্য
   .init({
-    resources: {
-      en: {
-        translation: {
-          welcome: "Welcome",
-          home: "Home",
-          about: "About",
-          services: "Services",
-          kundli: "Kundli",
-          contact: "Contact",
-          login: "Login",
-          signup: "Sign Up"
-        }
-      },
-      bn: {
-        translation: {
-          welcome: "স্বাগতম",
-          home: "হোম",
-          about: "সম্পর্কে",
-          services: "সেবাসমূহ",
-          kundli: "কুণ্ডলী",
-          contact: "যোগাযোগ",
-          login: "লগইন",
-          signup: "সাইন আপ"
-        }
-      }
-    },
-    lng: "en",
-    fallbackLng: "en",
+    fallbackLng: 'en', // ডিফল্ট ভাষা
+    supportedLngs: ['en', 'bn', 'hi', 'mr', 'ta', 'te'], // আপনার সাপোর্ট করা ভাষাগুলো
+    ns: ['common', 'navigation', 'hero', 'kundli'], // আপনার JSON ফাইলের নামগুলো
+    defaultNS: 'common',
+    debug: false,
     interpolation: {
-      escapeValue: false
+      escapeValue: false, // React অটোমেটিক XSS প্রোটেকশন দেয়
+    },
+    backend: {
+      loadPath: '/locales/{{lng}}/{{ns}}.json', // JSON ফাইলগুলোর ডিরেক্টরি
     }
   });
 
