@@ -1,14 +1,25 @@
 {
-  "title": "ॐ Gan Ganapataye Namo Namah",
-  "subtitle": "॥ Shri Siddhi Vinayak Namo Namah ॥",
-  "description": "Om Gan Ganapataye Namo Namah, Shri Siddhi Vinayak Namo Namah, Ashtavinayak Namo Namah, Ganapati Bappa Moraya",
+  "heroTitle": "ॐ गन् गणपत् र नमो नमः",
+  "heroSubtitle": "॥ श्री सिद्धि विनायक नमो नमः ॥",
+  "heroDescription": "ॐ गन गणपतए नमो नमः श्री सिद्धि विनायक नमो नमः अष्टविनायक नमो नमः गणपति बाप्पा मोरया",
   "exploreServices": "Explore Services",
   "consultNow": "Consult Now",
-  "ganeshaAlt": "Lord Ganesha - Remover of Obstacles",
-  "stats": {
-    "happyClients": "{{count}} Happy Clients",
-    "yearsOfService": "{{years}} Years of Service",
-    "certifiedAstrologers": "Certified Astrologers",
-    "support": "24/7 Support"
-  }
+  "happyClients": "Happy Clients",
+  "yearsOfService": "Years of Service",
+  "astrologers": "Astrologers",
+  "supportLabel": "Support",
+  "awakeningEnergy": "Awakening Cosmic Energy",
+  "aligningStars": "Aligning the stars for your divine journey...",
+  "Aries": "Aries",
+  "Taurus": "Taurus",
+  "Gemini": "Gemini",
+  "Cancer": "Cancer",
+  "Leo": "Leo",
+  "Virgo": "Virgo",
+  "Libra": "Libra",
+  "Scorpio": "Scorpio",
+  "Sagittarius": "Sagittarius",
+  "Capricorn": "Capricorn",
+  "Aquarius": "Aquarius",
+  "Pisces": "Pisces"
 }

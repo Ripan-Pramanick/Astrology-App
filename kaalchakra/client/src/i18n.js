@@ -9,8 +9,9 @@ i18n
   .use(initReactI18next) // React এর সাথে কানেক্ট করার জন্য
   .init({
     fallbackLng: 'en', // ডিফল্ট ভাষা
-    supportedLngs: ['en', 'bn', 'hi', 'mr', 'ta', 'te'], // আপনার সাপোর্ট করা ভাষাগুলো
-    ns: ['common', 'navigation', 'hero', 'kundli'], // আপনার JSON ফাইলের নামগুলো
+    supportedLngs: ['en', 'bn', 'hi', 'mr', 'ta', 'te'],
+    ns: ['common', 'navigation', 'hero', 'kundli', 'admin', 'services'],
+    defaultNS: 'common',
     defaultNS: 'common',
     debug: false,
     interpolation: {

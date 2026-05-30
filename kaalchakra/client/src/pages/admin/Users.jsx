@@ -8,8 +8,11 @@ import {
 } from 'lucide-react';
 import { SparkleButton, BackgroundSparkles } from '../../components/ui/Sparkle.jsx';
 import api from '../../services/api.js';
+import { useTranslation } from 'react-i18next'; // <-- i18n Hook
 
 const Users = () => {
+  const { t } = useTranslation('admin'); // <-- 'admin.json' থেকে ডেটা নিবে
+
   const [users, setUsers] = useState([]);
   const [filteredUsers, setFilteredUsers] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -76,7 +79,7 @@ const Users = () => {
       
     } catch (err) {
       console.error("Users fetch error:", err);
-      setError('Failed to load cosmic seekers.');
+      setError(t('failedLoadUsers', 'Failed to load cosmic seekers.'));
       
       // Fallback demo data
       const demoUsers = [
@@ -98,7 +101,11 @@ const Users = () => {
   };
 
   const handleDelete = async (userId, userName) => {
-    if (!window.confirm(`Are you sure you want to banish ${userName || 'this user'} from the universe?`)) return;
+    const confirmMessage = t('confirmDeleteUser', 'Are you sure you want to banish {{name}} from the universe?', { 
+      name: userName || t('thisUser', 'this user') 
+    });
+    
+    if (!window.confirm(confirmMessage)) return;
     
     setActionLoading(`delete-${userId}`);
     try {
@@ -109,7 +116,7 @@ const Users = () => {
       setUsers(users.filter(u => u.id !== userId));
     } catch (err) {
       console.error(err);
-      alert('Failed to delete user.');
+      alert(t('failedDeleteUser', 'Failed to delete user.'));
     } finally {
       setActionLoading(null);
     }
@@ -117,9 +124,9 @@ const Users = () => {
 
   const handleMakeAdmin = async (userId, currentRole) => {
     const newRole = currentRole === 'admin' ? 'user' : 'admin';
-    const actionText = newRole === 'admin' ? 'promote to Admin' : 'demote to User';
+    const actionText = newRole === 'admin' ? t('promoteAdmin', 'promote to Admin') : t('demoteUser', 'demote to User');
     
-    if (!window.confirm(`Are you sure you want to ${actionText}?`)) return;
+    if (!window.confirm(t('confirmRoleChange', 'Are you sure you want to {{action}}?', { action: actionText }))) return;
 
     setActionLoading(`role-${userId}`);
     try {
@@ -138,7 +145,7 @@ const Users = () => {
       
     } catch (err) {
       console.error(err);
-      alert('Failed to update role.');
+      alert(t('failedUpdateRole', 'Failed to update role.'));
     } finally {
       setActionLoading(null);
     }
@@ -148,20 +155,20 @@ const Users = () => {
     if (role === 'admin') {
       return {
         icon: <ShieldCheck size={14} />,
-        text: 'Admin',
+        text: t('roleAdmin', 'Admin'),
         className: 'bg-gradient-to-r from-[#d4af37] to-[#b8860b] text-white shadow-md'
       };
     }
     if (role === 'premium') {
       return {
         icon: <Crown size={14} />,
-        text: 'Premium',
+        text: t('rolePremium', 'Premium'),
         className: 'bg-gradient-to-r from-purple-500 to-pink-500 text-white shadow-md'
       };
     }
     return {
       icon: <ShieldAlert size={14} />,
-      text: 'User',
+      text: t('roleUser', 'User'),
       className: 'bg-slate-100 text-slate-600'
     };
   };
@@ -173,7 +180,9 @@ const Users = () => {
         <div className="w-16 h-16 border-4 border-[#d4af37] border-t-[#b8860b] rounded-full animate-spin"></div>
         <Sparkles className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 text-[#d4af37] animate-pulse" size={24} />
       </div>
-      <p className="mt-4 text-[#b8860b] font-bold tracking-widest uppercase text-sm animate-pulse">Gathering Cosmic Seekers...</p>
+      <p className="mt-4 text-[#b8860b] font-bold tracking-widest uppercase text-sm animate-pulse">
+        {t('gatheringUsers', 'Gathering Cosmic Seekers...')}
+      </p>
     </div>
   );
 
@@ -194,11 +203,11 @@ const Users = () => {
                 <UsersIcon className="text-white w-7 h-7" />
               </div>
               <span className="bg-gradient-to-r from-[#b8860b] to-[#d4af37] bg-clip-text text-transparent">
-                User Management
+                {t('userManagement', 'User Management')}
               </span>
               <Sparkles className="text-[#d4af37] animate-pulse" size={20} />
             </h1>
-            <p className="text-slate-500 font-medium mt-1 ml-2">Manage cosmic seekers and their celestial roles.</p>
+            <p className="text-slate-500 font-medium mt-1 ml-2">{t('userManagementSubtitle', 'Manage cosmic seekers and their celestial roles.')}</p>
           </div>
           
           <SparkleButton
@@ -206,17 +215,17 @@ const Users = () => {
             className="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-[#d4af37] to-[#b8860b] text-white rounded-xl shadow-md hover:shadow-lg"
             sparkleColor="#FFD700"
           >
-            <RefreshCw size={16} /> Refresh Users
+            <RefreshCw size={16} /> {t('refreshUsers', 'Refresh Users')}
           </SparkleButton>
         </div>
 
         {/* Stats Cards */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5 mb-8">
           {[
-            { label: 'Total Seekers', value: stats.totalUsers, icon: <UsersIcon size={20} />, gradient: 'from-blue-500 to-cyan-500', change: `+${stats.newThisMonth} this month` },
-            { label: 'Admin Users', value: stats.adminCount, icon: <ShieldCheck size={20} />, gradient: 'from-[#d4af37] to-[#b8860b]', change: 'Administrators' },
-            { label: 'Premium Members', value: stats.premiumCount, icon: <Crown size={20} />, gradient: 'from-purple-500 to-pink-500', change: 'VIP access' },
-            { label: 'Regular Users', value: stats.totalUsers - stats.adminCount - stats.premiumCount, icon: <UserCheck size={20} />, gradient: 'from-green-500 to-emerald-500', change: 'Standard access' }
+            { label: t('totalSeekers', 'Total Seekers'), value: stats.totalUsers, icon: <UsersIcon size={20} />, gradient: 'from-blue-500 to-cyan-500', change: `+${stats.newThisMonth} ${t('thisMonth', 'this month')}` },
+            { label: t('adminUsers', 'Admin Users'), value: stats.adminCount, icon: <ShieldCheck size={20} />, gradient: 'from-[#d4af37] to-[#b8860b]', change: t('administrators', 'Administrators') },
+            { label: t('premiumMembers', 'Premium Members'), value: stats.premiumCount, icon: <Crown size={20} />, gradient: 'from-purple-500 to-pink-500', change: t('vipAccess', 'VIP access') },
+            { label: t('regularUsers', 'Regular Users'), value: stats.totalUsers - stats.adminCount - stats.premiumCount, icon: <UserCheck size={20} />, gradient: 'from-green-500 to-emerald-500', change: t('standardAccess', 'Standard access') }
           ].map((stat, idx) => (
             <div key={idx} className="bg-white/90 backdrop-blur-sm rounded-xl p-4 shadow-lg border border-[#d4af37]/10 hover:shadow-xl transition-all">
               <div className="flex items-center justify-between">
@@ -239,7 +248,7 @@ const Users = () => {
             <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-slate-400" size={18} />
             <input
               type="text"
-              placeholder="Search by name, phone, or email..."
+              placeholder={t('searchUsers', 'Search by name, phone, or email...')}
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
               className="w-full pl-10 pr-4 py-3 bg-white/90 backdrop-blur-sm rounded-xl border border-[#d4af37]/20 focus:border-[#d4af37] focus:ring-2 focus:ring-[#d4af37]/20 outline-none transition-all"
@@ -248,17 +257,22 @@ const Users = () => {
           
           <div className="flex gap-3">
             <div className="flex bg-white/90 backdrop-blur-sm rounded-xl shadow-sm border border-[#d4af37]/20 p-1">
-              {['all', 'admin', 'premium', 'user'].map((role) => (
+              {[
+                { id: 'all', label: t('allRoles', 'All Roles') }, 
+                { id: 'admin', label: t('roleAdmin', 'Admin') }, 
+                { id: 'premium', label: t('rolePremium', 'Premium') }, 
+                { id: 'user', label: t('roleUser', 'User') }
+              ].map((role) => (
                 <button
-                  key={role}
-                  onClick={() => setRoleFilter(role)}
+                  key={role.id}
+                  onClick={() => setRoleFilter(role.id)}
                   className={`px-4 py-2 rounded-lg text-sm font-bold capitalize transition-all ${
-                    roleFilter === role 
+                    roleFilter === role.id 
                       ? 'bg-gradient-to-r from-[#d4af37] to-[#b8860b] text-white shadow-md' 
                       : 'text-slate-500 hover:text-[#b8860b] hover:bg-[#f3efe6]'
                   }`}
                 >
-                  {role === 'all' ? 'All Roles' : role}
+                  {role.label}
                 </button>
               ))}
             </div>
@@ -277,10 +291,10 @@ const Users = () => {
             <table className="w-full text-left">
               <thead className="bg-gradient-to-r from-[#fdfbfb] to-[#f3efe6] border-b border-[#d4af37]/20">
                 <tr>
-                  <th className="px-6 py-4 text-[#b8860b] text-xs uppercase tracking-wider font-bold">Seeker Info</th>
-                  <th className="px-6 py-4 text-[#b8860b] text-xs uppercase tracking-wider font-bold">Contact</th>
-                  <th className="px-6 py-4 text-[#b8860b] text-xs uppercase tracking-wider font-bold">Status / Role</th>
-                  <th className="px-6 py-4 text-[#b8860b] text-xs uppercase tracking-wider font-bold text-right">Actions</th>
+                  <th className="px-6 py-4 text-[#b8860b] text-xs uppercase tracking-wider font-bold">{t('seekerInfoCol', 'Seeker Info')}</th>
+                  <th className="px-6 py-4 text-[#b8860b] text-xs uppercase tracking-wider font-bold">{t('contactCol', 'Contact')}</th>
+                  <th className="px-6 py-4 text-[#b8860b] text-xs uppercase tracking-wider font-bold">{t('statusRoleCol', 'Status / Role')}</th>
+                  <th className="px-6 py-4 text-[#b8860b] text-xs uppercase tracking-wider font-bold text-right">{t('actionsCol', 'Actions')}</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-100">
@@ -296,20 +310,20 @@ const Users = () => {
                             {user.name?.charAt(0) || 'U'}
                           </div>
                           <div>
-                            <div className="font-bold text-slate-800">{user.name || 'Unknown Seeker'}</div>
+                            <div className="font-bold text-slate-800">{user.name || t('unknownSeeker', 'Unknown Seeker')}</div>
                             <div className="flex items-center gap-2 text-xs text-slate-400 mt-0.5">
                               <Calendar size={10} />
-                              Joined: {new Date(user.created_at).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })}
+                              {t('joined', 'Joined:')} {new Date(user.created_at).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })}
                             </div>
                           </div>
                         </div>
                         </td>
                       <td className="px-6 py-4">
                         <div className="flex items-center gap-2 font-semibold text-slate-700">
-                          <Phone size={14} className="text-[#d4af37]" /> {user.phone || 'No phone'}
+                          <Phone size={14} className="text-[#d4af37]" /> {user.phone || t('noPhone', 'No phone')}
                         </div>
                         <div className="flex items-center gap-2 text-xs text-slate-500 mt-1">
-                          <Mail size={14} className="text-[#d4af37]" /> {user.email || 'No email'}
+                          <Mail size={14} className="text-[#d4af37]" /> {user.email || t('noEmail', 'No email')}
                         </div>
                         </td>
                       <td className="px-6 py-4">
@@ -334,9 +348,9 @@ const Users = () => {
                             {actionLoading === `role-${user.id}` ? (
                               <Loader2 className="animate-spin inline" size={14} />
                             ) : isAdmin ? (
-                              'Remove Admin'
+                              t('removeAdmin', 'Remove Admin')
                             ) : (
-                              'Make Admin'
+                              t('makeAdmin', 'Make Admin')
                             )}
                           </SparkleButton>
                           
@@ -345,7 +359,7 @@ const Users = () => {
                             onClick={() => handleDelete(user.id, user.name)}
                             disabled={actionLoading === `delete-${user.id}`}
                             className="text-red-500 hover:text-red-700 hover:bg-red-50 p-1.5 rounded-lg transition-colors disabled:opacity-50"
-                            title="Delete User"
+                            title={t('deleteUserTitle', 'Delete User')}
                           >
                             {actionLoading === `delete-${user.id}` ? (
                               <Loader2 className="animate-spin" size={18} />
@@ -366,14 +380,14 @@ const Users = () => {
                 <div className="w-20 h-20 bg-gradient-to-br from-[#d4af37]/10 to-[#b8860b]/5 rounded-full flex items-center justify-center mb-4">
                   <UsersIcon className="w-10 h-10 text-[#d4af37]/40" />
                 </div>
-                <h3 className="text-lg font-bold text-slate-700">No Seekers Found</h3>
-                <p className="text-sm text-slate-400 mt-1">No users match your search criteria.</p>
+                <h3 className="text-lg font-bold text-slate-700">{t('noSeekersFound', 'No Seekers Found')}</h3>
+                <p className="text-sm text-slate-400 mt-1">{t('noUsersMatch', 'No users match your search criteria.')}</p>
                 <SparkleButton
                   onClick={() => { setSearchTerm(''); setRoleFilter('all'); }}
                   className="mt-4 px-4 py-2 bg-gradient-to-r from-[#d4af37] to-[#b8860b] text-white rounded-lg text-sm"
                   sparkleColor="#FFD700"
                 >
-                  Clear Filters
+                  {t('clearFilters', 'Clear Filters')}
                 </SparkleButton>
               </div>
             )}
@@ -384,11 +398,15 @@ const Users = () => {
             <div className="px-6 py-4 border-t border-[#d4af37]/10 bg-[#fdfbfb] flex justify-between items-center text-xs text-slate-500">
               <div className="flex items-center gap-2">
                 <Sparkles size={12} className="text-[#d4af37]" />
-                Showing {filteredUsers.length} of {users.length} seekers
+                {t('showingSeekers', 'Showing {{filtered}} of {{total}} seekers', { filtered: filteredUsers.length, total: users.length })}
               </div>
               <div className="flex items-center gap-2">
                 <Eye size={12} />
-                {stats.adminCount} Admins • {stats.premiumCount} Premium • {stats.totalUsers - stats.adminCount - stats.premiumCount} Users
+                {t('userBreakdown', '{{admin}} Admins • {{premium}} Premium • {{regular}} Users', { 
+                  admin: stats.adminCount, 
+                  premium: stats.premiumCount, 
+                  regular: stats.totalUsers - stats.adminCount - stats.premiumCount 
+                })}
               </div>
             </div>
           )}

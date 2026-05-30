@@ -1,14 +1,25 @@
 {
-  "title": "ॐ गण गणपतये नमो नमः",
-  "subtitle": "॥ श्री सिद्धि विनायक नमो नमः ॥",
-  "description": "ॐ गण गणपतये नमो नमः, श्री सिद्धि विनायक नमो नमः, अष्टविनायक नमो नमः, गणपति बाप्पा मोरया",
+  "heroTitle": "ॐ गन् गणपतये नमो नमः",
+  "heroSubtitle": "॥ श्री सिद्धि विनायक नमो नमः ॥",
+  "heroDescription": "ॐ गन गणपतए नमो नमः श्री सिद्धि विनायक नमो नमः अष्टविनायक नमो नमः गणपति बाप्पा मोरया",
   "exploreServices": "सेवाएं देखें",
   "consultNow": "अभी परामर्श लें",
-  "ganeshaAlt": "भगवान गणेश - विघ्नहर्ता",
-  "stats": {
-    "happyClients": "{{count}} खुश ग्राहक",
-    "yearsOfService": "{{years}} वर्षों की सेवा",
-    "certifiedAstrologers": "प्रमाणित ज्योतिषी",
-    "support": "24/7 सहायता"
-  }
+  "happyClients": "संतुष्ट ग्राहक",
+  "yearsOfService": "वर्षों का अनुभव",
+  "astrologers": "ज्योतिषी",
+  "supportLabel": "सपोर्ट",
+  "awakeningEnergy": "ब्रह्मांडीय ऊर्जा जागृत हो रही है",
+  "aligningStars": "आपकी दिव्य यात्रा के लिए सितारों को संरेखित किया जा रहा है...",
+  "Aries": "मेष",
+  "Taurus": "वृषभ",
+  "Gemini": "मिथुन",
+  "Cancer": "कर्क",
+  "Leo": "सिंह",
+  "Virgo": "कन्या",
+  "Libra": "तुला",
+  "Scorpio": "वृश्चिक",
+  "Sagittarius": "धनु",
+  "Capricorn": "मकर",
+  "Aquarius": "कुंभ",
+  "Pisces": "मीन"
 }

@@ -11,9 +11,12 @@ import {
 import { useAuth } from '../../context/AuthContext.jsx';
 import { SparkleButton, BackgroundSparkles } from '../../components/ui/Sparkle.jsx';
 import api from '../../services/api.js';
+import { useTranslation } from 'react-i18next'; // <-- i18n Hook
 
 const AdminDashboard = () => {
   const { logout, user } = useAuth();
+  const { t } = useTranslation('admin'); // <-- 'admin.json' থেকে ডেটা নিবে
+  
   const [stats, setStats] = useState({
     totalUsers: 0,
     totalPayments: 0,
@@ -29,14 +32,14 @@ const AdminDashboard = () => {
   const [recentReports, setRecentReports] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
-  const [greeting, setGreeting] = useState('');
+  const [greetingKey, setGreetingKey] = useState('goodMorning');
 
   // Set greeting based on time
   useEffect(() => {
     const hour = new Date().getHours();
-    if (hour < 12) setGreeting('Good Morning');
-    else if (hour < 18) setGreeting('Good Afternoon');
-    else setGreeting('Good Evening');
+    if (hour < 12) setGreetingKey('goodMorning');
+    else if (hour < 18) setGreetingKey('goodAfternoon');
+    else setGreetingKey('goodEvening');
   }, []);
 
   // Fetch all admin data from database
@@ -112,7 +115,7 @@ const AdminDashboard = () => {
         
       } catch (err) {
         console.error("Admin Fetch Error:", err);
-        setError('Failed to load cosmic data. Please check connection.');
+        setError(t('fetchError', 'Failed to load cosmic data. Please check connection.'));
         
         // Fallback to localStorage data if API fails
         try {
@@ -153,7 +156,7 @@ const AdminDashboard = () => {
     // Refresh data every 30 seconds
     const interval = setInterval(fetchAdminData, 30000);
     return () => clearInterval(interval);
-  }, []);
+  }, [t]);
 
   if (loading) return (
     <div className="min-h-screen bg-gradient-to-br from-[#f3efe6] to-[#e8e3d8] flex flex-col items-center justify-center relative overflow-hidden">
@@ -163,7 +166,7 @@ const AdminDashboard = () => {
         <Sparkles className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 text-[#d4af37] animate-pulse" size={28} />
       </div>
       <p className="mt-6 text-[#b8860b] font-bold tracking-widest uppercase text-sm animate-pulse">
-        Retrieving Cosmic Data...
+        {t('retrievingData', 'Retrieving Cosmic Data...')}
       </p>
     </div>
   );
@@ -185,12 +188,12 @@ const AdminDashboard = () => {
                 <Crown className="text-white w-7 h-7" />
               </div>
               <span className="bg-gradient-to-r from-[#b8860b] to-[#d4af37] bg-clip-text text-transparent">
-                Admin Observatory
+                {t('adminObservatory', 'Admin Observatory')}
               </span>
               <Sparkles className="text-[#d4af37] animate-pulse" size={24} />
             </h1>
             <p className="text-slate-500 font-medium mt-2 ml-2">
-              {greeting}, {user?.name || 'Admin'}! ✨ Here's your cosmic dashboard overview.
+              {t(greetingKey)}, {user?.name || t('admin', 'Admin')}! ✨ {t('welcomeMessage', "Here's your cosmic dashboard overview.")}
             </p>
           </div>
           
@@ -200,7 +203,7 @@ const AdminDashboard = () => {
                 <span className="w-2.5 h-2.5 bg-green-500 rounded-full animate-pulse"></span>
                 <span className="absolute inset-0 w-2.5 h-2.5 bg-green-500 rounded-full animate-ping opacity-75"></span>
               </div>
-              <span className="text-xs font-bold text-slate-600 uppercase tracking-widest">Live Data</span>
+              <span className="text-xs font-bold text-slate-600 uppercase tracking-widest">{t('liveData', 'Live Data')}</span>
             </div>
             
             <SparkleButton
@@ -217,35 +220,35 @@ const AdminDashboard = () => {
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-10">
           {[
             { 
-              label: 'Total Seekers', 
+              label: t('totalSeekers', 'Total Seekers'), 
               val: stats.totalUsers.toLocaleString(), 
               icon: <Users size={24} />, 
               gradient: 'from-[#4facfe] to-[#00f2fe]',
-              subtext: `${stats.monthlyGrowth > 0 ? '+' : ''}${stats.monthlyGrowth}% this month`,
+              subtext: `${stats.monthlyGrowth > 0 ? '+' : ''}${stats.monthlyGrowth}% ${t('thisMonth', 'this month')}`,
               trend: stats.monthlyGrowth > 0 ? 'up' : stats.monthlyGrowth < 0 ? 'down' : 'neutral'
             },
             { 
-              label: 'Premium Members', 
+              label: t('premiumMembers', 'Premium Members'), 
               val: stats.premiumUsers.toLocaleString(), 
               icon: <Crown size={24} />, 
               gradient: 'from-[#d4af37] to-[#f4a460]',
-              subtext: `${stats.totalUsers > 0 ? Math.round((stats.premiumUsers / stats.totalUsers) * 100) : 0}% conversion rate`,
+              subtext: `${stats.totalUsers > 0 ? Math.round((stats.premiumUsers / stats.totalUsers) * 100) : 0}% ${t('conversionRate', 'conversion rate')}`,
               trend: 'up'
             },
             { 
-              label: 'Total Revenue', 
+              label: t('totalRevenue', 'Total Revenue'), 
               val: `₹${(stats.totalRevenue || 0).toLocaleString()}`, 
               icon: <IndianRupee size={24} />, 
               gradient: 'from-[#fa709a] to-[#fee140]',
-              subtext: `${stats.totalPayments} total transactions`,
+              subtext: `${stats.totalPayments} ${t('totalTransactions', 'total transactions')}`,
               trend: 'neutral'
             },
             { 
-              label: 'Pending Consults', 
+              label: t('pendingConsults', 'Pending Consults'), 
               val: stats.pendingRequests, 
               icon: <Clock size={24} />, 
               gradient: 'from-[#ff0844] to-[#ffb199]',
-              subtext: `${stats.completedConsultations} completed`,
+              subtext: `${stats.completedConsultations} ${t('completed', 'completed')}`,
               trend: stats.pendingRequests > 10 ? 'up' : 'down'
             }
           ].map((item, idx) => (
@@ -277,26 +280,26 @@ const AdminDashboard = () => {
           <div className="lg:col-span-2 bg-white/90 backdrop-blur-sm rounded-2xl shadow-lg border border-[#d4af37]/10 overflow-hidden">
             <div className="p-6 border-b border-slate-100 flex justify-between items-center bg-gradient-to-r from-white to-[#fdfbfb]">
               <h2 className="text-xl font-bold text-slate-800 flex items-center gap-2">
-                <DollarSign className="text-[#b8860b] w-5 h-5" /> Recent Transactions
+                <DollarSign className="text-[#b8860b] w-5 h-5" /> {t('recentTransactions', 'Recent Transactions')}
                 <Sparkles size={14} className="text-[#d4af37]" />
               </h2>
-              <span className="text-xs text-slate-400">Last 5 payments</span>
+              <span className="text-xs text-slate-400">{t('last5Payments', 'Last 5 payments')}</span>
             </div>
             
             <div className="flex-1 overflow-x-auto">
               {recentPayments.length === 0 ? (
                 <div className="flex flex-col items-center justify-center h-full min-h-[250px] text-slate-400">
                   <CreditCard className="w-12 h-12 mb-3 opacity-20" />
-                  <p className="font-medium">No transactions yet.</p>
+                  <p className="font-medium">{t('noTransactions', 'No transactions yet.')}</p>
                 </div>
               ) : (
                 <table className="w-full text-left whitespace-nowrap">
                   <thead className="bg-[#fdfbfb] text-[#b8860b] text-[10px] uppercase tracking-widest font-bold">
                     <tr>
-                      <th className="px-6 py-4">Seeker</th>
-                      <th className="px-6 py-4">Amount</th>
-                      <th className="px-6 py-4">Status</th>
-                      <th className="px-6 py-4 text-right">Date</th>
+                      <th className="px-6 py-4">{t('seeker', 'Seeker')}</th>
+                      <th className="px-6 py-4">{t('amount', 'Amount')}</th>
+                      <th className="px-6 py-4">{t('status', 'Status')}</th>
+                      <th className="px-6 py-4 text-right">{t('date', 'Date')}</th>
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-slate-50 text-slate-600 text-sm">
@@ -306,7 +309,7 @@ const AdminDashboard = () => {
                           <div className="w-8 h-8 rounded-full bg-gradient-to-br from-[#d4af37]/20 to-[#b8860b]/10 flex items-center justify-center text-[#b8860b] font-bold">
                             {payment.user_name?.charAt(0) || payment.name?.charAt(0) || 'U'}
                           </div>
-                          {payment.user_name || payment.name || 'Anonymous'}
+                          {payment.user_name || payment.name || t('anonymous', 'Anonymous')}
                         </td>
                         <td className="px-6 py-4 font-bold text-[#b8860b]">₹{payment.amount || 1100}</td>
                         <td className="px-6 py-4">
@@ -319,11 +322,11 @@ const AdminDashboard = () => {
                               payment.status === 'success' || payment.ai_insights ? 'bg-green-500' : 
                               payment.status === 'pending' ? 'bg-orange-500' : 'bg-red-500'
                             }`}></span>
-                            {payment.ai_insights ? 'Completed' : payment.status || 'Pending'}
+                            {payment.ai_insights ? t('statusCompleted', 'Completed') : payment.status === 'pending' ? t('statusPending', 'Pending') : t('statusFailed', 'Failed')}
                           </span>
                         </td>
                         <td className="px-6 py-4 text-right text-slate-400">
-                          {payment.created_at ? new Date(payment.created_at).toLocaleDateString('en-GB') : 'Recent'}
+                          {payment.created_at ? new Date(payment.created_at).toLocaleDateString() : t('recent', 'Recent')}
                         </td>
                        </tr>
                     ))}
@@ -336,8 +339,8 @@ const AdminDashboard = () => {
           {/* Recent Users */}
           <div className="bg-white/90 backdrop-blur-sm rounded-2xl shadow-lg border border-[#d4af37]/10 p-6">
             <h3 className="font-bold text-slate-800 mb-4 flex items-center gap-2">
-              <Users size={16} className="text-[#b8860b]" /> Recent Seekers
-              <span className="text-xs text-slate-400 ml-auto">Last {recentUsers.length} joined</span>
+              <Users size={16} className="text-[#b8860b]" /> {t('recentSeekers', 'Recent Seekers')}
+              <span className="text-xs text-slate-400 ml-auto">{t('lastJoined', `Last ${recentUsers.length} joined`, { count: recentUsers.length })}</span>
             </h3>
             <div className="space-y-3">
               {recentUsers.map((user, idx) => (
@@ -347,21 +350,21 @@ const AdminDashboard = () => {
                       {user.name?.charAt(0) || user.phone?.charAt(0) || 'U'}
                     </div>
                     <div>
-                      <p className="text-sm font-medium text-slate-800">{user.name || 'Anonymous'}</p>
-                      <p className="text-xs text-slate-400">{user.phone || 'No phone'}</p>
+                      <p className="text-sm font-medium text-slate-800">{user.name || t('anonymous', 'Anonymous')}</p>
+                      <p className="text-xs text-slate-400">{user.phone || t('noPhone', 'No phone')}</p>
                     </div>
                   </div>
                   <span className="text-xs text-green-600">
-                    {user.created_at ? new Date(user.created_at).toLocaleDateString() : 'New'}
+                    {user.created_at ? new Date(user.created_at).toLocaleDateString() : t('new', 'New')}
                   </span>
                 </div>
               ))}
               {recentUsers.length === 0 && (
-                <p className="text-center text-slate-400 text-sm py-4">No users registered yet</p>
+                <p className="text-center text-slate-400 text-sm py-4">{t('noUsers', 'No users registered yet')}</p>
               )}
             </div>
             <Link to="/admin/users" className="mt-4 block text-center text-xs text-[#b8860b] hover:text-[#d4af37] transition-colors">
-              View All Users →
+              {t('viewAllUsers', 'View All Users →')}
             </Link>
           </div>
         </div>
@@ -370,20 +373,20 @@ const AdminDashboard = () => {
         <div className="bg-white/90 backdrop-blur-sm rounded-2xl shadow-lg border border-[#d4af37]/10 overflow-hidden mb-8">
           <div className="p-6 border-b border-slate-100 flex justify-between items-center bg-gradient-to-r from-white to-[#fdfbfb]">
             <h2 className="text-xl font-bold text-slate-800 flex items-center gap-2">
-              <Activity className="text-[#b8860b] w-5 h-5" /> Recent Kundli Reports
+              <Activity className="text-[#b8860b] w-5 h-5" /> {t('recentReports', 'Recent Kundli Reports')}
               <Sparkles size={14} className="text-[#d4af37]" />
             </h2>
-            <span className="text-xs text-slate-400">AI analysis status</span>
+            <span className="text-xs text-slate-400">{t('aiStatus', 'AI analysis status')}</span>
           </div>
           
           <div className="overflow-x-auto">
             <table className="w-full text-left">
               <thead className="bg-[#fdfbfb] text-[#b8860b] text-[10px] uppercase tracking-widest font-bold">
                 <tr>
-                  <th className="px-6 py-4">Name</th>
-                  <th className="px-6 py-4">DOB</th>
-                  <th className="px-6 py-4">AI Status</th>
-                  <th className="px-6 py-4 text-right">Created</th>
+                  <th className="px-6 py-4">{t('name', 'Name')}</th>
+                  <th className="px-6 py-4">{t('dob', 'DOB')}</th>
+                  <th className="px-6 py-4">{t('aiAnalysis', 'AI Status')}</th>
+                  <th className="px-6 py-4 text-right">{t('created', 'Created')}</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-50">
@@ -394,23 +397,23 @@ const AdminDashboard = () => {
                     <td className="px-6 py-4">
                       {report.ai_insights ? (
                         <span className="flex items-center gap-1 text-green-600 text-sm">
-                          <CheckCircle size={14} /> Analyzed
+                          <CheckCircle size={14} /> {t('analyzed', 'Analyzed')}
                         </span>
                       ) : (
                         <span className="flex items-center gap-1 text-orange-600 text-sm">
-                          <AlertCircle size={14} /> Pending
+                          <AlertCircle size={14} /> {t('statusPending', 'Pending')}
                         </span>
                       )}
                     </td>
                     <td className="px-6 py-4 text-right text-slate-400">
-                      {report.created_at ? new Date(report.created_at).toLocaleDateString() : 'Recent'}
+                      {report.created_at ? new Date(report.created_at).toLocaleDateString() : t('recent', 'Recent')}
                     </td>
                   </tr>
                 ))}
                 {recentReports.length === 0 && (
                   <tr>
                     <td colSpan="4" className="px-6 py-8 text-center text-slate-400">
-                      No reports generated yet
+                      {t('noReports', 'No reports generated yet')}
                     </td>
                   </tr>
                 )}
@@ -422,10 +425,10 @@ const AdminDashboard = () => {
         {/* Quick Actions */}
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
           {[
-            { to: "/admin/users", label: "Manage Users", icon: <Users size={18} />, color: "from-blue-500 to-cyan-500" },
-            { to: "/admin/payments", label: "View Payments", icon: <CreditCard size={18} />, color: "from-green-500 to-emerald-500" },
-            { to: "/admin/reports", label: "All Reports", icon: <Activity size={18} />, color: "from-purple-500 to-pink-500" },
-            { to: "/admin/settings", label: "Settings", icon: <Shield size={18} />, color: "from-gray-500 to-slate-500" }
+            { to: "/admin/users", label: t('manageUsers', "Manage Users"), icon: <Users size={18} />, color: "from-blue-500 to-cyan-500" },
+            { to: "/admin/payments", label: t('viewPayments', "View Payments"), icon: <CreditCard size={18} />, color: "from-green-500 to-emerald-500" },
+            { to: "/admin/reports", label: t('allReports', "All Reports"), icon: <Activity size={18} />, color: "from-purple-500 to-pink-500" },
+            { to: "/admin/settings", label: t('settings', "Settings"), icon: <Shield size={18} />, color: "from-gray-500 to-slate-500" }
           ].map((action, idx) => (
             <Link 
               key={idx}
@@ -444,7 +447,7 @@ const AdminDashboard = () => {
         {/* Footer */}
         <div className="mt-10 text-center">
           <p className="text-xs text-slate-400 flex items-center justify-center gap-2">
-            <Shield size={12} /> Live data from database • Last updated: {new Date().toLocaleTimeString()}
+            <Shield size={12} /> {t('liveDataInfo', 'Live data from database')} • {t('lastUpdated', 'Last updated:')} {new Date().toLocaleTimeString()}
             <Sparkles size={12} className="text-[#d4af37]" />
           </p>
         </div>

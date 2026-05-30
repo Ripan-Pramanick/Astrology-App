@@ -8,8 +8,11 @@ import {
 } from 'lucide-react';
 import { SparkleButton, BackgroundSparkles } from '../../components/ui/Sparkle.jsx';
 import api from '../../services/api.js';
+import { useTranslation } from 'react-i18next'; // <-- i18n Hook
 
 const Orders = () => {
+  const { t } = useTranslation('admin'); // <-- 'admin.json' থেকে ডেটা নিবে
+  
   const [orders, setOrders] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
@@ -59,7 +62,7 @@ const Orders = () => {
       
     } catch (err) {
       console.error("Orders fetch error:", err);
-      setError('Failed to load cosmic transactions.');
+      setError(t('failedLoadOrders', 'Failed to load cosmic transactions.'));
       
       // Fallback demo data
       const demoOrders = [
@@ -151,11 +154,18 @@ const Orders = () => {
   };
 
   const exportToCSV = () => {
-    const headers = ['Order ID', 'Customer Name', 'Service', 'Amount', 'Status', 'Date'];
+    const headers = [
+      t('orderIdCol', 'Order ID'), 
+      t('customerNameCol', 'Customer Name'), 
+      t('serviceCol', 'Service'), 
+      t('amount', 'Amount'), 
+      t('status', 'Status'), 
+      t('date', 'Date')
+    ];
     const rows = filteredOrders.map(order => [
       order.order_id || order.id,
-      order.user_name || 'Guest',
-      order.service || 'Astrology Service',
+      order.user_name || t('guestUser', 'Guest'),
+      order.service || t('astrologyService', 'Astrology Service'),
       order.amount > 1000 ? order.amount / 100 : order.amount,
       order.status,
       new Date(order.created_at).toLocaleDateString()
@@ -178,7 +188,9 @@ const Orders = () => {
         <div className="w-16 h-16 border-4 border-[#d4af37] border-t-[#b8860b] rounded-full animate-spin"></div>
         <Sparkles className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 text-[#d4af37] animate-pulse" size={24} />
       </div>
-      <p className="mt-4 text-[#b8860b] font-bold tracking-widest uppercase text-sm animate-pulse">Loading Cosmic Orders...</p>
+      <p className="mt-4 text-[#b8860b] font-bold tracking-widest uppercase text-sm animate-pulse">
+        {t('loadingOrders', 'Loading Cosmic Orders...')}
+      </p>
     </div>
   );
 
@@ -199,11 +211,11 @@ const Orders = () => {
                 <ShoppingBag className="text-white w-7 h-7" />
               </div>
               <span className="bg-gradient-to-r from-[#b8860b] to-[#d4af37] bg-clip-text text-transparent">
-                Cosmic Orders & Payments
+                {t('ordersTitle', 'Cosmic Orders & Payments')}
               </span>
               <Sparkles className="text-[#d4af37] animate-pulse" size={20} />
             </h1>
-            <p className="text-slate-500 font-medium mt-1 ml-2">Track all consultations and astrological services.</p>
+            <p className="text-slate-500 font-medium mt-1 ml-2">{t('ordersSubtitle', 'Track all consultations and astrological services.')}</p>
           </div>
           
           <div className="flex gap-3">
@@ -213,7 +225,7 @@ const Orders = () => {
               className="flex items-center gap-2 px-4 py-2 bg-white text-[#b8860b] rounded-xl shadow-md border border-[#d4af37]/20 hover:shadow-lg"
               sparkleColor="#d4af37"
             >
-              <Download size={16} /> Export CSV
+              <Download size={16} /> {t('exportCsv', 'Export CSV')}
             </SparkleButton>
             
             {/* Refresh Button */}
@@ -222,7 +234,7 @@ const Orders = () => {
               className="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-[#d4af37] to-[#b8860b] text-white rounded-xl shadow-md hover:shadow-lg"
               sparkleColor="#FFD700"
             >
-              <RefreshCw size={16} /> Refresh
+              <RefreshCw size={16} /> {t('refresh', 'Refresh')}
             </SparkleButton>
           </div>
         </div>
@@ -230,10 +242,10 @@ const Orders = () => {
         {/* Stats Cards */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5 mb-8">
           {[
-            { label: 'Total Orders', value: stats.totalOrders, icon: <ShoppingBag size={20} />, gradient: 'from-blue-500 to-cyan-500' },
-            { label: 'Total Revenue', value: `₹${stats.totalRevenue.toLocaleString()}`, icon: <DollarSign size={20} />, gradient: 'from-green-500 to-emerald-500' },
-            { label: 'Success Rate', value: `${Math.round(stats.successRate)}%`, icon: <TrendingUp size={20} />, gradient: 'from-purple-500 to-pink-500' },
-            { label: 'Pending Orders', value: stats.pendingOrders, icon: <Clock size={20} />, gradient: 'from-orange-500 to-red-500' }
+            { label: t('totalOrders', 'Total Orders'), value: stats.totalOrders, icon: <ShoppingBag size={20} />, gradient: 'from-blue-500 to-cyan-500' },
+            { label: t('totalRevenue', 'Total Revenue'), value: `₹${stats.totalRevenue.toLocaleString()}`, icon: <DollarSign size={20} />, gradient: 'from-green-500 to-emerald-500' },
+            { label: t('successRate', 'Success Rate'), value: `${Math.round(stats.successRate)}%`, icon: <TrendingUp size={20} />, gradient: 'from-purple-500 to-pink-500' },
+            { label: t('pendingOrders', 'Pending Orders'), value: stats.pendingOrders, icon: <Clock size={20} />, gradient: 'from-orange-500 to-red-500' }
           ].map((stat, idx) => (
             <div key={idx} className="bg-white/90 backdrop-blur-sm rounded-xl p-4 shadow-lg border border-[#d4af37]/10">
               <div className="flex items-center justify-between">
@@ -255,7 +267,7 @@ const Orders = () => {
             <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-slate-400" size={18} />
             <input
               type="text"
-              placeholder="Search by customer name, order ID, or service..."
+              placeholder={t('searchOrders', 'Search by customer name, order ID, or service...')}
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
               className="w-full pl-10 pr-4 py-3 bg-white/90 backdrop-blur-sm rounded-xl border border-[#d4af37]/20 focus:border-[#d4af37] focus:ring-2 focus:ring-[#d4af37]/20 outline-none transition-all"
@@ -264,17 +276,21 @@ const Orders = () => {
           
           <div className="flex gap-3">
             <div className="flex bg-white/90 backdrop-blur-sm rounded-xl shadow-sm border border-[#d4af37]/20 p-1">
-              {['all', 'success', 'pending'].map((type) => (
+              {[
+                { id: 'all', label: t('allOrders', 'All Orders') }, 
+                { id: 'success', label: t('statusSuccess', 'Success') }, 
+                { id: 'pending', label: t('statusPending', 'Pending') }
+              ].map((type) => (
                 <button
-                  key={type}
-                  onClick={() => setFilter(type)}
+                  key={type.id}
+                  onClick={() => setFilter(type.id)}
                   className={`px-4 py-2 rounded-lg text-sm font-bold capitalize transition-all ${
-                    filter === type 
+                    filter === type.id 
                       ? 'bg-gradient-to-r from-[#d4af37] to-[#b8860b] text-white shadow-md' 
                       : 'text-slate-500 hover:text-[#b8860b] hover:bg-[#f3efe6]'
                   }`}
                 >
-                  {type === 'all' ? 'All Orders' : type}
+                  {type.label}
                 </button>
               ))}
             </div>
@@ -295,23 +311,23 @@ const Orders = () => {
                 <tr>
                   <th className="px-6 py-4 text-[#b8860b] text-xs uppercase tracking-wider font-bold cursor-pointer hover:text-[#d4af37] transition-colors" onClick={() => handleSort('name')}>
                     <div className="flex items-center gap-1">
-                      Seeker <ArrowUpDown size={12} />
+                      {t('seeker', 'Seeker')} <ArrowUpDown size={12} />
                     </div>
                   </th>
                   <th className="px-6 py-4 text-[#b8860b] text-xs uppercase tracking-wider font-bold">
-                    Order Details
+                    {t('orderDetails', 'Order Details')}
                   </th>
                   <th className="px-6 py-4 text-[#b8860b] text-xs uppercase tracking-wider font-bold cursor-pointer hover:text-[#d4af37] transition-colors" onClick={() => handleSort('amount')}>
                     <div className="flex items-center gap-1">
-                      Amount <ArrowUpDown size={12} />
+                      {t('amount', 'Amount')} <ArrowUpDown size={12} />
                     </div>
                   </th>
                   <th className="px-6 py-4 text-[#b8860b] text-xs uppercase tracking-wider font-bold">
-                    Status
+                    {t('status', 'Status')}
                   </th>
                   <th className="px-6 py-4 text-[#b8860b] text-xs uppercase tracking-wider font-bold cursor-pointer hover:text-[#d4af37] transition-colors" onClick={() => handleSort('date')}>
                     <div className="flex items-center gap-1">
-                      Date <ArrowUpDown size={12} />
+                      {t('date', 'Date')} <ArrowUpDown size={12} />
                     </div>
                   </th>
                 </tr>
@@ -328,13 +344,13 @@ const Orders = () => {
                             {order.user_name?.charAt(0) || 'G'}
                           </div>
                           <div>
-                            <div className="font-semibold text-slate-800">{order.user_name || 'Guest User'}</div>
+                            <div className="font-semibold text-slate-800">{order.user_name || t('guestUser', 'Guest User')}</div>
                             <div className="text-xs text-slate-400">ID: {order.order_id || order.id?.substring(0, 8)}</div>
                           </div>
                         </div>
                        </td>
                       <td className="px-6 py-4">
-                        <div className="font-bold text-slate-800">{order.service || 'Astrology Service'}</div>
+                        <div className="font-bold text-slate-800">{order.service || t('astrologyService', 'Astrology Service')}</div>
                         <div className="text-xs text-slate-400 font-mono mt-0.5">{order.order_id || `ORD_${order.id}`}</div>
                        </td>
                       <td className="px-6 py-4">
@@ -345,7 +361,7 @@ const Orders = () => {
                       <td className="px-6 py-4">
                         <span className={`px-3 py-1.5 rounded-full text-[10px] font-bold uppercase flex items-center gap-1.5 w-fit ${getStatusColor(order.status)}`}>
                           {getStatusIcon(order.status)}
-                          {order.status}
+                          {t(order.status, order.status)}
                         </span>
                        </td>
                       <td className="px-6 py-4">
@@ -365,14 +381,14 @@ const Orders = () => {
                 <div className="w-20 h-20 bg-gradient-to-br from-[#d4af37]/10 to-[#b8860b]/5 rounded-full flex items-center justify-center mb-4">
                   <ShoppingBag className="w-10 h-10 text-[#d4af37]/40" />
                 </div>
-                <h3 className="text-lg font-bold text-slate-700">No Orders Found</h3>
-                <p className="text-sm text-slate-400 mt-1">There are no transactions matching your criteria.</p>
+                <h3 className="text-lg font-bold text-slate-700">{t('noOrdersFound', 'No Orders Found')}</h3>
+                <p className="text-sm text-slate-400 mt-1">{t('noTransactionsMatch', 'There are no transactions matching your criteria.')}</p>
                 <SparkleButton
                   onClick={() => { setFilter('all'); setSearchTerm(''); }}
                   className="mt-4 px-4 py-2 bg-gradient-to-r from-[#d4af37] to-[#b8860b] text-white rounded-lg text-sm"
                   sparkleColor="#FFD700"
                 >
-                  Clear Filters
+                  {t('clearFilters', 'Clear Filters')}
                 </SparkleButton>
               </div>
             )}
@@ -383,13 +399,13 @@ const Orders = () => {
             <div className="px-6 py-4 border-t border-[#d4af37]/10 bg-[#fdfbfb] flex justify-between items-center text-xs text-slate-500">
               <div className="flex items-center gap-2">
                 <Sparkles size={12} className="text-[#d4af37]" />
-                Showing {filteredOrders.length} of {orders.length} orders
+                {t('showingOrders', 'Showing {{filtered}} of {{total}} orders', { filtered: filteredOrders.length, total: orders.length })}
               </div>
               <div className="flex items-center gap-2">
                 <CreditCard size={12} />
-                Total Revenue: ₹{filteredOrders.reduce((sum, o) => {
+                {t('totalRevenue', 'Total Revenue')}: ₹{filteredOrders.reduce((sum, o) => {
                   const amount = o.amount > 1000 ? o.amount / 100 : o.amount;
-                  return sum + (o.status === 'success' ? amount : 0);
+                  return sum + (o.status === 'success' || o.status === 'paid' || o.status === 'completed' ? amount : 0);
                 }, 0).toLocaleString()}
               </div>
             </div>

@@ -1,11 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Calendar, User, Clock, ChevronRight, BookOpen, TrendingUp, Sparkles, Tag, Loader2, AlertCircle } from 'lucide-react';
-
-// আপনার মূল প্রজেক্টে নিচের ইম্পোর্টটি ব্যবহার করবেন। 
-// যেহেতু এখানে প্রিভিউ দেখানোর জন্য ফাইলটি নেই, তাই আমি নিচে একটি ডামি api তৈরি করে দিয়েছি।
+import { useTranslation } from 'react-i18next'; // <-- i18n Hook
 import api from '../../services/api.js';
-
-
 
 // Category colors mapping
 const categoryColors = {
@@ -20,7 +16,7 @@ const categoryColors = {
 };
 
 // Article Card Component
-const ArticleCard = ({ article, index, onReadMore }) => {
+const ArticleCard = ({ article, index, onReadMore, t }) => {
   const [isHovered, setIsHovered] = useState(false);
 
   return (
@@ -43,7 +39,7 @@ const ArticleCard = ({ article, index, onReadMore }) => {
         {/* Category Badge */}
         <div className="absolute top-4 left-4">
           <span className={`px-3 py-1 rounded-full text-xs font-semibold ${categoryColors[article.category] || 'bg-gray-100 text-gray-700'}`}>
-            {article.category}
+            {t(article.category, article.category)}
           </span>
         </div>
         {/* Trending Badge */}
@@ -51,7 +47,7 @@ const ArticleCard = ({ article, index, onReadMore }) => {
           <div className="absolute top-4 right-4">
             <span className="flex items-center gap-1 px-2 py-1 bg-red-500 text-white rounded-full text-xs font-semibold">
               <TrendingUp className="w-3 h-3" />
-              Trending
+              {t('trending', 'Trending')}
             </span>
           </div>
         )}
@@ -69,7 +65,7 @@ const ArticleCard = ({ article, index, onReadMore }) => {
           </div>
           <div className="flex items-center gap-1">
             <Clock className="w-3.5 h-3.5" />
-            <span>{article.read_time || `${Math.ceil((article.content?.length || 1000) / 1000)} min read`}</span>
+            <span>{article.read_time || `${Math.ceil((article.content?.length || 1000) / 1000)} ${t('minRead', 'min read')}`}</span>
           </div>
           <div className="flex items-center gap-1">
             <User className="w-3.5 h-3.5" />
@@ -89,7 +85,7 @@ const ArticleCard = ({ article, index, onReadMore }) => {
 
         {/* Read More Link */}
         <button className="group/btn inline-flex items-center gap-2 text-orange-500 font-medium text-sm hover:text-orange-600 transition-colors">
-          <span>Read Article</span>
+          <span>{t('readArticle', 'Read Article')}</span>
           <ChevronRight className="w-4 h-4 group-hover/btn:translate-x-1 transition-transform" />
         </button>
       </div>
@@ -116,7 +112,7 @@ const ArticleCardSkeleton = () => (
 );
 
 // Featured Article Component
-const FeaturedArticle = ({ article, onReadMore }) => {
+const FeaturedArticle = ({ article, onReadMore, t }) => {
   const [isHovered, setIsHovered] = useState(false);
 
   return (
@@ -131,7 +127,7 @@ const FeaturedArticle = ({ article, onReadMore }) => {
         <div className="max-w-2xl">
           <div className="flex items-center gap-2 mb-4">
             <Sparkles className="w-5 h-5 text-yellow-300" />
-            <span className="text-sm font-semibold text-yellow-200">Featured Article</span>
+            <span className="text-sm font-semibold text-yellow-200">{t('featuredArticle', 'Featured Article')}</span>
           </div>
           <h2 className="text-2xl md:text-3xl lg:text-4xl font-bold mb-4 leading-tight">
             {article.title}
@@ -144,11 +140,11 @@ const FeaturedArticle = ({ article, onReadMore }) => {
               <Calendar className="w-4 h-4" /> {new Date(article.published_at || article.created_at).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })}
             </span>
             <span className="flex items-center gap-1">
-              <Clock className="w-4 h-4" /> {article.read_time || `${Math.ceil((article.content?.length || 1000) / 1000)} min read`}
+              <Clock className="w-4 h-4" /> {article.read_time || `${Math.ceil((article.content?.length || 1000) / 1000)} ${t('minRead', 'min read')}`}
             </span>
           </div>
           <button className="inline-flex items-center gap-2 bg-white text-orange-600 font-semibold px-6 py-2.5 rounded-xl shadow-md hover:shadow-lg transition-all duration-300 hover:scale-105">
-            Read Featured Story
+            {t('readFeaturedStory', 'Read Featured Story')}
             <ChevronRight className="w-4 h-4" />
           </button>
         </div>
@@ -170,6 +166,7 @@ const FeaturedArticle = ({ article, onReadMore }) => {
 };
 
 export default function NewsArticles() {
+  const { t } = useTranslation('news'); // <-- 'news.json' থেকে ডেটা নিবে
   const [articles, setArticles] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
@@ -185,35 +182,24 @@ export default function NewsArticles() {
   }, [activeFilter]);
 
   const fetchArticles = async () => {
-  setLoading(true);
-  setError('');
-  try {
-    console.log('🟢 Fetching from:', api.defaults.baseURL + '/articles');
-    
-    const response = await api.get('/articles');
-    
-    console.log('📦 Full response:', response);
-    console.log('📊 Response data:', response.data);
-    console.log('📰 Articles array:', response.data?.articles);
-    console.log('✅ Success:', response.data?.success);
-    
-    if (response.data?.success && Array.isArray(response.data.articles)) {
-      setArticles(response.data.articles);
-      console.log(`✅ Loaded ${response.data.articles.length} articles`);
-    } else if (Array.isArray(response.data)) {
-      setArticles(response.data);
-      console.log(`✅ Loaded ${response.data.length} articles (direct array)`);
-    } else {
-      console.warn('⚠️ No articles in expected format');
-      setArticles([]);
+    setLoading(true);
+    setError('');
+    try {
+      const response = await api.get('/articles');
+      if (response.data?.success && Array.isArray(response.data.articles)) {
+        setArticles(response.data.articles);
+      } else if (Array.isArray(response.data)) {
+        setArticles(response.data);
+      } else {
+        setArticles([]);
+      }
+    } catch (err) {
+      console.error('❌ Error fetching articles:', err);
+      setError(t('unableConnect', 'Unable to connect to server.'));
+    } finally {
+      setLoading(false);
     }
-  } catch (err) {
-    console.error('❌ Error fetching articles:', err);
-    setError('Unable to connect to server.');
-  } finally {
-    setLoading(false);
-  }
-};
+  };
 
   const handleReadMore = (articleId) => {
     window.location.href = `/blog/${articleId}`;
@@ -222,7 +208,7 @@ export default function NewsArticles() {
   const handleSubscribe = async (e) => {
     e.preventDefault();
     if (!subscribeEmail || !subscribeEmail.includes('@')) {
-      alert('Please enter a valid email address');
+      alert(t('validEmailAlert', 'Please enter a valid email address'));
       return;
     }
 
@@ -236,7 +222,7 @@ export default function NewsArticles() {
       }
     } catch (err) {
       console.error('Subscription error:', err);
-      alert('Failed to subscribe. Please try again.');
+      alert(t('subscribeFailedAlert', 'Failed to subscribe. Please try again.'));
     } finally {
       setSubscribing(false);
     }
@@ -290,7 +276,7 @@ export default function NewsArticles() {
             onClick={fetchArticles}
             className="bg-orange-500 hover:bg-orange-600 text-white font-semibold px-6 py-2 rounded-xl"
           >
-            Try Again
+            {t('tryAgain', 'Try Again')}
           </button>
         </div>
       </div>
@@ -309,7 +295,7 @@ export default function NewsArticles() {
             </div>
           </div>
           <h2 className="text-3xl md:text-4xl lg:text-5xl font-bold text-gray-800 mb-3">
-            News & Articles
+            {t('newsAndArticles', 'News & Articles')}
           </h2>
           <div className="flex items-center justify-center gap-2 mb-4">
             <div className="w-16 h-px bg-gradient-to-r from-transparent to-orange-300"></div>
@@ -317,11 +303,11 @@ export default function NewsArticles() {
             <div className="w-16 h-px bg-gradient-to-l from-transparent to-orange-300"></div>
           </div>
           <p className="text-gray-500 text-lg max-w-2xl mx-auto">
-            Insights from our astrologers to guide you on your spiritual journey
+            {t('insightsGuidance', 'Insights from our astrologers to guide you on your spiritual journey')}
           </p>
         </div>
 
-        {/* Category Filters - Hide if there are completely no articles in DB */}
+        {/* Category Filters */}
         {articles.length > 0 && (
           <div className="flex flex-wrap items-center justify-center gap-3 mb-10">
             {categories.map((category) => (
@@ -333,7 +319,7 @@ export default function NewsArticles() {
                     : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
                   }`}
               >
-                {category === 'all' ? 'All Articles' : category}
+                {category === 'all' ? t('allArticles', 'All Articles') : t(category, category)}
               </button>
             ))}
           </div>
@@ -342,29 +328,24 @@ export default function NewsArticles() {
         {/* Featured Article */}
         {activeFilter === 'all' && featuredArticle && articles.length > 0 && (
           <div className="mb-12">
-            <FeaturedArticle article={featuredArticle} onReadMore={handleReadMore} />
+            <FeaturedArticle article={featuredArticle} onReadMore={handleReadMore} t={t} />
           </div>
         )}
 
-        {/* ================================================= */}
-        {/* Articles Grid or Coming Soon / Empty State Check  */}
-        {/* ================================================= */}
-
+        {/* Articles Grid or Coming Soon / Empty State Check */}
         {articles.length === 0 && activeFilter === 'all' ? (
-          /* Condition 1: When database has completely NO articles */
           <div className="text-center py-20 px-4 bg-orange-50/40 rounded-3xl border border-orange-100 shadow-sm mt-8 animate-in fade-in zoom-in duration-500">
             <div className="inline-flex items-center justify-center w-20 h-20 rounded-full bg-orange-100 mb-6 shadow-inner">
               <Sparkles className="w-10 h-10 text-orange-500 animate-pulse" />
             </div>
             <h3 className="text-2xl md:text-4xl font-bold text-gray-800 mb-4">
-              New Articles Coming Soon! 🚀
+              {t('newArticlesComingSoon', 'New Articles Coming Soon! 🚀')}
             </h3>
             <p className="text-gray-600 max-w-lg mx-auto text-lg leading-relaxed">
-              Our expert astrologers are currently crafting deep cosmic insights, weekly horoscopes, and daily guidance. Stay tuned!
+              {t('craftingInsights', 'Our expert astrologers are currently crafting deep cosmic insights, weekly horoscopes, and daily guidance. Stay tuned!')}
             </p>
           </div>
         ) : regularArticles.length > 0 ? (
-          /* Condition 2: When there are articles available */
           <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
             {regularArticles.map((article, index) => (
               <ArticleCard
@@ -372,17 +353,19 @@ export default function NewsArticles() {
                 article={article}
                 index={index}
                 onReadMore={handleReadMore}
+                t={t}
               />
             ))}
           </div>
         ) : (
-          /* Condition 3: When a specific category filter is empty */
           <div className="text-center py-16">
             <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-gray-100 mb-4">
               <Tag className="w-8 h-8 text-gray-400" />
             </div>
-            <h3 className="text-xl font-semibold text-gray-700 mb-2">No Articles Found</h3>
-            <p className="text-gray-500 text-lg">No articles are currently available in the "{activeFilter}" category.</p>
+            <h3 className="text-xl font-semibold text-gray-700 mb-2">{t('noArticlesFound', 'No Articles Found')}</h3>
+            <p className="text-gray-500 text-lg">
+              {t('noArticlesInCategory', 'No articles are currently available in the "{{category}}" category.', { category: t(activeFilter, activeFilter) })}
+            </p>
           </div>
         )}
 
@@ -393,7 +376,7 @@ export default function NewsArticles() {
               onClick={() => setActiveFilter('all')}
               className="inline-flex items-center gap-2 bg-gradient-to-r from-orange-500 to-amber-500 text-white font-semibold px-8 py-3 rounded-xl shadow-md hover:shadow-lg transition-all duration-300 hover:scale-105"
             >
-              <span>View All Articles</span>
+              <span>{t('viewAllArticles', 'View All Articles')}</span>
               <ChevronRight className="w-4 h-4" />
             </button>
           </div>
@@ -401,12 +384,12 @@ export default function NewsArticles() {
 
         {/* Newsletter Subscription */}
         <div className="mt-16 bg-gradient-to-r from-orange-50 to-amber-50 rounded-2xl p-8 text-center border border-orange-100">
-          <h3 className="text-2xl font-bold text-gray-800 mb-2">Stay Updated with Cosmic Wisdom</h3>
-          <p className="text-gray-600 mb-6">Subscribe to our newsletter for monthly astrological insights and articles</p>
+          <h3 className="text-2xl font-bold text-gray-800 mb-2">{t('stayUpdated', 'Stay Updated with Cosmic Wisdom')}</h3>
+          <p className="text-gray-600 mb-6">{t('subscribeDesc', 'Subscribe to our newsletter for monthly astrological insights and articles')}</p>
 
           {subscribeSuccess ? (
             <div className="bg-green-100 text-green-700 p-4 rounded-xl max-w-md mx-auto">
-              ✅ Thanks for subscribing! Check your email for confirmation.
+              {t('thanksSubscribing', '✅ Thanks for subscribing! Check your email for confirmation.')}
             </div>
           ) : (
             <form onSubmit={handleSubscribe} className="flex flex-col sm:flex-row items-center justify-center gap-4 max-w-md mx-auto">
@@ -414,7 +397,7 @@ export default function NewsArticles() {
                 type="email"
                 value={subscribeEmail}
                 onChange={(e) => setSubscribeEmail(e.target.value)}
-                placeholder="Enter your email"
+                placeholder={t('enterEmail', 'Enter your email')}
                 className="flex-1 px-4 py-3 rounded-xl border border-gray-200 focus:border-orange-400 focus:ring-2 focus:ring-orange-200 outline-none transition-all"
                 required
               />
@@ -423,7 +406,7 @@ export default function NewsArticles() {
                 disabled={subscribing}
                 className="bg-orange-500 hover:bg-orange-600 text-white font-semibold px-6 py-3 rounded-xl transition-all duration-300 whitespace-nowrap disabled:opacity-50"
               >
-                {subscribing ? <Loader2 className="w-5 h-5 animate-spin" /> : 'Subscribe'}
+                {subscribing ? <Loader2 className="w-5 h-5 animate-spin" /> : t('subscribe', 'Subscribe')}
               </button>
             </form>
           )}

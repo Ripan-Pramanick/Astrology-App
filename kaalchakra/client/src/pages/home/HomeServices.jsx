@@ -51,7 +51,7 @@ const HomeServices = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [kundaliBanner, setKundaliBanner] = useState({
-    title: "Order Hard Copy of Kundali (Birth Chart) for convenient reference, personal keepsake, detailed layout and easy annotations",
+    title: t('services:orderKundaliBanner', "Order Hard Copy of Kundali (Birth Chart) for convenient reference, personal keepsake, detailed layout and easy annotations"),
     price: "1100",
     link: "/kundli"
   });
@@ -59,7 +59,7 @@ const HomeServices = () => {
   useEffect(() => {
     fetchServices();
     fetchKundaliBanner();
-  }, [i18n.language]);
+  }, [i18n.language, t]);
 
   const fetchServices = async () => {
     setLoading(true);
@@ -68,7 +68,6 @@ const HomeServices = () => {
     try {
       const currentLang = i18n.language || 'en';
       
-      // ✅ .maybeSingle() এর পরিবর্তে .select() ব্যবহার করুন
       const { data, error: supabaseError } = await supabase
         .from('services')
         .select('*')
@@ -90,12 +89,12 @@ const HomeServices = () => {
         }));
         setServices(formattedServices);
       } else {
-        setServices(getFallbackServices(currentLang));
+        setServices(getFallbackServices());
       }
     } catch (err) {
       console.error('Error fetching services:', err);
-      setError(t('error.loadFailed') || 'Failed to load services');
-      setServices(getFallbackServices(i18n.language || 'en'));
+      setError(t('services:errorLoadFailed', 'Failed to load services'));
+      setServices(getFallbackServices());
     } finally {
       setLoading(false);
     }
@@ -105,16 +104,14 @@ const HomeServices = () => {
     try {
       const currentLang = i18n.language || 'en';
       
-      // ✅ .maybeSingle() ব্যবহার করুন (404 error এড়াতে)
       const { data, error } = await supabase
         .from('services_banner')
         .select('*')
         .eq('is_active', true)
-        .maybeSingle();  // ← এটা খালি থাকলে error দেয় না
+        .maybeSingle(); 
       
       if (error) {
         console.error('Banner fetch error:', error);
-        // ডিফল্ট ব্যানার ব্যবহার করুন
         return;
       }
       
@@ -127,23 +124,20 @@ const HomeServices = () => {
       }
     } catch (err) {
       console.error('Error fetching banner:', err);
-      // ব্যানার না থাকলে ডিফল্ট থাকে, কোনো error দেখাবেন না
     }
   };
 
-  const getFallbackServices = (lang) => {
-    const isBengali = lang === 'bn';
-    
+  const getFallbackServices = () => {
     return [
-      { id: 1, name: isBengali ? "কুন্ডলী" : "Kundali", subtitle: isBengali ? "জন্ম কুন্ডলী বিশ্লেষণ" : "Birth Chart Analysis", original_price: 1500, price: 1100, icon_type: "Kundali" },
-      { id: 2, name: isBengali ? "কুন্ডলী মিলন" : "Matchmaking", subtitle: isBengali ? "জ্যোতিষীয় সামঞ্জস্য" : "Astrological Compatibility", original_price: 2000, price: 1500, icon_type: "Match" },
-      { id: 3, name: isBengali ? "বিবাহ জ্যোতিষ" : "Marriage Astrology", subtitle: isBengali ? "বিবাহ সংক্রান্ত গাইডেন্স" : "Marriage Guidance", original_price: 1800, price: 1300, icon_type: "Marriage" },
-      { id: 4, name: isBengali ? "সন্তান জ্যোতিষ" : "Progeny Astrology", subtitle: isBengali ? "সন্তান ও পরিবার বিশ্লেষণ" : "Children & Family Analysis", original_price: 1800, price: 1300, icon_type: "Progeny" },
-      { id: 5, name: isBengali ? "শিক্ষা জ্যোতিষ" : "Education Astrology", subtitle: isBengali ? "ক্যারিয়ার ও শিক্ষা পথনির্দেশ" : "Career & Education Guidance", original_price: 1600, price: 1200, icon_type: "Education" },
-      { id: 6, name: isBengali ? "ক্যারিয়ার জ্যোতিষ" : "Career Astrology", subtitle: isBengali ? "পেশাগত সাফল্যের পথ" : "Path to Professional Success", original_price: 1600, price: 1200, icon_type: "Career" },
-      { id: 7, name: isBengali ? "নামকরণ জ্যোতিষ" : "Name Astrology", subtitle: isBengali ? "জ্যোতিষ অনুযায়ী নাম নির্বাচন" : "Name Selection by Astrology", original_price: 1400, price: 1000, icon_type: "Name" },
-      { id: 8, name: isBengali ? "মুহুর্ত জ্যোতিষ" : "Muhurta Astrology", subtitle: isBengali ? "শুভ সময় নির্বাচন" : "Auspicious Timing", original_price: 1700, price: 1200, icon_type: "Muhurata" },
-      { id: 9, name: isBengali ? "উপায় জ্যোতিষ" : "Remedial Astrology", subtitle: isBengali ? "জ্যোতিষীয় সমাধান" : "Astrological Solutions", original_price: 1900, price: 1400, icon_type: "Good" }
+      { id: 1, name: t('services:kundali', "Kundali"), subtitle: t('services:kundaliSub', "Birth Chart Analysis"), original_price: 1500, price: 1100, icon_type: "Kundali" },
+      { id: 2, name: t('services:matchmaking', "Matchmaking"), subtitle: t('services:matchmakingSub', "Astrological Compatibility"), original_price: 2000, price: 1500, icon_type: "Match" },
+      { id: 3, name: t('services:marriageAstrology', "Marriage Astrology"), subtitle: t('services:marriageAstrologySub', "Marriage Guidance"), original_price: 1800, price: 1300, icon_type: "Marriage" },
+      { id: 4, name: t('services:progenyAstrology', "Progeny Astrology"), subtitle: t('services:progenyAstrologySub', "Children & Family Analysis"), original_price: 1800, price: 1300, icon_type: "Progeny" },
+      { id: 5, name: t('services:educationAstrology', "Education Astrology"), subtitle: t('services:educationAstrologySub', "Career & Education Guidance"), original_price: 1600, price: 1200, icon_type: "Education" },
+      { id: 6, name: t('services:careerAstrology', "Career Astrology"), subtitle: t('services:careerAstrologySub', "Path to Professional Success"), original_price: 1600, price: 1200, icon_type: "Career" },
+      { id: 7, name: t('services:nameAstrology', "Name Astrology"), subtitle: t('services:nameAstrologySub', "Name Selection by Astrology"), original_price: 1400, price: 1000, icon_type: "Name" },
+      { id: 8, name: t('services:muhurtaAstrology', "Muhurta Astrology"), subtitle: t('services:muhurtaAstrologySub', "Auspicious Timing"), original_price: 1700, price: 1200, icon_type: "Muhurata" },
+      { id: 9, name: t('services:remedialAstrology', "Remedial Astrology"), subtitle: t('services:remedialAstrologySub', "Astrological Solutions"), original_price: 1900, price: 1400, icon_type: "Good" }
     ];
   };
 
@@ -174,7 +168,7 @@ const HomeServices = () => {
       window.location.href = '/kundli';
     } catch (err) {
       console.error('Order error:', err);
-      alert('Failed to place order. Please try again.');
+      alert(t('services:orderFailed', 'Failed to place order. Please try again.'));
     }
   };
 
@@ -273,7 +267,7 @@ const HomeServices = () => {
     }
     
     for (const [key, icon] of Object.entries(icons)) {
-      if (serviceName.includes(key)) {
+      if (serviceName && serviceName.includes(key)) {
         return icon;
       }
     }
@@ -315,7 +309,7 @@ const HomeServices = () => {
             onClick={fetchServices} 
             className="bg-[#F7931E] hover:bg-[#e0850c] text-white font-bold px-6 py-2 rounded-xl"
           >
-            Try Again
+            {t('services:tryAgain', 'Try Again')}
           </button>
         </div>
       </div>
@@ -329,10 +323,12 @@ const HomeServices = () => {
           <style>
             {`@import url('https://fonts.googleapis.com/css2?family=Stoke&display=swap');`}
           </style>
-          <h2 className="text-5xl md:text-6xl font-bold text-gray-800 mb-4 tracking-tight" style={{ fontFamily: "'Stoke', serif", color: "#b87333" }}>Our Services</h2>
+          <h2 className="text-5xl md:text-6xl font-bold text-gray-800 mb-4 tracking-tight" style={{ fontFamily: "'Stoke', serif", color: "#b87333" }}>
+            {t('services:ourServices', 'Our Services')}
+          </h2>
           <div className="flex items-center justify-center gap-2 text-gray-600">
             <span className="text-xl">🙏</span>
-            <p className="text-lg md:text-xl font-medium">May All The Worlds Be Happy</p>
+            <p className="text-lg md:text-xl font-medium">{t('services:mayAllBeHappy', 'May All The Worlds Be Happy')}</p>
             <span className="text-xl">🙏</span>
           </div>
         </div>
@@ -399,7 +395,7 @@ const HomeServices = () => {
         <div className="text-center mt-16">
           <Link to="/services">
             <button className="bg-[#F7931E] hover:bg-[#e0850c] text-white font-bold px-10 py-3.5 rounded-xl shadow-md transition-all duration-300 hover:shadow-lg hover:scale-105 text-lg tracking-wide">
-              View All
+              {t('services:viewAll', 'View All')}
             </button>
           </Link>
         </div>

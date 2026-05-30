@@ -1,8 +1,11 @@
 import React from 'react';
 import { BrowserRouter, Link } from 'react-router-dom';
 import { Phone, Mail, Twitter, Facebook, Instagram } from 'lucide-react';
+import { useTranslation } from 'react-i18next'; // <-- i18n Hook ইম্পোর্ট করা হলো
 
 const Footer = () => {
+  const { t } = useTranslation('common'); // 'common.json' থেকে ডেটা নেওয়ার জন্য
+
   return (
     <>
       {/* Injecting custom animations so the SVG effects work perfectly */}
@@ -31,7 +34,6 @@ const Footer = () => {
                 <div className="relative w-12 h-12">
                   <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" className="w-full h-full animate-spin-slow drop-shadow-lg">
                     <defs>
-                      {/* FIX: userSpaceOnUse ensures the gradient maps perfectly to the 100x100 box regardless of browser quirks */}
                       <linearGradient id="goldEdgeFooter" x1="0" y1="0" x2="100" y2="100" gradientUnits="userSpaceOnUse">
                         <stop offset="0%" stopColor="#FFD700" />
                         <stop offset="50%" stopColor="#F5A623" />
@@ -51,10 +53,9 @@ const Footer = () => {
                       </filter>
                     </defs>
                     
-                    {/* SVG Elements utilizing the bulletproofed gradients */}
+                    {/* SVG Elements */}
                     <circle cx="50" cy="50" r="44" fill="none" stroke="#F5A623" strokeWidth="4" opacity="0.3" filter="url(#goldGlowFooter)" />
                     <circle cx="50" cy="50" r="44" fill="none" stroke="url(#goldEdgeFooter)" strokeWidth="2.2" strokeDasharray="8 6" className="animate-pulse-glow" />
-                    
                     <circle cx="50" cy="50" r="37" fill="none" stroke="url(#goldEdgeFooter)" strokeWidth="1.2" strokeOpacity="0.5" />
                     <g fill="#FFD700" opacity="0.9">
                       <circle cx="50" cy="8" r="1.8" /><circle cx="76.5" cy="17.5" r="1.8" /><circle cx="92" cy="42" r="1.8" />
@@ -71,7 +72,6 @@ const Footer = () => {
                 
                 {/* Brand Text */}
                 <div className="flex flex-col">
-                  {/* FIX: Using explicit inline CSS background and clip so it cannot fail due to Tailwind config */}
                   <span 
                     className="inline-block text-2xl md:text-3xl font-bold tracking-wider" 
                     style={{ 
@@ -83,10 +83,10 @@ const Footer = () => {
                       color: "transparent"
                     }}
                   >
-                    Kaal Chakra
+                    {t('siteName', 'Kaal Chakra')}
                   </span>
-                  <span className="text-[10px] tracking-[0.2em] text-[#d4af37]/80 font-bold -mt-0.5">
-                    TIME KNOWS YOUR DESTINY
+                  <span className="text-[10px] tracking-[0.2em] text-[#d4af37]/80 font-bold -mt-0.5 uppercase">
+                    {t('tagline', 'TIME KNOWS YOUR DESTINY')}
                   </span>
                 </div>
               </div>
@@ -100,7 +100,7 @@ const Footer = () => {
                   <Phone size={20} strokeWidth={1.5} />
                 </div>
                 <div>
-                  <p className="text-[#b8860b] font-semibold text-sm mb-1 uppercase tracking-wider">Phone</p>
+                  <p className="text-[#b8860b] font-semibold text-sm mb-1 uppercase tracking-wider">{t('phone', 'Phone')}</p>
                   <a href="tel:+919123858544" className="font-bold text-lg text-slate-700 hover:text-[#b8860b] transition-colors">
                     +91 - 9123858544
                   </a>
@@ -113,9 +113,9 @@ const Footer = () => {
                   <Mail size={20} strokeWidth={1.5} />
                 </div>
                 <div>
-                  <p className="text-[#b8860b] font-semibold text-sm mb-1 uppercase tracking-wider">Email Id</p>
-                  <a href="mailto:[EMAIL_ADDRESS]" className="font-bold text-lg text-slate-700 hover:text-[#b8860b] transition-colors">
-                    [EMAIL_ADDRESS]
+                  <p className="text-[#b8860b] font-semibold text-sm mb-1 uppercase tracking-wider">{t('emailId', 'Email Id')}</p>
+                  <a href="mailto:support@kaalchakra.com" className="font-bold text-lg text-slate-700 hover:text-[#b8860b] transition-colors">
+                    support@kaalchakra.com
                   </a>
                 </div>
               </div>
@@ -128,7 +128,7 @@ const Footer = () => {
             {/* Column 1: About & Social */}
             <div className="md:pr-8 md:border-r border-[#cf9f4a]/20">
               <p className="text-slate-600 font-medium text-[15px] leading-relaxed mb-8">
-                Contact us for an in-depth analysis of your Kundali chart, tailored to your specific areas of concern. We ensure complete client confidentiality at all times.
+                {t('footerDescription', 'Contact us for an in-depth analysis of your Kundali chart, tailored to your specific areas of concern. We ensure complete client confidentiality at all times.')}
               </p>
               <div className="flex gap-4 justify-center md:justify-start">
                 <a href="#" className="w-10 h-10 rounded-full border border-[#cf9f4a]/60 bg-amber-50 flex items-center justify-center text-[#b8860b] hover:bg-[#d4af37] hover:text-white hover:border-[#d4af37] transition duration-300 shadow-sm">
@@ -145,31 +145,30 @@ const Footer = () => {
 
             {/* Column 2: Useful Links */}
             <div className="md:pl-8 text-center md:text-left">
-              <h3 className="text-2xl text-[#b8860b] mb-6 tracking-wide font-bold" style={{ fontFamily: "'Cormorant Garamond', serif" }}>Useful Links</h3>
+              <h3 className="text-2xl text-[#b8860b] mb-6 tracking-wide font-bold" style={{ fontFamily: "'Cormorant Garamond', serif" }}>{t('usefulLinks', 'Useful Links')}</h3>
               <ul className="space-y-4">
-                <li><Link to="/" className="text-slate-600 hover:text-[#d4af37] font-semibold transition text-[15px]">Home</Link></li>
-                <li><Link to="/services" className="text-slate-600 hover:text-[#d4af37] font-semibold transition text-[15px]">Services</Link></li>
-                <li><Link to="/about" className="text-slate-600 hover:text-[#d4af37] font-semibold transition text-[15px]">About Us</Link></li>
-                <li><Link to="/contact" className="text-slate-600 hover:text-[#d4af37] font-semibold transition text-[15px]">Contact Us</Link></li>
+                <li><Link to="/" className="text-slate-600 hover:text-[#d4af37] font-semibold transition text-[15px]">{t('home', 'Home')}</Link></li>
+                <li><Link to="/services" className="text-slate-600 hover:text-[#d4af37] font-semibold transition text-[15px]">{t('services', 'Services')}</Link></li>
+                <li><Link to="/about" className="text-slate-600 hover:text-[#d4af37] font-semibold transition text-[15px]">{t('aboutUs', 'About Us')}</Link></li>
+                <li><Link to="/contact" className="text-slate-600 hover:text-[#d4af37] font-semibold transition text-[15px]">{t('contactUs', 'Contact Us')}</Link></li>
               </ul>
             </div>
 
             {/* Column 3: Subscribe */}
             <div>
-              <h3 className="text-2xl text-[#b8860b] mb-6 tracking-wide font-bold text-center md:text-left" style={{ fontFamily: "'Cormorant Garamond', serif" }}>Subscribe</h3>
+              <h3 className="text-2xl text-[#b8860b] mb-6 tracking-wide font-bold text-center md:text-left" style={{ fontFamily: "'Cormorant Garamond', serif" }}>{t('subscribe', 'Subscribe')}</h3>
               <form className="flex flex-col gap-4">
                 <input
                   type="email"
-                  placeholder="Your Email"
+                  placeholder={t('yourEmail', 'Your Email')}
                   className="w-full px-4 py-3 rounded-xl border border-[#cf9f4a]/40 text-slate-700 bg-amber-50/30 focus:outline-none focus:border-[#d4af37] focus:ring-1 focus:ring-[#d4af37] placeholder-slate-400 transition"
                 />
-                {/* FIX: Using explicit inline CSS background so it cannot fail due to Tailwind config */}
                 <button 
                   type="button" 
                   className="w-full text-white font-bold text-lg px-4 py-3 rounded-xl hover:opacity-90 shadow-[0_4px_10px_rgba(212,175,55,0.2)] transition-all duration-300"
                   style={{ background: "linear-gradient(to right, #d4af37, #e4b363)" }}
                 >
-                  Subscribe Now
+                  {t('subscribeNow', 'Subscribe Now')}
                 </button>
               </form>
             </div>
@@ -178,8 +177,8 @@ const Footer = () => {
 
           {/* Bottom Copyright */}
           <div className="border-t border-[#cf9f4a]/20 mt-16 py-6 flex justify-center items-center">
-            <p className="text-slate-500 text-sm font-semibold tracking-wide">
-              All Rights Reserved © {new Date().getFullYear()} Kaal Chakra.
+            <p className="text-slate-500 text-sm font-semibold tracking-wide text-center">
+              {t('allRightsReserved', 'All Rights Reserved')} © {new Date().getFullYear()} {t('siteName', 'Kaal Chakra')}.
             </p>
           </div>
         </div>
