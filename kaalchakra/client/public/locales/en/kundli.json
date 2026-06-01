@@ -18,17 +18,58 @@
     "Libra", "Scorpio", "Sagittarius", "Capricorn", "Aquarius", "Pisces"
   ],
   "houses": {
-    "1": "Lagna",
-    "2": "Dhana",
-    "3": "Sahaja",
-    "4": "Sukha",
-    "5": "Putra",
-    "6": "Ripu",
-    "7": "Yuvati",
-    "8": "Randhra",
-    "9": "Dharma",
-    "10": "Karma",
-    "11": "Labha",
-    "12": "Vyaya"
+    "1": "Lagna", "2": "Dhana", "3": "Sahaja", "4": "Sukha",
+    "5": "Putra", "6": "Ripu", "7": "Yuvati", "8": "Randhra",
+    "9": "Dharma", "10": "Karma", "11": "Labha", "12": "Vyaya"
+  },
+  "planets": {
+    "Sun": "Sun", "Moon": "Moon", "Mars": "Mars", "Mercury": "Mercury", 
+    "Jupiter": "Jupiter", "Venus": "Venus", "Saturn": "Saturn", 
+    "Rahu": "Rahu", "Ketu": "Ketu", "Ascendant": "Ascendant"
+  },
+  "planetTable": {
+    "title": "Planetary Positions",
+    "planetsCount": "Planets",
+    "planet": "Planet",
+    "sign": "Sign",
+    "house": "House",
+    "degree": "Degree",
+    "lord": "Lord",
+    "status": "Status",
+    "direct": "Direct",
+    "noData": "Planetary data not available",
+    "note": "Vedic Calculation: House positions are calculated based on Ascendant."
+  },
+  "sadeSati": {
+    "title": "Shani Sade Sati",
+    "subtitle": "7.5 years of karmic growth and transformation",
+    "moonSign": "Your Moon Sign",
+    "active": "Sade Sati is Active",
+    "inactive": "No Active Sade Sati",
+    "positive": "Positive Aspects",
+    "challenges": "Challenges",
+    "lesson": "Spiritual Lesson",
+    "remedies": "Remedies",
+    "notActiveMsg": "Sade Sati is not currently active for your Moon Sign."
+  },
+  "predictions": {
+    "title": "AI Cosmic Insights",
+    "poweredBy": "Powered by Google Gemini AI",
+    "loadingTitle": "AI is analyzing your cosmic chart...",
+    "loadingSubtitle": "Generating personalized predictions",
+    "retry": "Retry Prediction",
+    "careerTitle": "Career & Finance",
+    "careerSub": "Professional growth and wealth insights",
+    "loveTitle": "Love & Relationships",
+    "loveSub": "Romance, family, and emotional bonds",
+    "healthTitle": "Health & Wellness",
+    "healthSub": "Physical and mental well-being",
+    "spiritualTitle": "Spiritual Guidance",
+    "spiritualSub": "Inner wisdom and cosmic connection",
+    "luckyElements": "Your Lucky Elements",
+    "luckyNumber": "Lucky Number",
+    "luckyColor": "Lucky Color",
+    "gemstone": "Recommended Gemstone",
+    "disclaimer": "✨ AI-generated insights based on Vedic astrology principles. For entertainment and guidance purposes. ✨"
   }
 }

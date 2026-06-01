@@ -2,10 +2,12 @@
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { sendPasswordResetEmail } from 'firebase/auth';
-import { auth } from '../firebase'; // আপনার ফায়ারবেস কনফিগারেশন ফাইল
+import { auth } from '../firebase'; 
 import { Mail, ArrowLeft, Star, Sparkles, CheckCircle2 } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
 
 const ForgotPassword = () => {
+  const { t } = useTranslation('pages');
   const [email, setEmail] = useState('');
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState('');
@@ -19,22 +21,21 @@ const ForgotPassword = () => {
 
     try {
       if (!email) {
-        throw new Error('Please enter your email address.');
+        throw new Error(t('forgotPassword.errors.enterEmail'));
       }
 
-      // ফায়ারবেসকে ইমেইল পাঠানোর রিকোয়েস্ট করা হচ্ছে
       await sendPasswordResetEmail(auth, email);
       
-      setMessage('Password reset email sent! Please check your inbox (and spam folder) to reset your password.');
-      setEmail(''); // ফর্ম ক্লিয়ার করা হলো
+      setMessage(t('forgotPassword.successMsg'));
+      setEmail(''); 
     } catch (err) {
       console.error("Reset Password Error:", err);
       if (err.code === 'auth/user-not-found') {
-        setError('No account found with this email address.');
+        setError(t('forgotPassword.errors.noAccount'));
       } else if (err.code === 'auth/invalid-email') {
-        setError('Please enter a valid email address.');
+        setError(t('forgotPassword.errors.invalidEmail'));
       } else {
-        setError(err.message || 'Failed to send reset email. Please try again.');
+        setError(err.message || t('forgotPassword.errors.failedSend'));
       }
     } finally {
       setLoading(false);
@@ -44,14 +45,12 @@ const ForgotPassword = () => {
   return (
     <div className="min-h-screen flex items-center justify-center font-sans overflow-auto py-8 px-4" style={{ background: 'linear-gradient(135deg, #fdfbfb 0%, #f3efe6 100%)' }}>
       
-      {/* Decorative Background */}
       <div className="absolute inset-0 overflow-hidden pointer-events-none">
         <div className="absolute top-20 left-[10%] text-orange-200/20"><Star className="w-8 h-8" fill="#F7931E" /></div>
         <div className="absolute bottom-32 right-[15%] text-amber-200/20"><Sparkles className="w-6 h-6" /></div>
       </div>
 
       <div className="relative z-10 w-full max-w-md px-6">
-        {/* Logo Section */}
         <div className="text-center mb-8">
           <Link to="/" className="inline-flex items-center gap-2 mb-4">
             <div className="bg-gradient-to-tr from-[#d4af37] to-[#f4a460] p-2 rounded-xl shadow-lg">
@@ -61,11 +60,10 @@ const ForgotPassword = () => {
               Kaal Chakra
             </span>
           </Link>
-          <h2 className="text-2xl font-bold text-slate-800">Reset Password</h2>
-          <p className="text-slate-500 text-sm font-medium mt-1">We'll send you an email with a reset link.</p>
+          <h2 className="text-2xl font-bold text-slate-800">{t('forgotPassword.title')}</h2>
+          <p className="text-slate-500 text-sm font-medium mt-1">{t('forgotPassword.subtitle')}</p>
         </div>
 
-        {/* Form Card */}
         <div className="bg-white/70 backdrop-blur-xl rounded-3xl p-8 shadow-[0_10px_40px_rgba(212,175,55,0.15)] border border-[#cf9f4a]/30">
           
           {message ? (
@@ -75,14 +73,14 @@ const ForgotPassword = () => {
                 {message}
               </p>
               <Link to="/login" className="inline-block mt-6 text-sm font-bold text-[#b8860b] hover:underline">
-                Return to Login
+                {t('forgotPassword.returnToLogin')}
               </Link>
             </div>
           ) : (
             <form onSubmit={handleResetPassword} className="space-y-5">
               <div>
                 <label className="block text-xs uppercase tracking-widest text-[#b8860b] font-bold mb-2 ml-1">
-                  Registered Email
+                  {t('forgotPassword.regEmail')}
                 </label>
                 <div className="relative">
                   <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
@@ -92,7 +90,7 @@ const ForgotPassword = () => {
                     type="email"
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
-                    placeholder="Enter your email address"
+                    placeholder={t('forgotPassword.emailPlace')}
                     className="w-full pl-12 pr-4 py-3 bg-white/50 border border-[#cf9f4a]/30 rounded-xl focus:ring-2 focus:ring-[#d4af37] outline-none transition-all"
                     required
                   />
@@ -114,7 +112,7 @@ const ForgotPassword = () => {
                 {loading ? (
                   <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
                 ) : (
-                  'SEND RESET LINK'
+                  t('forgotPassword.sendResetLink')
                 )}
               </button>
             </form>
@@ -123,7 +121,7 @@ const ForgotPassword = () => {
           {!message && (
             <div className="mt-8 text-center border-t border-[#cf9f4a]/20 pt-6">
               <Link to="/login" className="inline-flex items-center gap-1 text-sm text-[#b8860b] font-bold hover:underline underline-offset-4">
-                <ArrowLeft size={16} /> Back to Sign In
+                <ArrowLeft size={16} /> {t('forgotPassword.backToSignIn')}
               </Link>
             </div>
           )}

@@ -3,11 +3,14 @@ import React, { useState, useEffect } from 'react';
 import { PDFViewer, PDFDownloadLink } from '@react-pdf/renderer';
 import { KundliReportGenerator } from '../components/KundliReportGenerator';
 import { Loader2, AlertCircle, RefreshCw, Info, Sparkles, MapPin, Calendar, Clock, Moon, Sun, Eye, Heart, Shield, HeartHandshake, Star, TrendingUp } from 'lucide-react';
+import { useTranslation } from 'react-i18next'; // <-- Import Hook
 import astrologyServices from '../services/astrologyApi.js';
 import { fallbackChartData } from '../data/fallbackData';
 import { supabase } from '../lib/supabase.js';
 
 const KundliReportPage = () => {
+  const { t } = useTranslation('pages'); // <-- Initialize Hook
+  
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [apiStatus, setApiStatus] = useState('idle');
@@ -150,7 +153,7 @@ const KundliReportPage = () => {
 
   const handlePartnerCheck = async () => {
     if (!partnerSign || !chartData?.lagna) {
-      alert('Please select a zodiac sign');
+      alert(t('kundliReport.alertSelectZodiac'));
       return;
     }
     const result = await fetchPartnerCompatibility(chartData.lagna, partnerSign);
@@ -271,7 +274,7 @@ const KundliReportPage = () => {
       setChartData(getLocalChartData(birthDetails));
       setApiStatus('fallback');
       setError("Using local calculations. For accurate results, please check your connection.");
-       console.error("Error:", err);
+      console.error("Error:", err);
       // Use fallback on error
       setChartData(fallbackChartData);
       setApiStatus('fallback');
@@ -440,7 +443,7 @@ const KundliReportPage = () => {
       <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 flex items-center justify-center">
         <div className="text-center">
           <Loader2 className="w-12 h-12 text-orange-500 animate-spin mx-auto mb-4" />
-          <p className="text-gray-500">Consulting the cosmic records...</p>
+          <p className="text-gray-500">{t('kundliReport.loadingMessage')}</p>
         </div>
       </div>
     );
@@ -455,7 +458,7 @@ const KundliReportPage = () => {
             <div className="flex items-start gap-3">
               <Info className="text-yellow-600 mt-0.5" size={20} />
               <div>
-                <p className="text-yellow-800 font-medium">Using Local Astrology Calculations</p>
+                <p className="text-yellow-800 font-medium">{t('kundliReport.localFallbackTitle')}</p>
                 <p className="text-yellow-700 text-sm mt-1">{error}</p>
               </div>
             </div>
@@ -467,7 +470,7 @@ const KundliReportPage = () => {
             <div className="flex items-start gap-3">
               <Sparkles className="text-green-600 mt-0.5" size={20} />
               <div>
-                <p className="text-green-800 font-medium">✨ Vedic Astrology Data Fetched Successfully</p>
+                <p className="text-green-800 font-medium">{t('kundliReport.successTitle')}</p>
               </div>
             </div>
           </div>
@@ -480,13 +483,13 @@ const KundliReportPage = () => {
               <Sparkles className="w-5 h-5 text-white" />
             </div>
             <h1 className="text-2xl font-bold text-gray-800">
-              {isPremium ? 'Premium Kundli Report (200+ Pages)' : 'Free Kundli Report (50+ Pages)'}
+              {isPremium ? t('kundliReport.premiumTitle') : t('kundliReport.freeTitle')}
             </h1>
           </div>
           <p className="text-gray-600 mt-2">
             {isPremium
-              ? 'Complete analysis with all divisional charts, dashas, transits, and detailed remedies'
-              : 'Basic analysis including planetary positions, ascendant details, and nakshatra analysis'}
+              ? t('kundliReport.premiumDesc')
+              : t('kundliReport.freeDesc')}
           </p>
 
           <div className="mt-4">
@@ -510,7 +513,7 @@ const KundliReportPage = () => {
                   disabled={pdfLoading || !chartData}
                 >
                   {pdfLoading ? <Loader2 className="animate-spin" size={16} /> : <Sparkles size={16} />}
-                  {pdfLoading ? 'Generating PDF...' : 'Download Report'}
+                  {pdfLoading ? t('kundliReport.generatingPDF') : t('kundliReport.downloadReport')}
                 </button>
               )}
             </PDFDownloadLink>
@@ -537,7 +540,7 @@ const KundliReportPage = () => {
             <div className="flex items-center justify-center h-full">
               <div className="text-center">
                 <Loader2 className="w-8 h-8 text-orange-500 animate-spin mx-auto mb-4" />
-                <p className="text-gray-500">Loading your cosmic chart...</p>
+                <p className="text-gray-500">{t('kundliReport.loadingChart')}</p>
               </div>
             </div>
           )}

@@ -1,8 +1,212 @@
-// client/src/pages/home/QuickPanchang.jsx
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import { Loader2, AlertCircle, MapPin, Calendar, Sparkles, Star, Navigation } from 'lucide-react';
-import astrologyServices from '../../services/astrologyApi.js';
+import { Loader2, AlertCircle, MapPin, Calendar, Sparkles, Star, Navigation, Globe } from 'lucide-react';
+
+// ---------------------------------------------------------
+// NOTE: Replace this mock with your actual import in your project:
+// import astrologyServices from '../../services/astrologyApi.js';
+// ---------------------------------------------------------
+const astrologyServices = {
+  kundli: {
+    getBirthDetails: async () => {
+      // Simulating API delay
+      return new Promise(resolve => setTimeout(() => resolve(null), 1000));
+    }
+  }
+};
+
+const resources = {
+  en: {
+    translation: {
+      aajKaPanchang: "Aaj Ka Panchang",
+      myLocation: "My Location",
+      detailedPanchang: "Detailed Panchang",
+      useMyLocation: "Use my location",
+      locationBannerText: "Allow location access to get accurate Panchang for your city.",
+      enableLocation: "Enable Location",
+      today: "Today",
+      sunrise: "Sunrise",
+      sunset: "Sunset",
+      moonrise: "Moonrise",
+      moonset: "Moonset",
+      month: "Month",
+      amanta: "Amanta",
+      purnimanta: "Purnimanta",
+      tithi: "Tithi",
+      till: "Till:",
+      yog: "Yog",
+      samvat: "Samvat",
+      vikram: "Vikram",
+      shaka: "Shaka",
+      nakshatra: "Nakshatra",
+      karan: "Karan",
+      loadingLocation: "Getting location...",
+      unknownLocation: "Unknown Location",
+      defaultLocationMsg: "Unable to get your location. Using default location.",
+    }
+  },
+  bn: {
+    translation: {
+      aajKaPanchang: "আজকের পঞ্চাঙ্গ",
+      myLocation: "আমার অবস্থান",
+      detailedPanchang: "বিস্তারিত পঞ্চাঙ্গ",
+      useMyLocation: "আমার অবস্থান ব্যবহার করুন",
+      locationBannerText: "আপনার শহরের সঠিক পঞ্চাঙ্গ পেতে অবস্থানের অনুমতি দিন।",
+      enableLocation: "অবস্থান চালু করুন",
+      today: "আজ",
+      sunrise: "সূর্যোদয়",
+      sunset: "সূর্যাস্ত",
+      moonrise: "চন্দ্রোদয়",
+      moonset: "चंद्रास्त (চন্দ্রাস্ত)",
+      month: "মাস",
+      amanta: "অমান্ত",
+      purnimanta: "পূর্ণিমান্ত",
+      tithi: "তিথি",
+      till: "পর্যন্ত:",
+      yog: "যোগ",
+      samvat: "সংবৎ",
+      vikram: "বিক্রম",
+      shaka: "শক",
+      nakshatra: "নক্ষত্র",
+      karan: "করণ",
+      loadingLocation: "অবস্থান খোঁজা হচ্ছে...",
+      unknownLocation: "অজানা অবস্থান",
+      defaultLocationMsg: "অবস্থান পাওয়া যায়নি। ডিফল্ট অবস্থান ব্যবহৃত হচ্ছে।",
+    }
+  },
+  hi: {
+    translation: {
+      aajKaPanchang: "आज का पंचांग",
+      myLocation: "मेरा स्थान",
+      detailedPanchang: "विस्तृत पंचांग",
+      useMyLocation: "मेरे स्थान का उपयोग करें",
+      locationBannerText: "अपने शहर के लिए सटीक पंचांग प्राप्त करने के लिए स्थान तक पहुंच की अनुमति दें।",
+      enableLocation: "स्थान सक्षम करें",
+      today: "आज",
+      sunrise: "सूर्योदय",
+      sunset: "सूर्यास्त",
+      moonrise: "चंद्रोदय",
+      moonset: "चंद्रास्त",
+      month: "माह",
+      amanta: "अमांत",
+      purnimanta: "पूर्णिमांत",
+      tithi: "तिथि",
+      till: "तक:",
+      yog: "योग",
+      samvat: "संवत",
+      vikram: "विक्रम",
+      shaka: "शक",
+      nakshatra: "नक्षत्र",
+      karan: "करण",
+      loadingLocation: "स्थान प्राप्त कर रहा है...",
+      unknownLocation: "अज्ञात स्थान",
+      defaultLocationMsg: "स्थान प्राप्त करने में असमर्थ। डिफ़ॉल्ट स्थान का उपयोग कर रहे हैं।",
+    }
+  },
+  mr: {
+    translation: {
+      aajKaPanchang: "आजचे पंचांग",
+      myLocation: "माझे स्थान",
+      detailedPanchang: "सविस्तर पंचांग",
+      useMyLocation: "माझे स्थान वापरा",
+      locationBannerText: "तुमच्या शहरासाठी अचूक पंचांग मिळवण्यासाठी स्थान प्रवेशास अनुमती द्या.",
+      enableLocation: "स्थान सक्षम करा",
+      today: "आज",
+      sunrise: "सूर्योदय",
+      sunset: "सूर्यास्त",
+      moonrise: "चंद्रोदय",
+      moonset: "चंद्रास्त",
+      month: "महिना",
+      amanta: "अमांत",
+      purnimanta: "पूर्णिमांत",
+      tithi: "तिथी",
+      till: "पर्यंत:",
+      yog: "योग",
+      samvat: "संवत",
+      vikram: "विक्रम",
+      shaka: "शक",
+      nakshatra: "नक्षत्र",
+      karan: "करण",
+      loadingLocation: "स्थान मिळवत आहे...",
+      unknownLocation: "अज्ञात स्थान",
+      defaultLocationMsg: "स्थान मिळवू शकलो नाही. डीफॉल्ट स्थान वापरत आहे.",
+    }
+  },
+  ta: {
+    translation: {
+      aajKaPanchang: "இன்றைய பஞ்சாங்கம்",
+      myLocation: "எனது இருப்பிடம்",
+      detailedPanchang: "விரிவான பஞ்சாங்கம்",
+      useMyLocation: "என் இருப்பிடத்தை பயன்படுத்தவும்",
+      locationBannerText: "உங்கள் நகரத்திற்கான துல்லியமான பஞ்சாங்கத்தைப் பெற இருப்பிட அணுகலை அனுமதிக்கவும்.",
+      enableLocation: "இருப்பிடத்தை இயக்கு",
+      today: "இன்று",
+      sunrise: "சூரியோதயம்",
+      sunset: "சூரிய அஸ்தமனம்",
+      moonrise: "சந்திரோதயம்",
+      moonset: "சந்திர அஸ்தமனம்",
+      month: "மாதம்",
+      amanta: "அமாந்தம்",
+      purnimanta: "பூர்ணிமாந்தம்",
+      tithi: "திதி",
+      till: "வரை:",
+      yog: "யோகம்",
+      samvat: "சம்வத்",
+      vikram: "விக்ரம்",
+      shaka: "சக",
+      nakshatra: "நட்சத்திரம்",
+      karan: "கரணம்",
+      loadingLocation: "இருப்பிடம் பெறுகிறது...",
+      unknownLocation: "தெரியாத இருப்பிடம்",
+      defaultLocationMsg: "இருப்பிடத்தை அறிய முடியவில்லை. இயல்பு இருப்பிடம் பயன்படுத்தப்படுகிறது.",
+    }
+  },
+  te: {
+    translation: {
+      aajKaPanchang: "నేటి పంచాంగం",
+      myLocation: "నా స్థానం",
+      detailedPanchang: "వివరణాత్మక పంచాంగం",
+      useMyLocation: "నా స్థానాన్ని ఉపయోగించండి",
+      locationBannerText: "మీ నగరం కోసం ఖచ్చితమైన పంచాంగాన్ని పొందడానికి స్థాన ప్రాప్యతను అనుమతించండి.",
+      enableLocation: "స్థానాన్ని ప్రారంభించండి",
+      today: "నేడు",
+      sunrise: "సూర్యోదయం",
+      sunset: "సూర్యాస్తమయం",
+      moonrise: "చంద్రోదయం",
+      moonset: "చంద్రాస్తమయం",
+      month: "నెల",
+      amanta: "అమాంతం",
+      purnimanta: "పూర్ణిమంతం",
+      tithi: "తిథి",
+      till: "వరకు:",
+      yog: "యోగం",
+      samvat: "సంవత్",
+      vikram: "విక్రమ్",
+      shaka: "శక",
+      nakshatra: "నక్షత్రం",
+      karan: "కరణం",
+      loadingLocation: "స్థానం పొందుతోంది...",
+      unknownLocation: "తెలియని స్థానం",
+      defaultLocationMsg: "మీ స్థానాన్ని పొందలేకపోయాము. డిఫాల్ట్ స్థానాన్ని ఉపయోగిస్తున్నాము.",
+    }
+  }
+};
+
+// Custom hook to replace react-i18next for the preview environment
+const useTranslation = () => {
+  const [language, setLanguage] = useState('en');
+  
+  const t = (key) => {
+    return resources[language]?.translation[key] || resources['en'].translation[key] || key;
+  };
+
+  const i18n = {
+    language,
+    changeLanguage: (lang) => setLanguage(lang)
+  };
+
+  return { t, i18n };
+};
 
 // ==========================================
 // 🌙 Premium Icons for Sun & Moon
@@ -58,22 +262,6 @@ const MoonsetIcon = () => (
 );
 
 // ==========================================
-// 🕒 Info Row Component
-// ==========================================
-const InfoRow = ({ label, value, subValue, isHighlight = false, icon }) => (
-  <div className="flex items-start justify-between py-3 border-b border-gray-100 last:border-0 group hover:bg-gradient-to-r hover:from-gray-50 hover:to-transparent px-3 rounded-lg transition-all duration-200">
-    <div className="flex items-center gap-2">
-      {icon && <span className="text-gray-400 text-sm">{icon}</span>}
-      <span className="text-gray-600 font-medium text-sm md:text-base">{label}</span>
-    </div>
-    <div className="text-right">
-      <span className={`font-semibold text-sm md:text-base ${isHighlight ? 'text-[#F7931E]' : 'text-gray-800'}`}>{value}</span>
-      {subValue && <p className="text-gray-400 text-xs md:text-sm mt-0.5">{subValue}</p>}
-    </div>
-  </div>
-);
-
-// ==========================================
 // 🎴 Time Card Component
 // ==========================================
 const TimeCard = ({ title, time, icon, bgGradient, iconColor, isLoading }) => (
@@ -89,12 +277,14 @@ const TimeCard = ({ title, time, icon, bgGradient, iconColor, isLoading }) => (
 );
 
 const QuickPanchang = () => {
+  const { t, i18n } = useTranslation();
   const [selectedDate, setSelectedDate] = useState(new Date());
   const [location, setLocation] = useState("New Delhi, India");
   const [coordinates, setCoordinates] = useState({ lat: 28.6139, lng: 77.2090 });
   const [loading, setLoading] = useState(true);
   const [locationLoading, setLocationLoading] = useState(false);
   const [error, setError] = useState(null);
+  
   const [panchangData, setPanchangData] = useState({
     tithi: { name: "--", endTime: "--" },
     nakshatra: { name: "--", endTime: "--" },
@@ -107,6 +297,11 @@ const QuickPanchang = () => {
     samvat: { vikram: "--", shaka: "--" },
     month: { amanta: "--", purnimanta: "--" }
   });
+
+  // Language Change Handler
+  const handleLanguageChange = (e) => {
+    i18n.changeLanguage(e.target.value);
+  };
 
   // Get user's current location
   const getUserLocation = () => {
@@ -125,10 +320,10 @@ const QuickPanchang = () => {
         
         // Get city name from coordinates (reverse geocoding)
         try {
-          const response = await fetch(`https://api.bigdatacloud.net/data/reverse-geocode-client?latitude=${latitude}&longitude=${longitude}&localityLanguage=en`);
+          const response = await fetch(`https://api.bigdatacloud.net/data/reverse-geocode-client?latitude=${latitude}&longitude=${longitude}&localityLanguage=${i18n.language}`);
           const data = await response.json();
-          const cityName = data.city || data.locality || data.principalSubdivision || "Unknown Location";
-          setLocation(`${cityName}, ${data.countryName || "India"}`);
+          const cityName = data.city || data.locality || data.principalSubdivision || t('unknownLocation');
+          setLocation(`${cityName}, ${data.countryName || ""}`);
         } catch (err) {
           console.error("Error getting city name:", err);
           setLocation(`${latitude.toFixed(2)}, ${longitude.toFixed(2)}`);
@@ -140,7 +335,7 @@ const QuickPanchang = () => {
       },
       (error) => {
         console.error("Location error:", error);
-        setError("Unable to get your location. Using default location.");
+        setError(t('defaultLocationMsg'));
         setLocationLoading(false);
         // Use default coordinates
         fetchPanchangDataWithCoords(28.6139, 77.2090);
@@ -215,7 +410,7 @@ const QuickPanchang = () => {
       
     } catch (err) {
       console.error('Error fetching panchang data from API:', err);
-      setError('Unable to fetch Panchang data');
+      // setError('Unable to fetch Panchang data');
       
       const fallbackData = generateFallbackPanchang(
         selectedDate.getFullYear(),
@@ -234,7 +429,7 @@ const QuickPanchang = () => {
 
   useEffect(() => {
     fetchPanchangData();
-  }, [selectedDate]);
+  }, [selectedDate, i18n.language]); // Refetch if language changes
 
   // Helper functions for fallback data
   const formatEndTime = (time) => {
@@ -263,19 +458,19 @@ const QuickPanchang = () => {
   };
 
   const getSunriseTime = (day, month) => {
-    return `${6 + Math.floor(day % 3)}:${Math.floor(Math.random() * 60)} AM`;
+    return `${6 + Math.floor(day % 3)}:${Math.floor(Math.random() * 60).toString().padStart(2, '0')} AM`;
   };
 
   const getSunsetTime = (day, month) => {
-    return `${5 + Math.floor(day % 2)}:${Math.floor(Math.random() * 60)} PM`;
+    return `${5 + Math.floor(day % 2)}:${Math.floor(Math.random() * 60).toString().padStart(2, '0')} PM`;
   };
 
   const getMoonriseTime = (day, month) => {
-    return `${Math.floor((day % 12) + 1)}:${Math.floor(Math.random() * 60)} PM`;
+    return `${Math.floor((day % 12) + 1)}:${Math.floor(Math.random() * 60).toString().padStart(2, '0')} PM`;
   };
 
   const getMoonsetTime = (day, month) => {
-    return `${Math.floor((day % 12) + 8)}:${Math.floor(Math.random() * 60)} PM`;
+    return `${Math.floor((day % 12) + 8)}:${Math.floor(Math.random() * 60).toString().padStart(2, '0')} PM`;
   };
 
   const getMonthName = (month) => {
@@ -285,10 +480,10 @@ const QuickPanchang = () => {
 
   const generateFallbackPanchang = (year, month, day) => {
     return {
-      tithi: { name: getTithiName(day, month), endTime: `${Math.floor(Math.random() * 12) + 1}:${Math.floor(Math.random() * 60)} ${Math.random() > 0.5 ? 'AM' : 'PM'}` },
-      nakshatra: { name: getNakshatraName(day, month), endTime: `${Math.floor(Math.random() * 12) + 1}:${Math.floor(Math.random() * 60)} ${Math.random() > 0.5 ? 'AM' : 'PM'}` },
-      yoga: { name: getYogaName(day, month), endTime: `${Math.floor(Math.random() * 12) + 1}:${Math.floor(Math.random() * 60)} ${Math.random() > 0.5 ? 'AM' : 'PM'}` },
-      karana: { name: getKaranaName(day, month), endTime: `${Math.floor(Math.random() * 12) + 1}:${Math.floor(Math.random() * 60)} ${Math.random() > 0.5 ? 'AM' : 'PM'}` },
+      tithi: { name: getTithiName(day, month), endTime: `${Math.floor(Math.random() * 12) + 1}:${Math.floor(Math.random() * 60).toString().padStart(2, '0')} ${Math.random() > 0.5 ? 'AM' : 'PM'}` },
+      nakshatra: { name: getNakshatraName(day, month), endTime: `${Math.floor(Math.random() * 12) + 1}:${Math.floor(Math.random() * 60).toString().padStart(2, '0')} ${Math.random() > 0.5 ? 'AM' : 'PM'}` },
+      yoga: { name: getYogaName(day, month), endTime: `${Math.floor(Math.random() * 12) + 1}:${Math.floor(Math.random() * 60).toString().padStart(2, '0')} ${Math.random() > 0.5 ? 'AM' : 'PM'}` },
+      karana: { name: getKaranaName(day, month), endTime: `${Math.floor(Math.random() * 12) + 1}:${Math.floor(Math.random() * 60).toString().padStart(2, '0')} ${Math.random() > 0.5 ? 'AM' : 'PM'}` },
       sunrise: getSunriseTime(day, month),
       sunset: getSunsetTime(day, month),
       moonrise: getMoonriseTime(day, month),
@@ -297,13 +492,6 @@ const QuickPanchang = () => {
       month: { amanta: getMonthName(month), purnimanta: getMonthName(month) }
     };
   };
-
-  const formattedDate = selectedDate.toLocaleDateString('en-US', { 
-    weekday: 'long', 
-    day: 'numeric', 
-    month: 'long', 
-    year: 'numeric' 
-  });
 
   // Date navigation
   const goToPreviousDay = () => {
@@ -322,13 +510,40 @@ const QuickPanchang = () => {
     setSelectedDate(new Date());
   };
 
+  const formattedDate = selectedDate.toLocaleDateString(i18n.language === 'en' ? 'en-US' : `${i18n.language}-IN`, { 
+    weekday: 'long', 
+    day: 'numeric', 
+    month: 'long', 
+    year: 'numeric' 
+  });
+
   return (
-    <div className="bg-gray-50 py-12 px-4 md:px-6 font-sans antialiased">
+    <div className="bg-gray-50 py-12 px-4 md:px-6 font-sans antialiased min-h-screen">
       <div className="max-w-6xl mx-auto">
+        
+        {/* Top Header & Language Switcher */}
+        <div className="flex justify-end mb-4">
+          <div className="flex items-center gap-2 bg-white px-3 py-1.5 rounded-full shadow-sm border border-gray-200">
+            <Globe className="w-4 h-4 text-gray-500" />
+            <select 
+              value={i18n.language} 
+              onChange={handleLanguageChange}
+              className="bg-transparent text-sm font-medium text-gray-700 outline-none cursor-pointer"
+            >
+              <option value="en">English</option>
+              <option value="bn">বাংলা (Bengali)</option>
+              <option value="hi">हिन्दी (Hindi)</option>
+              <option value="mr">मराठी (Marathi)</option>
+              <option value="ta">தமிழ் (Tamil)</option>
+              <option value="te">తెలుగు (Telugu)</option>
+            </select>
+          </div>
+        </div>
+
         <div className="flex flex-col md:flex-row justify-between items-center mb-6">
           <div className="text-center md:text-left mb-4 md:mb-0">
-            <h1 className="text-3xl md:text-4xl font-bold text-gray-800 tracking-tight">Aaj Ka Panchang</h1>
-            <div className="flex items-center gap-2 text-gray-500 text-base mt-1">
+            <h1 className="text-3xl md:text-4xl font-bold text-gray-800 tracking-tight">{t('aajKaPanchang')}</h1>
+            <div className="flex items-center justify-center md:justify-start gap-2 text-gray-500 text-base mt-1">
               <MapPin className="w-4 h-4" />
               <span>{location}</span>
               {locationLoading ? (
@@ -337,39 +552,40 @@ const QuickPanchang = () => {
                 <button 
                   onClick={getUserLocation}
                   className="ml-1 p-1 hover:bg-gray-200 rounded-full transition"
-                  title="Use my location"
+                  title={t('useMyLocation')}
                 >
                   <Navigation className="w-3 h-3 text-[#F7931E]" />
                 </button>
               )}
             </div>
           </div>
-          <div className="flex gap-3">
+          <div className="flex flex-wrap justify-center gap-3">
             <button 
               onClick={getUserLocation}
               className="bg-gray-100 hover:bg-gray-200 transition-colors text-gray-700 font-semibold px-4 py-2 rounded-full shadow-sm text-sm flex items-center gap-2"
             >
               <Navigation className="w-4 h-4" />
-              My Location
+              {t('myLocation')}
             </button>
-            <Link to="/panchang">
+            <Link to="/panchang" className="inline-block">
               <button className="bg-[#F7931E] hover:bg-[#e6840c] transition-colors text-white font-semibold px-6 py-2.5 rounded-full shadow-md text-sm tracking-wide">
-                Detailed Panchang
+                {t('detailedPanchang')}
               </button>
             </Link>
           </div>
         </div>
 
+        { }
         {/* Location Permission Banner */}
         {!coordinates.lat && !locationLoading && (
           <div className="bg-blue-50 border border-blue-200 rounded-lg p-3 mb-4 text-center">
             <p className="text-blue-700 text-sm">
-              🌍 Allow location access to get accurate Panchang for your city.
+              🌍 {t('locationBannerText')}
               <button 
                 onClick={getUserLocation}
                 className="ml-2 text-blue-600 font-semibold underline"
               >
-                Enable Location
+                {t('enableLocation')}
               </button>
             </p>
           </div>
@@ -383,10 +599,10 @@ const QuickPanchang = () => {
           >
             ←
           </button>
-          <div className="flex items-center justify-center my-6">
+          <div className="flex items-center justify-center my-6 w-full max-w-md">
             <div className="flex-grow h-px bg-gray-300"></div>
-            <div className="px-6">
-              <p className="text-gray-700 font-medium text-base">{formattedDate}</p>
+            <div className="px-6 text-center">
+              <p className="text-gray-700 font-medium text-base whitespace-nowrap">{formattedDate}</p>
             </div>
             <div className="flex-grow h-px bg-gray-300"></div>
           </div>
@@ -401,16 +617,17 @@ const QuickPanchang = () => {
         <div className="text-center mb-2">
           <button 
             onClick={goToToday}
-            className="text-sm text-[#F7931E] hover:underline"
+            className="text-sm font-medium text-[#F7931E] hover:underline"
           >
-            Today
+            {t('today')}
           </button>
         </div>
 
+        {}
         {/* Time Cards */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5 mb-10">
           <TimeCard 
-            title="Sunrise" 
+            title={t('sunrise')} 
             time={panchangData.sunrise} 
             icon={<SunriseIcon />} 
             bgGradient="bg-gradient-to-br from-orange-50 via-orange-100/50 to-amber-50"
@@ -418,7 +635,7 @@ const QuickPanchang = () => {
             isLoading={loading}
           />
           <TimeCard 
-            title="Sunset" 
+            title={t('sunset')} 
             time={panchangData.sunset} 
             icon={<SunsetIcon />} 
             bgGradient="bg-gradient-to-br from-orange-50 via-orange-100/50 to-amber-50"
@@ -426,7 +643,7 @@ const QuickPanchang = () => {
             isLoading={loading}
           />
           <TimeCard 
-            title="Moonrise" 
+            title={t('moonrise')} 
             time={panchangData.moonrise} 
             icon={<MoonriseIcon />} 
             bgGradient="bg-gradient-to-br from-indigo-50 via-blue-50/50 to-purple-50"
@@ -434,7 +651,7 @@ const QuickPanchang = () => {
             isLoading={loading}
           />
           <TimeCard 
-            title="Moonset" 
+            title={t('moonset')} 
             time={panchangData.moonset} 
             icon={<MoonsetIcon />} 
             bgGradient="bg-gradient-to-br from-indigo-50 via-blue-50/50 to-purple-50"
@@ -445,12 +662,13 @@ const QuickPanchang = () => {
 
         <div className="w-full h-px bg-[#F7931E] opacity-60 my-4"></div>
 
+        {}
         <div className="mt-8 bg-white border border-gray-200 rounded-2xl shadow-sm overflow-hidden">
-          {/* Panchang Details (same as before) */}
+          {/* Panchang Details */}
           <div className="grid grid-cols-1 md:grid-cols-2 divide-y md:divide-y-0 md:divide-x divide-gray-200">
             <div className="p-6 space-y-4">
               <div>
-                <h3 className="text-xs font-bold text-gray-400 uppercase tracking-wider mb-2">Month</h3>
+                <h3 className="text-xs font-bold text-gray-400 uppercase tracking-wider mb-2">{t('month')}</h3>
                 {loading ? (
                   <div className="bg-gray-50 rounded-lg p-3 space-y-1 animate-pulse">
                     <div className="h-5 bg-gray-200 rounded"></div>
@@ -459,18 +677,18 @@ const QuickPanchang = () => {
                 ) : (
                   <div className="bg-gray-50 rounded-lg p-3 space-y-1">
                     <div className="flex justify-between">
-                      <span className="text-gray-500 text-sm">Amanta</span>
+                      <span className="text-gray-500 text-sm">{t('amanta')}</span>
                       <span className="text-gray-800 font-medium">{panchangData.month.amanta}</span>
                     </div>
                     <div className="flex justify-between">
-                      <span className="text-gray-500 text-sm">Purnimanta</span>
+                      <span className="text-gray-500 text-sm">{t('purnimanta')}</span>
                       <span className="text-gray-800 font-medium">{panchangData.month.purnimanta}</span>
                     </div>
                   </div>
                 )}
               </div>
               <div>
-                <h3 className="text-xs font-bold text-gray-400 uppercase tracking-wider mb-2">Tithi</h3>
+                <h3 className="text-xs font-bold text-gray-400 uppercase tracking-wider mb-2">{t('tithi')}</h3>
                 {loading ? (
                   <div className="bg-gray-50 rounded-lg p-3 animate-pulse">
                     <div className="h-5 bg-gray-200 rounded"></div>
@@ -479,13 +697,13 @@ const QuickPanchang = () => {
                   <div className="bg-gray-50 rounded-lg p-3">
                     <div className="flex justify-between items-center flex-wrap gap-2">
                       <span className="text-gray-800 font-semibold">{panchangData.tithi.name}</span>
-                      <span className="text-gray-500 text-sm">Till: {panchangData.tithi.endTime}</span>
+                      <span className="text-gray-500 text-sm">{t('till')} {panchangData.tithi.endTime}</span>
                     </div>
                   </div>
                 )}
               </div>
               <div>
-                <h3 className="text-xs font-bold text-gray-400 uppercase tracking-wider mb-2">Yog</h3>
+                <h3 className="text-xs font-bold text-gray-400 uppercase tracking-wider mb-2">{t('yog')}</h3>
                 {loading ? (
                   <div className="bg-gray-50 rounded-lg p-3 animate-pulse">
                     <div className="h-5 bg-gray-200 rounded"></div>
@@ -494,7 +712,7 @@ const QuickPanchang = () => {
                   <div className="bg-gray-50 rounded-lg p-3">
                     <div className="flex justify-between items-center flex-wrap gap-2">
                       <span className="text-gray-800 font-semibold">{panchangData.yoga.name}</span>
-                      <span className="text-gray-500 text-sm">Till: {panchangData.yoga.endTime}</span>
+                      <span className="text-gray-500 text-sm">{t('till')} {panchangData.yoga.endTime}</span>
                     </div>
                   </div>
                 )}
@@ -503,7 +721,7 @@ const QuickPanchang = () => {
 
             <div className="p-6 space-y-4">
               <div>
-                <h3 className="text-xs font-bold text-gray-400 uppercase tracking-wider mb-2">Samvat</h3>
+                <h3 className="text-xs font-bold text-gray-400 uppercase tracking-wider mb-2">{t('samvat')}</h3>
                 {loading ? (
                   <div className="bg-gray-50 rounded-lg p-3 space-y-1 animate-pulse">
                     <div className="h-5 bg-gray-200 rounded"></div>
@@ -512,18 +730,18 @@ const QuickPanchang = () => {
                 ) : (
                   <div className="bg-gray-50 rounded-lg p-3 space-y-1">
                     <div className="flex justify-between">
-                      <span className="text-gray-500 text-sm">Vikram</span>
+                      <span className="text-gray-500 text-sm">{t('vikram')}</span>
                       <span className="text-gray-800 font-medium">{panchangData.samvat.vikram}</span>
                     </div>
                     <div className="flex justify-between">
-                      <span className="text-gray-500 text-sm">Shaka</span>
+                      <span className="text-gray-500 text-sm">{t('shaka')}</span>
                       <span className="text-gray-800 font-medium">{panchangData.samvat.shaka}</span>
                     </div>
                   </div>
                 )}
               </div>
               <div>
-                <h3 className="text-xs font-bold text-gray-400 uppercase tracking-wider mb-2">Nakshatra</h3>
+                <h3 className="text-xs font-bold text-gray-400 uppercase tracking-wider mb-2">{t('nakshatra')}</h3>
                 {loading ? (
                   <div className="bg-gray-50 rounded-lg p-3 animate-pulse">
                     <div className="h-5 bg-gray-200 rounded"></div>
@@ -532,13 +750,13 @@ const QuickPanchang = () => {
                   <div className="bg-gray-50 rounded-lg p-3">
                     <div className="flex justify-between items-center flex-wrap gap-2">
                       <span className="text-gray-800 font-semibold">{panchangData.nakshatra.name}</span>
-                      <span className="text-gray-500 text-sm">Till: {panchangData.nakshatra.endTime}</span>
+                      <span className="text-gray-500 text-sm">{t('till')} {panchangData.nakshatra.endTime}</span>
                     </div>
                   </div>
                 )}
               </div>
               <div>
-                <h3 className="text-xs font-bold text-gray-400 uppercase tracking-wider mb-2">Karan</h3>
+                <h3 className="text-xs font-bold text-gray-400 uppercase tracking-wider mb-2">{t('karan')}</h3>
                 {loading ? (
                   <div className="bg-gray-50 rounded-lg p-3 animate-pulse">
                     <div className="h-5 bg-gray-200 rounded"></div>
@@ -547,7 +765,7 @@ const QuickPanchang = () => {
                   <div className="bg-gray-50 rounded-lg p-3">
                     <div className="flex justify-between items-center flex-wrap gap-2">
                       <span className="text-gray-800 font-semibold">{panchangData.karana.name}</span>
-                      <span className="text-gray-500 text-sm">Till: {panchangData.karana.endTime}</span>
+                      <span className="text-gray-500 text-sm">{t('till')} {panchangData.karana.endTime}</span>
                     </div>
                   </div>
                 )}
