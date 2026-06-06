@@ -1,5 +1,13 @@
 // server/index.js
-import 'dotenv/config';
+import dotenv from 'dotenv';
+import path from 'path';
+import { fileURLToPath } from 'url';
+
+// ES Module এ __dirname ডিফাইন করা এবং .env লোড করা
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+dotenv.config({ path: path.resolve(__dirname, '.env') }); 
+
 import express from 'express';
 import cors from 'cors';
 import helmet from 'helmet';
@@ -31,7 +39,6 @@ import astrologyRoutes from './routes/astrologyRoutes.js';
 import aiRoutes from './routes/ai.js'; // ✅ IMPORTED AI ROUTES HERE
 import reportRoutes from "./routes/reportRoutes.js";
 import testAstro from "./routes/testAstro.js";
-// import reportRoutes from "./routes/reportRoutes.js";
 
 // ============================================
 // FIREBASE ADMIN INITIALIZATION
@@ -103,6 +110,7 @@ app.use('/api/about', aboutRoutes);
 app.use('/api/contact', contactRoutes);
 app.use('/api/panchang', panchangRoutes);
 
+
 app.get('/hero/stats', async (req, res) => {
     try {
         res.json({ 
@@ -124,7 +132,7 @@ app.use('/', astrologyRoutes);
 
 // ✅ MOUNTED AI ROUTES HERE
 app.use('/api/ai', aiRoutes); 
-app.use("/api/report", reportRoutes);
+app.use("/api/reports", reportRoutes);
 app.use("/api", testAstro);
 
 // ============================================
@@ -231,7 +239,5 @@ const PORT = appConfig.port || 5000;
 app.listen(PORT, () => {
     console.log(`\n✅ Server started successfully on port ${PORT}!`);
 });
-
-
 
 export default app;

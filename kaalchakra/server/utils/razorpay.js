@@ -1,11 +1,26 @@
 // server/utils/razorpay.js
+import dotenv from 'dotenv';
+import path from 'path';
+import { fileURLToPath } from 'url';
 import Razorpay from 'razorpay';
 import crypto from 'crypto';
 
+// ES Module-এ সঠিক .env ফাইলের পাথ সেট করা (utils ফোল্ডার থেকে এক ধাপ বাইরে)
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+dotenv.config({ path: path.resolve(__dirname, '../.env') });
+
+// ডিবাগ করার জন্য লগ (টার্মিনালে বুঝতে পারবেন ডেটা পাচ্ছে কি না)
+if (!process.env.RAZORPAY_KEY_ID || !process.env.RAZORPAY_KEY_SECRET) {
+  console.error("❌ CRITICAL ERROR: Razorpay keys are missing in .env file!");
+} else {
+  console.log("✅ Razorpay Keys Loaded Successfully in utils/razorpay.js");
+}
+
 // Initialize Razorpay instance
 const razorpay = new Razorpay({
-  key_id: process.env.RAZORPAY_KEY_ID,
-  key_secret: process.env.RAZORPAY_KEY_SECRET,
+  key_id: "rzp_test_SxdPTwuayHXPYm",
+  key_secret: "BUOKI5IkFA30iQCCGssiegJR",
 });
 
 /**

@@ -5,7 +5,6 @@ export const generatePDF = async (htmlContent) => {
     
     try {
         // Launch Puppeteer browser
-        // Note: '--no-sandbox' is often required when running Node.js on cloud servers (like AWS, DigitalOcean, Heroku)
         browser = await puppeteer.launch({
             headless: true,
             args: [
@@ -17,14 +16,14 @@ export const generatePDF = async (htmlContent) => {
 
         const page = await browser.newPage();
 
-        // Inject the generated HTML content
-        // 'networkidle0' ensures that any external fonts or images (if added later) are fully loaded before generating the PDF
-        await page.setContent(htmlContent, { waitUntil: 'networkidle0' });
+        // 🌟 Timeout 0 করে দেওয়া হলো যাতে ২০০ পেজ লোড হতে গিয়ে ক্র্যাশ না করে
+        await page.setContent(htmlContent, { waitUntil: 'networkidle0', timeout: 0 });
 
-        // Generate PDF with A4 dimensions
+        // 🌟 PDF জেনারেট হওয়ার জন্যও Timeout 0 করা হলো
         const pdfBuffer = await page.pdf({
             format: 'A4',
-            printBackground: true, // Extremely important for the Dark Luxury background and Gold CSS
+            printBackground: true, 
+            timeout: 0, 
             margin: {
                 top: '0px',
                 right: '0px',
@@ -39,7 +38,6 @@ export const generatePDF = async (htmlContent) => {
         console.error("Puppeteer PDF generation failed:", error);
         throw new Error("Failed to generate PDF document.");
     } finally {
-        // Ensure browser is closed to prevent memory leaks
         if (browser) {
             await browser.close();
         }

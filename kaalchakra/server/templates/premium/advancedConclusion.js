@@ -4,7 +4,6 @@ const generateAdvancedConclusion = (data) => {
     const lang = data.language || 'en';
     const t = translations[lang] || translations.en;
 
-    // Fallback premium data
     const conclusionData = data.advancedConclusion || {
         karmicSummary: "Your birth chart reveals a soul that has journeyed through many lifetimes to master the art of balance and leadership. While your early years may have presented challenges in finding your true voice, the planetary alignments promise a highly rewarding second half of life. Your ultimate karmic goal is to use your wisdom and material success to uplift those around you.",
         dos: [
@@ -50,10 +49,8 @@ const generateAdvancedConclusion = (data) => {
         .gold-line { width: 60px; height: 2px; background-color: #a1493b; margin: 10px auto; }
         .section-subtitle { font-size: 13px; color: #707070; font-style: italic; }
 
-        /* Karmic Summary */
         .summary-box { background-color: #fdfbf3; border: 1px solid rgba(161, 73, 59, 0.2); padding: 25px; border-radius: 6px; margin-bottom: 30px; text-align: justify; font-family: 'Arial', sans-serif; font-size: 15px; line-height: 1.8; color: #4a4a4a; }
         
-        /* Dos and Donts */
         .guidelines-grid { display: flex; gap: 20px; flex-grow: 1; margin-bottom: 20px; }
         .guideline-column { flex: 1; display: flex; flex-direction: column; gap: 15px; }
         .column-header { font-size: 16px; text-transform: uppercase; letter-spacing: 1px; text-align: center; margin-bottom: 10px; padding-bottom: 10px; border-bottom: 1px dashed rgba(161, 73, 59, 0.3); }
@@ -65,7 +62,6 @@ const generateAdvancedConclusion = (data) => {
         .do-item { background-color: #f0fdf4; border: 1px solid #bbf7d0; color: #15803d; }
         .dont-item { background-color: #fef2f2; border: 1px solid #fca5a5; color: #b91c1c; }
 
-        /* Final Back Cover */
         .back-cover-wrapper { justify-content: center; align-items: center; text-align: center; border: 3px solid #a1493b; background-color: #fdfbf3; }
         .om-symbol-large { font-size: 60px; color: #a1493b; margin-bottom: 25px; }
         .closing-title { font-size: 32px; color: #a1493b; text-transform: uppercase; letter-spacing: 3px; margin-bottom: 20px; }
@@ -76,7 +72,6 @@ const generateAdvancedConclusion = (data) => {
         .brand-website { font-family: 'Arial', sans-serif; font-size: 13px; color: #707070; letter-spacing: 2px; }
     </style>
 
-    <!-- Page 1: Karmic Summary & Guidelines -->
     <div class="page-container">
         <div class="content-wrapper">
             <div class="section-header">
@@ -86,7 +81,7 @@ const generateAdvancedConclusion = (data) => {
             </div>
 
             <div class="summary-box">
-                <strong style="color: #a1493b; font-size: 16px; text-transform: uppercase;">The Soul's Journey:</strong><br><br>
+                <strong style="color: #a1493b; font-size: 16px; text-transform: uppercase;">${t.soulsJourney || "The Soul's Journey:"}</strong><br><br>
                 ${conclusionData.karmicSummary}
             </div>
 
@@ -103,14 +98,13 @@ const generateAdvancedConclusion = (data) => {
         </div>
     </div>
 
-    <!-- Page 2: Final Back Cover -->
     <div class="page-container">
         <div class="content-wrapper back-cover-wrapper">
             <div class="om-symbol-large">ॐ</div>
-            <h2 class="closing-title">May The Stars Guide You</h2>
+            <h2 class="closing-title">${t.mayStarsGuide || "May The Stars Guide You"}</h2>
             
             <p class="closing-text">
-                Dear <strong>${data.name || 'Seeker'}</strong>, astrology is a profound tool for self-awareness, not a definitive script of your future. You possess the free will to shape your destiny. Use this cosmic blueprint to navigate life's challenges with wisdom, patience, and grace.
+                ${t.dear || "Dear"} <strong>${data.name || 'Seeker'}</strong>, ${t.closingText || "astrology is a profound tool for self-awareness, not a definitive script of your future. You possess the free will to shape your destiny. Use this cosmic blueprint to navigate life's challenges with wisdom, patience, and grace."}
             </p>
 
             <div class="brand-footer">

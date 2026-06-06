@@ -4,8 +4,8 @@ const generateAdvancedAIInsights = (data) => {
     const lang = data.language || 'en';
     const t = translations[lang] || translations.en;
 
-    // Fallback data for Premium AI Insights (Dynamically scalable to multiple pages)
-    const insightsData = data.aiInsights || [
+    // Fallback data for Premium AI Insights
+    const fallbackInsights = [
         {
             chapter: "Chapter 1: Karmic Debts & Life Lessons",
             icon: "⚖️",
@@ -20,8 +20,12 @@ const generateAdvancedAIInsights = (data) => {
             analysis: "Beyond your known professional skills, Mercury's conjunction with Venus in a creative house points towards a profound, untapped talent for communication through art, writing, or digital media. You have an innate ability to take complex ideas and present them in an aesthetically pleasing and easily digestible format. This is an energy that, if channeled correctly, can become a significant secondary source of income and deep personal satisfaction.",
             actionableAdvice: "Dedicate at least two hours a week to a creative hobby that has no immediate financial goal. The creative flow will inadvertently boost your primary career."
         }
-        // API can provide 10-20 such chapters to generate a 20-page insight report
     ];
+
+    // 🌟 Safe Check: Ensure data is an Array before using it 🌟
+    const insightsData = (Array.isArray(data.aiInsights) && data.aiInsights.length > 0) 
+        ? data.aiInsights 
+        : fallbackInsights;
 
     let pagesHtml = '';
 
@@ -48,12 +52,12 @@ const generateAdvancedAIInsights = (data) => {
                         </div>
 
                         <div class="insight-content">
-                            <h4 class="analysis-heading">Synthesized Analysis</h4>
+                            <h4 class="analysis-heading">${t.synthesizedAnalysis || "Synthesized Analysis"}</h4>
                             <p class="insight-text">${insight.analysis}</p>
                         </div>
 
                         <div class="advice-box">
-                            <span class="advice-label">Cosmic Recommendation</span>
+                            <span class="advice-label">${t.cosmicRecommendation || "Cosmic Recommendation"}</span>
                             <p class="advice-text">${insight.actionableAdvice}</p>
                         </div>
                     </div>

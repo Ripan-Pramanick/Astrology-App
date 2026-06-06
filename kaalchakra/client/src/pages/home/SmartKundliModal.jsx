@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { X, Sparkles, Star, Moon } from 'lucide-react';
+import { X, Sparkles, Star, Moon, ChevronDown, Globe } from 'lucide-react';
 
 // ==========================================
 // 🌍 Translations Dictionary
@@ -57,10 +57,8 @@ const resources = {
 };
 
 const useTranslation = () => {
-  // Demo purpose: Defaulting to 'bn' (Bengali) to show changes. 
-  // In your real app, this will come from a global context or i18next.
-  const [language, setLanguage] = useState('bn'); 
-  
+  const [language, setLanguage] = useState('bn');
+
   const t = (key) => {
     return resources[language]?.translation[key] || resources['en'].translation[key] || key;
   };
@@ -75,33 +73,27 @@ const useTranslation = () => {
 
 const SmartKundliModal = () => {
   const [isOpen, setIsOpen] = useState(false);
+  const [isLangOpen, setIsLangOpen] = useState(false);
   const { t, i18n } = useTranslation();
-  
-  // NOTE: Mocking useNavigate for preview environment
-  // const navigate = useNavigate();
-  const navigate = (path) => console.log(`Navigating to: ${path}`);
+
+  const navigate = useNavigate();
 
   useEffect(() => {
-    // চেক করা হচ্ছে ইউজার এই সেশনে আগে মোডালটি দেখেছে কি না
     const hasSeenModal = sessionStorage.getItem('kundliModalSeen');
 
     if (!hasSeenModal) {
       const handleScroll = () => {
-        // স্ক্রল পার্সেন্টেজ বের করার লজিক
         const scrollY = window.scrollY;
         const documentHeight = document.documentElement.scrollHeight - window.innerHeight;
         const scrollPercentage = (scrollY / documentHeight) * 100;
 
-        // যদি ইউজার ৩৫% এর বেশি স্ক্রল করে, তবে মোডালটি ওপেন হবে
-        // For testing purpose, making it show quickly on small scroll or immediately
         if (scrollPercentage > 5 || scrollY > 50) {
           setIsOpen(true);
-          sessionStorage.setItem('kundliModalSeen', 'true'); // একবার দেখালে সেভ করে রাখবো
-          window.removeEventListener('scroll', handleScroll); // ইভেন্ট রিমুভ করে দেবো
+          sessionStorage.setItem('kundliModalSeen', 'true');
+          window.removeEventListener('scroll', handleScroll);
         }
       };
 
-      // For preview environment, explicitly showing the modal after 2 seconds if scroll doesn't happen
       const timer = setTimeout(() => setIsOpen(true), 2000);
 
       window.addEventListener('scroll', handleScroll);
@@ -110,83 +102,286 @@ const SmartKundliModal = () => {
         clearTimeout(timer);
       };
     } else {
-      // For preview testing, we forcefully open it so you can see it
       setIsOpen(true);
     }
   }, []);
 
   if (!isOpen) return null;
 
+  const languageNames = {
+    en: 'English',
+    bn: 'বাংলা',
+    hi: 'हिन्दी',
+    mr: 'मराठी',
+    ta: 'தமிழ்',
+    te: 'తెలుగు'
+  };
+
   return (
-    // পেছনের ব্লার হওয়া ব্যাকগ্রাউন্ড
-    <div className="fixed inset-0 z-[100] flex items-center justify-center bg-[#1e2545]/60 backdrop-blur-sm p-4 animate-in fade-in duration-500">
+    <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 animate-in fade-in duration-500"
+      style={{ 
+        background: 'radial-gradient(ellipse at center, rgba(30,37,69,0.5) 0%, rgba(20,16,36,0.8) 100%)',
+        backdropFilter: 'blur(12px)'
+      }}>
       
-      {/* Language Switcher for Preview Testing */}
-      <div className="absolute top-4 left-4 bg-white rounded-full p-2 flex gap-2 z-50">
-        <select 
-          className="text-sm outline-none bg-transparent cursor-pointer"
-          value={i18n.language}
-          onChange={(e) => i18n.changeLanguage(e.target.value)}
-        >
-          <option value="en">English</option>
-          <option value="bn">বাংলা</option>
-          <option value="hi">हिन्दी</option>
-          <option value="mr">मराठी</option>
-          <option value="ta">தமிழ்</option>
-          <option value="te">తెలుగు</option>
-        </select>
+      {/* Floating background particles */}
+      <div className="absolute inset-0 overflow-hidden pointer-events-none">
+        {[...Array(15)].map((_, i) => (
+          <div key={i}
+            className="absolute rounded-full"
+            style={{
+              width: Math.random() * 4 + 2 + 'px',
+              height: Math.random() * 4 + 2 + 'px',
+              left: Math.random() * 100 + '%',
+              top: Math.random() * 100 + '%',
+              background: i % 3 === 0 ? '#d4af37' : i % 3 === 1 ? '#fbbf24' : '#e4b363',
+              opacity: Math.random() * 0.5 + 0.2,
+              animation: `floatModal ${Math.random() * 8 + 6}s infinite ease-in-out`,
+              animationDelay: Math.random() * 5 + 's',
+              boxShadow: '0 0 10px rgba(212,175,55,0.3)',
+            }}
+          />
+        ))}
       </div>
 
-      {/* মোডাল বা ছোট পেজটি */}
-      <div className="relative w-full max-w-md bg-white rounded-3xl shadow-[0_20px_60px_rgba(0,0,0,0.3)] overflow-hidden animate-in zoom-in-95 duration-500">
-        
-        {/* ক্রস (X) বাটন */}
-        <button 
-          onClick={() => setIsOpen(false)}
-          className="absolute top-4 right-4 z-10 w-8 h-8 flex items-center justify-center bg-white/80 rounded-full text-slate-500 hover:text-red-500 hover:bg-red-50 transition-all shadow-sm"
-        >
-          <X size={18} strokeWidth={2.5} />
-        </button>
-
-        {/* ওপরের ডিজাইন অংশ */}
-        <div className="h-32 relative flex items-center justify-center overflow-hidden" style={{ background: 'linear-gradient(135deg, #1e2545 0%, #2a355c 100%)' }}>
-          <div className="absolute inset-0 opacity-20">
-             <div className="absolute top-4 left-6 text-[#d4af37]"><Star size={24} /></div>
-             <div className="absolute bottom-6 right-8 text-[#d4af37]"><Moon size={32} /></div>
-          </div>
-          <div className="w-16 h-16 rounded-full bg-gradient-to-tr from-[#d4af37] to-[#e4b363] flex items-center justify-center shadow-[0_0_20px_rgba(212,175,55,0.5)] border-4 border-white z-10">
-            <Sparkles className="text-white w-8 h-8" />
-          </div>
-        </div>
-
-        {/* নিচের টেক্সট ও বাটন অংশ */}
-        <div className="p-8 text-center bg-gray-50 bg-cover">
-          <h3 className="text-2xl font-bold text-[#1e2545] mb-2 font-serif">
-            {t('title')}
-          </h3>
-          <p className="text-sm text-slate-500 mb-6 leading-relaxed">
-            {t('description')}
-          </p>
-
+      {/* Language Switcher */}
+      <div className="absolute top-6 left-6 z-50">
+        <div className="relative">
           <button
-            onClick={() => {
-              setIsOpen(false);
-              navigate('/auth'); // বা আপনার লগইন পেজের লিংক
-            }}
-            className="w-full py-3.5 px-6 rounded-xl font-bold text-sm tracking-widest uppercase text-white shadow-[0_8px_20px_rgba(212,175,55,0.4)] hover:-translate-y-1 transition-all"
-            style={{ backgroundImage: 'linear-gradient(to right, #d4af37, #e4b363)' }}
+            onClick={() => setIsLangOpen(!isLangOpen)}
+            className="flex items-center gap-2 bg-white/10 backdrop-blur-md border border-white/20 text-white px-4 py-2 rounded-full hover:bg-white/20 transition-all duration-300 text-sm font-medium"
+            style={{ boxShadow: '0 4px 15px rgba(0,0,0,0.2)' }}
           >
-            {t('buttonPrimary')}
+            <Globe size={16} className="text-[#d4af37]" />
+            <span>{languageNames[i18n.language]}</span>
+            <ChevronDown size={14} className={`transition-transform duration-300 ${isLangOpen ? 'rotate-180' : ''}`} />
           </button>
           
-          <button 
-            onClick={() => setIsOpen(false)}
-            className="mt-4 text-xs font-bold text-slate-400 hover:text-[#1e2545] uppercase tracking-wider transition-colors"
-          >
-            {t('buttonSecondary')}
-          </button>
+          {isLangOpen && (
+            <div className="absolute top-full mt-2 left-0 bg-white/95 backdrop-blur-md rounded-2xl shadow-2xl border border-white/20 overflow-hidden animate-in slide-in-from-top-2 duration-300 min-w-[150px]"
+              style={{ boxShadow: '0 20px 50px rgba(0,0,0,0.3)' }}>
+              {Object.entries(languageNames).map(([code, name]) => (
+                <button
+                  key={code}
+                  onClick={() => {
+                    i18n.changeLanguage(code);
+                    setIsLangOpen(false);
+                  }}
+                  className={`w-full text-left px-5 py-3 text-sm font-medium transition-all duration-200 hover:bg-gradient-to-r hover:from-[#d4af37]/10 hover:to-[#e4b363]/10 ${
+                    i18n.language === code ? 'text-[#d4af37] bg-[#d4af37]/5' : 'text-gray-700'
+                  }`}
+                >
+                  {name}
+                </button>
+              ))}
+            </div>
+          )}
         </div>
       </div>
+
+      {/* Modal Card */}
+      <div className="relative w-full max-w-md animate-in zoom-in-95 duration-500"
+        style={{ perspective: '1000px' }}>
+        
+        {/* Outer glow rings */}
+        <div className="absolute -inset-4 rounded-[2.5rem] opacity-30 animate-pulse"
+          style={{
+            background: 'linear-gradient(135deg, rgba(212,175,55,0.15), rgba(228,179,99,0.15))',
+            filter: 'blur(40px)',
+            animationDuration: '3s'
+          }} />
+        <div className="absolute -inset-2 rounded-[2rem] border border-[#d4af37]/20"
+          style={{ boxShadow: '0 0 30px rgba(212,175,55,0.1), inset 0 0 30px rgba(212,175,55,0.05)' }} />
+        
+        <div className="relative bg-white rounded-3xl overflow-hidden"
+          style={{
+            boxShadow: '0 25px 80px rgba(0,0,0,0.4), 0 0 60px rgba(212,175,55,0.15), 0 0 120px rgba(30,37,69,0.3)',
+            transformStyle: 'preserve-3d',
+            transform: 'rotateY(-1deg) rotateX(1deg)',
+          }}>
+          
+          {/* Top shimmer line */}
+          <div className="absolute top-0 left-8 right-8 h-px bg-gradient-to-r from-transparent via-[#d4af37] to-transparent opacity-40 z-20" />
+
+          {/* Close Button */}
+          <button
+            onClick={() => setIsOpen(false)}
+            className="absolute top-4 right-4 z-20 w-10 h-10 flex items-center justify-center bg-white/90 backdrop-blur-sm rounded-full text-slate-400 hover:text-red-500 hover:bg-red-50 hover:scale-110 active:scale-95 transition-all duration-300 shadow-lg border border-gray-100"
+            style={{ boxShadow: '0 4px 15px rgba(0,0,0,0.1)' }}
+          >
+            <X size={18} strokeWidth={2.5} />
+          </button>
+
+          {/* Top Decorative Section */}
+          <div className="h-36 relative flex items-center justify-center overflow-hidden"
+            style={{ background: 'linear-gradient(135deg, #0f1729 0%, #1e2545 40%, #2a355c 100%)' }}>
+            
+            {/* Background pattern */}
+            <div className="absolute inset-0 opacity-10"
+              style={{
+                backgroundImage: 'radial-gradient(circle at 50% 50%, #d4af37 1px, transparent 1px)',
+                backgroundSize: '30px 30px',
+                perspective: '1000px',
+                transform: 'rotateX(60deg) scale(1.5)',
+              }} />
+            
+            {/* Glowing orbs in background */}
+            <div className="absolute top-0 left-1/4 w-20 h-20 rounded-full bg-[#d4af37]/10 blur-2xl" />
+            <div className="absolute bottom-0 right-1/4 w-16 h-16 rounded-full bg-[#e4b363]/10 blur-2xl" />
+            
+            {/* Floating stars */}
+            <div className="absolute inset-0 opacity-30">
+              <div className="absolute top-4 left-6 text-[#d4af37] animate-float-slow">
+                <Star size={20} style={{ filter: 'drop-shadow(0 0 8px rgba(212,175,55,0.5))' }} />
+              </div>
+              <div className="absolute top-8 right-8 text-[#d4af37] animate-float-medium">
+                <Star size={14} style={{ filter: 'drop-shadow(0 0 6px rgba(212,175,55,0.4))' }} />
+              </div>
+              <div className="absolute bottom-4 left-1/3 text-[#e4b363] animate-float-fast">
+                <Moon size={24} style={{ filter: 'drop-shadow(0 0 10px rgba(228,179,99,0.5))' }} />
+              </div>
+              <div className="absolute bottom-6 right-6 text-[#d4af37] animate-float-slow">
+                <Star size={12} style={{ filter: 'drop-shadow(0 0 5px rgba(212,175,55,0.4))', animationDelay: '1s' }} />
+              </div>
+            </div>
+
+            {/* Central Icon Container */}
+            <div className="relative z-10">
+              {/* Outer rotating ring */}
+              <div className="absolute inset-0 w-24 h-24 rounded-full border-2 border-[#d4af37]/30 animate-spin-slow"
+                style={{ animationDuration: '8s', margin: '-12px' }} />
+              <div className="absolute inset-0 w-20 h-20 rounded-full border border-[#d4af37]/20 animate-spin-slow"
+                style={{ animationDuration: '12s', animationDirection: 'reverse', margin: '-10px' }} />
+              
+              {/* Main icon circle */}
+              <div className="w-20 h-20 rounded-full bg-gradient-to-tr from-[#d4af37] via-[#e4b363] to-[#fbbf24] flex items-center justify-center"
+                style={{ 
+                  boxShadow: '0 0 40px rgba(212,175,55,0.5), 0 0 80px rgba(212,175,55,0.3), 0 0 120px rgba(228,179,99,0.2), inset 0 1px 0 rgba(255,255,255,0.3)',
+                  transform: 'translateZ(10px)'
+                }}>
+                <div className="relative">
+                  <Sparkles className="text-white w-9 h-9 animate-pulse" />
+                  <div className="absolute -top-1 -right-1 w-2 h-2 rounded-full bg-white animate-ping" />
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* Bottom Content Section */}
+          <div className="relative p-8 text-center bg-gradient-to-b from-[#fdfbf7] via-[#fef9f0] to-[#fef5e7]">
+            
+            {/* Sacred geometry decorative line */}
+            <div className="flex items-center justify-center gap-3 mb-5">
+              <div className="w-8 h-px bg-gradient-to-r from-transparent to-[#d4af37]/50" />
+              <Om size={16} className="text-[#d4af37]/60" />
+              <div className="w-8 h-px bg-gradient-to-l from-transparent to-[#d4af37]/50" />
+            </div>
+
+            <h3 className="text-2xl font-bold mb-3 font-serif bg-gradient-to-r from-[#1e2545] via-[#2a355c] to-[#1e2545] bg-clip-text text-transparent"
+              style={{ 
+                backgroundSize: '200% 200%',
+                animation: 'shimmer 3s ease infinite',
+                textShadow: '0 2px 4px rgba(0,0,0,0.05)'
+              }}>
+              {t('title')}
+            </h3>
+            
+            <p className="text-sm text-slate-500 mb-8 leading-relaxed max-w-sm mx-auto">
+              {t('description')}
+            </p>
+
+            {/* Primary CTA Button */}
+            <button
+              onClick={() => navigate('/kundli')}
+              className="relative w-full py-4 px-6 rounded-xl font-bold text-sm tracking-wider uppercase text-white overflow-hidden group transition-all duration-300 hover:-translate-y-1 hover:scale-[1.02] active:scale-95"
+              style={{ 
+                backgroundImage: 'linear-gradient(135deg, #d4af37 0%, #e4b363 50%, #fbbf24 100%)',
+                boxShadow: '0 10px 40px rgba(212,175,55,0.4), 0 0 20px rgba(212,175,55,0.2), 0 0 0 1px rgba(255,255,255,0.2) inset',
+                backgroundSize: '200% 200%',
+                animation: 'shimmer 3s ease infinite',
+              }}>
+              {/* Button shimmer effect */}
+              <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/30 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-1000" />
+              <span className="relative z-10 flex items-center justify-center gap-2">
+                <Sparkles size={16} className="animate-pulse" />
+                {t('buttonPrimary')}
+              </span>
+            </button>
+
+            {/* Secondary Button */}
+            <button
+              onClick={() => setIsOpen(false)}
+              className="mt-4 text-xs font-bold text-slate-400 hover:text-[#1e2545] uppercase tracking-widest transition-all duration-300 hover:tracking-[0.2em]"
+            >
+              {t('buttonSecondary')}
+            </button>
+          </div>
+        </div>
+      </div>
+
+      {/* Animation Styles */}
+      <style>{`
+        @keyframes floatModal {
+          0%, 100% {
+            transform: translateY(0) scale(1);
+            opacity: 0.3;
+          }
+          25% {
+            transform: translateY(-20px) scale(1.5);
+            opacity: 0.6;
+          }
+          50% {
+            transform: translateY(-10px) scale(1);
+            opacity: 0.4;
+          }
+          75% {
+            transform: translateY(-30px) scale(1.3);
+            opacity: 0.5;
+          }
+        }
+        
+        @keyframes float-slow {
+          0%, 100% { transform: translateY(0px) rotate(0deg); opacity: 0.3; }
+          50% { transform: translateY(-15px) rotate(10deg); opacity: 0.6; }
+        }
+        
+        @keyframes float-medium {
+          0%, 100% { transform: translateY(0px) rotate(0deg); opacity: 0.3; }
+          50% { transform: translateY(-10px) rotate(-8deg); opacity: 0.5; }
+        }
+        
+        @keyframes float-fast {
+          0%, 100% { transform: translateY(0px) rotate(0deg); opacity: 0.25; }
+          50% { transform: translateY(-8px) rotate(12deg); opacity: 0.5; }
+        }
+        
+        @keyframes spin-slow {
+          0% { transform: rotate(0deg); }
+          100% { transform: rotate(360deg); }
+        }
+        
+        @keyframes shimmer {
+          0% { background-position: 0% 50%; }
+          50% { background-position: 100% 50%; }
+          100% { background-position: 0% 50%; }
+        }
+        
+        .animate-float-slow {
+          animation: float-slow 6s ease-in-out infinite;
+        }
+        
+        .animate-float-medium {
+          animation: float-medium 4s ease-in-out infinite;
+        }
+        
+        .animate-float-fast {
+          animation: float-fast 3s ease-in-out infinite;
+        }
+        
+        .animate-spin-slow {
+          animation: spin-slow linear infinite;
+        }
+      `}</style>
     </div>
   );
 };

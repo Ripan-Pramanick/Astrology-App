@@ -33,19 +33,30 @@ export const updatePaymentRecord = async (orderId, updateData) => {
 
 /**
  * Update service request (e.g., kundali_requests) after payment success
- * @param {string} service - Service type ('kundli', 'matchmaking', etc.)
+ * @param {string} service - Service type ('kundli', 'matchmaking', 'pdf', 'premium_report', etc.)
  * @param {string} serviceId - ID of the service request
  */
 export const updateServicePaymentStatus = async (service, serviceId) => {
   let table;
-  if (service === 'kundli') table = 'kundali_requests';
-  else if (service === 'matchmaking') table = 'matchmaking_requests';
-  else throw new Error('Unknown service');
+  
+  if (service === 'kundli') {
+    table = 'kundali_requests';
+  } else if (service === 'matchmaking') {
+    table = 'matchmaking_requests';
+  } else if (service === 'pdf' || service === 'premium_report') {
+    // PDF বা Premium Report এর জন্য কোনো নির্দিষ্ট টেবিল আপডেট করার প্রয়োজন নেই আপাতত
+    console.log(`Payment successful for service: ${service}`);
+    return; // 500 Error বন্ধ করতে এখানেই return করা হলো
+  } else {
+    throw new Error('Unknown service: ' + service);
+  }
 
-  const { error } = await supabase
-    .from(table)
-    .update({ payment_status: 'paid' })
-    .eq('id', serviceId);
+  if (table) {
+    const { error } = await supabase
+      .from(table)
+      .update({ payment_status: 'paid' })
+      .eq('id', serviceId);
 
-  if (error) throw new Error('Failed to update service payment status');
+    if (error) throw new Error('Failed to update service payment status');
+  }
 };
