@@ -4,7 +4,6 @@ export const generatePDF = async (htmlContent) => {
     let browser = null;
     
     try {
-        // Launch Puppeteer browser
         browser = await puppeteer.launch({
             headless: true,
             args: [
@@ -16,10 +15,10 @@ export const generatePDF = async (htmlContent) => {
 
         const page = await browser.newPage();
 
-        // 🌟 Timeout 0 করে দেওয়া হলো যাতে ২০০ পেজ লোড হতে গিয়ে ক্র্যাশ না করে
+        // 🌟 Timeout 0 যোগ করা হলো যাতে বিশাল পিডিএফ ক্র্যাশ না করে
         await page.setContent(htmlContent, { waitUntil: 'networkidle0', timeout: 0 });
 
-        // 🌟 PDF জেনারেট হওয়ার জন্যও Timeout 0 করা হলো
+        // 🌟 PDF Generation Timeout 0 করা হলো
         const pdfBuffer = await page.pdf({
             format: 'A4',
             printBackground: true, 
