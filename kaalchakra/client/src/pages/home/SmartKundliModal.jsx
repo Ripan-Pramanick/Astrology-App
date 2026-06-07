@@ -273,7 +273,7 @@ const SmartKundliModal = () => {
             {/* Sacred geometry decorative line */}
             <div className="flex items-center justify-center gap-3 mb-5">
               <div className="w-8 h-px bg-gradient-to-r from-transparent to-[#d4af37]/50" />
-              <Om size={16} className="text-[#d4af37]/60" />
+            <span className="text-orange-500 text-xl">🕉️</span>
               <div className="w-8 h-px bg-gradient-to-l from-transparent to-[#d4af37]/50" />
             </div>
 
