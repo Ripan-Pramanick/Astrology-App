@@ -14,8 +14,10 @@ const generateAdvancedLalkitab = (data) => {
     if (lkData && typeof lkData === 'object' && !Array.isArray(lkData)) {
         debtsList = lkData.debts || [];
         remediesList = lkData.remedies || [];
-    } else {
-        // যদি API ফেইল করে বা ডেটা না থাকে, তবে Fallback
+    } 
+    
+    // 🌟 Fallback: যদি ডেটা না থাকে বা ফাঁকা আসে
+    if (!debtsList.length || !remediesList.length) {
         debtsList = [
             { name: "Forefather's Debt (Pitr Rin)", indications: "Destruction of crops, financial losses without reason, or struggles with male progeny.", isPresent: true },
             { name: "Mother's Debt (Matr Rin)", indications: "Alienation from family, distress to mother, or loss of milch animals.", isPresent: false },
@@ -25,15 +27,20 @@ const generateAdvancedLalkitab = (data) => {
             { planet: "Sun", remedy: "Throw copper coins in flowing water. Always maintain a good moral character." },
             { planet: "Moon", remedy: "Keep a silver piece or rice given by your mother in your wallet." },
             { planet: "Mars", remedy: "Offer sweet tandoori rotis to animals or donate blood if health permits." },
-            { planet: "Rahu", remedy: "Keep a piece of solid silver with you. Avoid wearing blue or black clothes." }
+            { planet: "Mercury", remedy: "Plant broad-leaved plants and water them daily." },
+            { planet: "Jupiter", remedy: "Apply saffron (Kesar) tilak on your forehead." },
+            { planet: "Venus", remedy: "Wear clean, ironed clothes and use mild fragrances." },
+            { planet: "Saturn", remedy: "Feed crows or black dogs. Avoid consuming non-vegetarian food and alcohol." },
+            { planet: "Rahu", remedy: "Keep a piece of solid silver with you. Avoid wearing blue or black clothes." },
+            { planet: "Ketu", remedy: "Donate black and white blankets to the needy or homeless." }
         ];
     }
 
-    // 🌟 Dynamic Loops
+    // 🌟 Dynamic Loops (No Emojis, Using HTML Entities)
     const debtsHtml = debtsList.map(debt => `
         <div class="lk-card ${debt.isPresent ? 'active-debt' : 'inactive-debt'}">
             <h4 class="debt-title">${debt.name || 'Karmic Debt'}</h4>
-            <div class="debt-status">${debt.isPresent ? '⚠️ Active' : '✅ Cleared / Not Present'}</div>
+            <div class="debt-status">${debt.isPresent ? '&#9888; Active' : '&#10003; Cleared / Not Present'}</div>
             <p class="debt-desc">${debt.isPresent ? (debt.indications || debt.description || '') : (t.noDebt || "No active karmic debts found in this category.")}</p>
         </div>
     `).join('');
@@ -59,8 +66,8 @@ const generateAdvancedLalkitab = (data) => {
         
         .lk-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 30px; }
         
-        /* 🌟 page-break-inside: avoid; এর মাধ্যমে কার্ড বা টেবিল পেজের মাঝে অর্ধেক কাটা পড়বে না */
-        .lk-card { padding: 15px; border-radius: 6px; border: 1px solid rgba(161, 73, 59, 0.2); background-color: #fdfbf3; page-break-inside: avoid; }
+        /* 🌟 page-break-inside: avoid; */
+        .lk-card { padding: 15px; border-radius: 6px; border: 1px solid rgba(161, 73, 59, 0.2); background-color: #fdfbf3; page-break-inside: avoid; display: block; }
         .active-debt { border-left: 4px solid #b91c1c; background-color: #fef2f2; }
         .inactive-debt { border-left: 4px solid #15803d; background-color: #f0fdf4; }
         
@@ -72,8 +79,8 @@ const generateAdvancedLalkitab = (data) => {
 
         .remedy-table { width: 100%; border-collapse: collapse; font-family: 'Arial', sans-serif; font-size: 13.5px; border: 1px solid rgba(161, 73, 59, 0.2); border-radius: 6px; overflow: hidden; page-break-inside: auto; }
         
-        /* 🌟 টেবিলের রো যেন পেজ ব্রেক এর সময় সুন্দর করে পরের পেজে যায় */
-        .remedy-table tr { page-break-inside: avoid; page-break-after: auto; }
+        /* 🌟 Table rows will not break across pages */
+        .remedy-table tr { page-break-inside: avoid; page-break-after: auto; display: table-row; }
         
         .remedy-table th { background-color: rgba(161, 73, 59, 0.08); color: #a1493b; text-transform: uppercase; letter-spacing: 1px; padding: 12px 15px; text-align: left; }
         .remedy-table td { padding: 12px 15px; border-bottom: 1px dashed rgba(0,0,0,0.1); }
@@ -91,14 +98,14 @@ const generateAdvancedLalkitab = (data) => {
             </div>
 
             <h3 style="font-size: 17px; color: #a1493b; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 15px; border-bottom: 1px dashed rgba(161, 73, 59, 0.3); padding-bottom: 8px;">
-                🔴 ${t.lkDebts || "Lalkitab Karmic Debts (Rin)"}
+                <span style="font-size: 20px;">&#10022;</span> ${t.lkDebts || "Lalkitab Karmic Debts (Rin)"}
             </h3>
             <div class="lk-grid">
                 ${debtsHtml}
             </div>
 
             <h3 style="font-size: 17px; color: #a1493b; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 15px; border-bottom: 1px dashed rgba(161, 73, 59, 0.3); padding-bottom: 8px; margin-top: 10px;">
-                🌿 ${t.lkRemedies || "Lalkitab Planetary Remedies"}
+                <span style="font-size: 20px;">&#10022;</span> ${t.lkRemedies || "Lalkitab Planetary Remedies"}
             </h3>
             <table class="remedy-table">
                 <thead>
