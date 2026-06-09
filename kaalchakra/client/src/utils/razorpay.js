@@ -41,7 +41,7 @@ export const initiatePayment = async (options, onSuccess, onError) => {
       key: razorpayKey,
       amount: order.amount,
       currency: order.currency,
-      name: 'Ruhu Astrology',
+      name: 'KAALCHAKRA',
       description: options.description,
       order_id: order.id,
       handler: async (response) => {
