@@ -22,16 +22,17 @@ const generateAdvancedConclusion = (data) => {
         ]
     };
 
+    // 🌟 FIX 1: ইমোজির বদলে HTML Entity ব্যবহার করা হলো (যাতে [] বক্স না আসে)
     const dosHtml = conclusionData.dos.map(item => `
         <div class="guideline-item do-item">
-            <div class="icon">✨</div>
+            <div class="icon">&#10003;</div>
             <div class="text">${item}</div>
         </div>
     `).join('');
 
     const dontsHtml = conclusionData.donts.map(item => `
         <div class="guideline-item dont-item">
-            <div class="icon">🚫</div>
+            <div class="icon">&#10007;</div>
             <div class="text">${item}</div>
         </div>
     `).join('');
@@ -57,8 +58,32 @@ const generateAdvancedConclusion = (data) => {
         .do-header { color: #15803d; }
         .dont-header { color: #b91c1c; }
 
-        .guideline-item { display: flex; align-items: flex-start; padding: 15px; border-radius: 4px; font-family: 'Arial', sans-serif; font-size: 13.5px; line-height: 1.6; }
-        .guideline-item .icon { font-size: 16px; margin-right: 12px; margin-top: -2px; }
+        /* 🌟 FIX 2: CSS Page Break Hack (বক্স কাটা বন্ধ করবে) */
+        .guideline-item { 
+            display: table !important; /* ফ্লেক্সবক্সের কারণে পেজ কাটে, তাই টেবিল লেআউট করা হলো */
+            width: 100%; 
+            padding: 15px; 
+            border-radius: 4px; 
+            font-family: 'Arial', sans-serif; 
+            font-size: 13.5px; 
+            line-height: 1.6; 
+            page-break-inside: avoid !important; /* পেজ কাটা বন্ধ করবে */
+            break-inside: avoid !important;
+            -webkit-column-break-inside: avoid !important;
+        }
+        .guideline-item .icon { 
+            display: table-cell; 
+            vertical-align: top; 
+            font-size: 18px; 
+            font-weight: bold; 
+            width: 30px; 
+            padding-right: 10px;
+        }
+        .guideline-item .text { 
+            display: table-cell; 
+            vertical-align: top; 
+        }
+
         .do-item { background-color: #f0fdf4; border: 1px solid #bbf7d0; color: #15803d; }
         .dont-item { background-color: #fef2f2; border: 1px solid #fca5a5; color: #b91c1c; }
 
@@ -100,7 +125,7 @@ const generateAdvancedConclusion = (data) => {
 
     <div class="page-container">
         <div class="content-wrapper back-cover-wrapper">
-            <div class="om-symbol-large">ॐ</div>
+            <div class="om-symbol-large">&#2384;</div>
             <h2 class="closing-title">${t.mayStarsGuide || "May The Stars Guide You"}</h2>
             
             <p class="closing-text">
